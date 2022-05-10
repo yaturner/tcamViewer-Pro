@@ -61,10 +61,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:scaleType="fitCenter"
+        app:layout_constraintBottom_toTopOf="@+id/glCameraBottom"
         app:layout_constraintEnd_toStartOf="@+id/glCameraEnd"
         app:layout_constraintStart_toStartOf="@+id/glCameraStart"
         app:layout_constraintTop_toBottomOf="@+id/glCameraTop"
-        app:layout_constraintBottom_toTopOf="@+id/glCameraBottom"
         tools:srcCompat="@drawable/main_camera" />
 
 

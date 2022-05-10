@@ -1,5 +1,6 @@
 package com.darcangel.acam.ui.library;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +21,7 @@ public class LibraryFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         LibraryViewModel libraryViewModel =
                 new ViewModelProvider(this).get(LibraryViewModel.class);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         binding = FragmentLibraryBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
