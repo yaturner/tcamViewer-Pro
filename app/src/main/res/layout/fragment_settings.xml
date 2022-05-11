@@ -43,43 +43,141 @@
         app:layout_constraintStart_toStartOf="@+id/glStart"
         app:layout_constraintTop_toBottomOf="@+id/glTop">
 
-        <LinearLayout
+        <!--Scrollview Container-->
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="@+id/glEnd"
+            app:layout_constraintStart_toStartOf="@+id/glStart">
 
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/switchAGC"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:text="@string/agc" />
+            <!--Heading-->
+            <TextView
+                style="@style/SettingsHeading"
+                android:text="@string/camera_settings" />
 
-            <androidx.appcompat.widget.LinearLayoutCompat
+            <!--AGC-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchAGC"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="@+id/glEnd"
-                app:layout_constraintStart_toStartOf="@+id/glStart">
+                android:layout_height="0dp"
+                android:layout_marginBottom="10sp"
+                android:layout_weight="1"
+                android:text="@string/agc" />
+
+            <!--Emissivity-->
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Emissivity"
-                    android:layout_gravity="start"
-                    android:layout_weight=".9"/>
+                    style="@style/SettingsTextStart"
+                    android:layout_weight=".9"
+                    android:text="@string/emissivity" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/emissivity"
+                    style="@style/SettingsTextEnd"
+                    android:layout_weight=".1"
                     android:text="97"
-                    android:layout_gravity="end"
-                    android:layout_weight=".1"/>
+                    android:textAlignment="textEnd" />
 
 
             </androidx.appcompat.widget.LinearLayoutCompat>
-        </LinearLayout>
+
+            <!--Gain Radio Buttons-->
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/gain" />
+
+                <RadioGroup
+                    android:id="@+id/rgGroup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatRadioButton
+                        android:id="@+id/rbGainAuto"
+                        style="@style/SettingsRadioButton"
+                        android:checked="true"
+                        android:text="@string/auto" />
+
+                    <androidx.appcompat.widget.AppCompatRadioButton
+                        android:id="@+id/rbGainHigh"
+                        style="@style/SettingsRadioButton"
+                        android:checked="false"
+                        android:text="@string/high" />
+
+                    <androidx.appcompat.widget.AppCompatRadioButton
+                        android:id="@+id/rbGainLow"
+                        style="@style/SettingsRadioButton"
+                        android:checked="false"
+                        android:text="@string/low" />
+                </RadioGroup>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!--Heading-->
+            <TextView
+                style="@style/SettingsHeading"
+                android:text="@string/wifi_network"
+                android:textAllCaps="false" />
+
+
+            <!--Heading-->
+            <TextView
+                style="@style/SettingsHeading"
+                android:text="@string/application_settings" />
+
+            <!--Camera IP Address-->
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/camera_ip_settings" />
+
+                <EditText
+                    style="@style/SettingsTextEnd"
+                    android:hint="192.168.0.1"
+                    android:inputType="textUri"
+                    android:textAlignment="textEnd">
+                </EditText>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!--Export Picture on Save-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchSavePictureOnSave"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10sp"
+                android:layout_weight="1"
+                android:text="@string/save_picture_on_save" />
+
+            <!--Export MetaData-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchExportMetadata"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10sp"
+                android:layout_weight="1"
+                android:text="@string/export_metadata" />
+
+            <!--Export Resolution-->
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:text="@string/export_resolution" />
+
+                <ImageButton
+                    style="@style/SettingsTextEnd"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!--End of scrollable context-->
+        </androidx.appcompat.widget.LinearLayoutCompat>
     </ScrollView>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
