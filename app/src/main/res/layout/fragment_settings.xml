@@ -144,7 +144,8 @@
                     style="@style/SettingsTextEnd"
                     android:hint="192.168.0.1"
                     android:inputType="textUri"
-                    android:textAlignment="textEnd"></EditText>
+                    android:textAlignment="textEnd">
+                </EditText>
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <!--Export Picture on Save-->
@@ -242,6 +243,62 @@
                 android:layout_marginBottom="10sp"
                 android:layout_weight="1"
                 android:text="@string/spotmeter" />
+
+            <!--Units-->
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/units" />
+
+                <RadioGroup
+                    android:id="@+id/rgUnits"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <androidx.appcompat.widget.AppCompatRadioButton
+                        android:id="@+id/rbUnitsF"
+                        style="@style/SettingsRadioButton"
+                        android:checked="true"
+                        android:text="&#xb0;F" />
+
+                    <androidx.appcompat.widget.AppCompatRadioButton
+                        android:id="@+id/rbUnitsC"
+                        style="@style/SettingsRadioButton"
+                        android:checked="false"
+                        android:text="&#xb0;C" />
+
+                </RadioGroup>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!--Version-->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:text="@string/version"/>
+                <TextView
+                    style="@style/SettingsTextEnd"
+                    android:text="0.1.0"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!--Privacy Policy-->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:text="@string/privacy_policy"/>
+                <ImageButton
+                    style="@style/SettingsTextEnd"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
 
 
             <!--End of scrollable context-->

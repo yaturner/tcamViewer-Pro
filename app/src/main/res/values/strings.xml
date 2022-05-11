@@ -23,4 +23,7 @@
     <string name="manual_range">Manual Range</string>
     <string name="shutter_sound">Shutter Sound</string>
     <string name="spotmeter">Spotmeter</string>
+    <string name="units">Units</string>
+    <string name="version">Version</string>
+    <string name="privacy_policy">Privacy Policy</string>
 </resources>
