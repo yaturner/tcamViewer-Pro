@@ -20,4 +20,7 @@
     <string name="export_metadata">Export Metadata</string>
     <string name="export_resolution">Export Resolution</string>
     <string name="camera_ip_settings">Camera IP Settings</string>
+    <string name="manual_range">Manual Range</string>
+    <string name="shutter_sound">Shutter Sound</string>
+    <string name="spotmeter">Spotmeter</string>
 </resources>

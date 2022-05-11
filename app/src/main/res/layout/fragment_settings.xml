@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".ui.settings.SettingsFragment">
 
 
@@ -37,8 +37,9 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/glBottom"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
         app:layout_constraintEnd_toEndOf="@+id/glEnd"
         app:layout_constraintStart_toStartOf="@+id/glStart"
         app:layout_constraintTop_toBottomOf="@+id/glTop">
@@ -46,7 +47,7 @@
         <!--Scrollview Container-->
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="@+id/glEnd"
             app:layout_constraintStart_toStartOf="@+id/glStart">
@@ -143,8 +144,7 @@
                     style="@style/SettingsTextEnd"
                     android:hint="192.168.0.1"
                     android:inputType="textUri"
-                    android:textAlignment="textEnd">
-                </EditText>
+                    android:textAlignment="textEnd"></EditText>
             </androidx.appcompat.widget.LinearLayoutCompat>
 
             <!--Export Picture on Save-->
@@ -177,7 +177,74 @@
                     android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
             </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <!--End of scrollable context-->
+            <!--Manual Range-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchManualRange"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10sp"
+                android:layout_weight="1"
+                android:text="@string/manual_range" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                style="@style/SettingsLayout"
+                android:orientation="vertical">
+
+                <!--Min-->
+                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                    <TextView
+                        style="@style/SettingsTextStart"
+                        android:text="Min"
+                        android:textAlignment="center"/>
+
+                    <EditText style="@style/SettingsTextEnd"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!--Max-->
+                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsTextEnd">
+
+                    <TextView
+                        style="@style/SettingsTextStart"
+                        android:text="Max"
+                        android:textAlignment="center" />
+
+                    <EditText style="@style/SettingsTextEnd"/>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:text="Palette" />
+
+                <ImageButton
+                    style="@style/SettingsTextEnd"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <!--Shutter Sound-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchShutterSound"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10sp"
+                android:layout_weight="1"
+                android:text="@string/shutter_sound" />
+
+            <!--Spotmeter-->
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switchSpotMeter"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginBottom="10sp"
+                android:layout_weight="1"
+                android:text="@string/spotmeter" />
+
+
+            <!--End of scrollable context-->
         </androidx.appcompat.widget.LinearLayoutCompat>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
