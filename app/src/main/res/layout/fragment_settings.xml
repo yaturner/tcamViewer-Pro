@@ -112,7 +112,8 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:onCheckedChanged="@{(group, checkedId) -> model.onGainChanged(checkedId)}">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainAuto"
@@ -156,9 +157,9 @@
 
                     <EditText
                         style="@style/SettingsTextEnd"
-                        android:autofillHints="textUri"
-                        android:hint="@string/camera_ip_address"
+                        android:id="@+id/cameraIPAddress"
                         android:inputType="textUri"
+                        android:afterTextChanged="@{(text) -> model.onCameraIPAddressChanged(text)}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -169,6 +170,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/save_picture_on_save" />
 
                 <!--Export MetaData-->
@@ -178,6 +180,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/export_metadata" />
 
                 <!--Export Resolution-->
@@ -189,7 +192,9 @@
 
                     <ImageButton
                         style="@style/SettingsTextEnd"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                        android:id="@+id/btnExportResolution"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                        android:onClick="@{(buttonView) -> model.onButtonClicked(buttonView)}" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Manual Range-->
