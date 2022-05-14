@@ -11,16 +11,36 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/black</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:layout_gravity">start</item>
+        <item name="android:layout_gravity">center_vertical|start</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:layout_weight">.75</item>
     </style>
 
     <style name="SettingsTextEnd">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/black</item>
-        <item name="android:layout_weight">1</item>
+        <item name="android:textAlignment">textEnd</item>
         <item name="android:layout_gravity">end</item>
+        <item name="android:layout_weight">.25</item>
+    </style>
+
+    <style name="SettingsBtnStart">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:layout_gravity">center_vertical|start</item>
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:layout_weight">.95</item>
+    </style>
+
+    <style name="SettingsBtnEnd">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textAlignment">textEnd</item>
+        <item name="android:layout_gravity">end</item>
+        <item name="android:layout_weight">.05</item>
     </style>
 
     <style name="SettingsRadioButton">

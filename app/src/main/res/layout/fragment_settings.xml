@@ -76,6 +76,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/agc" />
 
                 <!--Emissivity-->
@@ -83,17 +84,15 @@
 
                     <TextView
                         style="@style/SettingsTextStart"
-                        android:layout_weight=".9"
-                        android:textAlignment="center"
                         android:text="@string/emissivity" />
 
                     <EditText
+                        style="@style/SettingsTextEnd"
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
                         android:id="@+id/emissivity"
                         android:inputType="number"
-                        android:afterTextChanged="@{(text) -> model.onEmissivityTextChanged(text)}"
-                        android:layout_weight=".1" />
+                        android:afterTextChanged="@{(text) -> model.onEmissivityTextChanged(text)}"/>
 
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -113,7 +112,7 @@
                         android:layout_gravity="end"
                         android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:onCheckedChanged="@{(group, checkedId) -> model.onGainChanged(checkedId)}">
+                        android:onCheckedChanged="@{(group, checkedId) -> model.onRadioGroupChanged(group, checkedId)}">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainAuto"
@@ -204,37 +203,41 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/manual_range" />
 
                 <androidx.appcompat.widget.LinearLayoutCompat
                     style="@style/SettingsLayout"
-                    android:orientation="vertical">
+                    android:id="@+id/layoutManualRange"
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
                     <!--Min-->
-                    <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        style="@style/SettingsLayout">
 
                         <TextView
                             style="@style/SettingsTextStart"
-                            android:text="@string/min"
-                            android:textAlignment="center" />
+                            android:text="@string/min"/>
 
                         <EditText
                             style="@style/SettingsTextEnd"
-                            android:autofillHints="number"
-                            android:inputType="number" />
+                            android:inputType="number"
+                            android:afterTextChanged="@{(text) -> model.onMinRangeTextChanged(text)}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                     <!--Max-->
-                    <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsTextEnd">
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        style="@style/SettingsLayout">
 
                         <TextView
                             style="@style/SettingsTextStart"
-                            android:text="@string/max"
-                            android:textAlignment="center" />
+                            android:text="@string/max"/>
 
                         <EditText
                             style="@style/SettingsTextEnd"
-                            android:inputType="number" />
+                            android:inputType="number"
+                            android:afterTextChanged="@{(text) -> model.onMaxRangeTextChanged(text)}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -242,11 +245,11 @@
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
-                        style="@style/SettingsTextStart"
+                        style="@style/SettingsBtnStart"
                         android:text="@string/palette" />
 
                     <ImageButton
-                        style="@style/SettingsTextEnd"
+                        style="@style/SettingsBtnEnd"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -257,6 +260,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/shutter_sound" />
 
                 <!--Spotmeter-->
@@ -266,6 +270,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/spotmeter" />
 
                 <!--Units-->

@@ -4,7 +4,9 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.view.View;
+import android.widget.RadioGroup;
 
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.databinding.adapters.TextViewBindingAdapter;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -14,20 +16,28 @@ import com.darcangel.acam.R;
 
 import timber.log.Timber;
 
-public class SettingsViewModel extends ViewModel  {
+public class SettingsViewModel extends ViewModel {
 
     public MutableLiveData<String> emissivity;
+    public MutableLiveData<Boolean> manualRange;
 
     public SettingsViewModel() {
         emissivity = new MutableLiveData<String>();
-        emissivity.setValue("98.6");
+        manualRange = new MutableLiveData<Boolean>();
     }
 
     public MutableLiveData<String> getEmissivity() {
-        if(emissivity == null) {
+        if (emissivity == null) {
             emissivity = new MutableLiveData<String>();
         }
         return emissivity;
+    }
+
+    public MutableLiveData<Boolean> getManualRangeSwitch() {
+        if (manualRange == null) {
+            manualRange = new MutableLiveData<Boolean>();
+        }
+        return manualRange;
     }
 
     public void setEmissivity(String value) {
@@ -36,39 +46,67 @@ public class SettingsViewModel extends ViewModel  {
 
 
     public void onEmissivityTextChanged(CharSequence text) {
-        Log.d("SettingsViewModel", "Emissivity is " + text);
+        Timber.d("Emissivity is " + text);
         setEmissivity(text.toString());
     }
 
-    public void onGainChanged(int checkedId) {
-        Log.d("SettingsViewModel", "Gain is " + checkedId);
-        switch(checkedId) {
+    public void onMinRangeTextChanged(CharSequence text) {
+        Timber.d("Min Range is " + text);
+        setEmissivity(text.toString());
+    }
+
+    public void onMaxRangeTextChanged(CharSequence text) {
+        Timber.d("Max Range is " + text);
+        setEmissivity(text.toString());
+    }
+
+    public void onRadioGroupChanged(RadioGroup group, int checkedId) {
+        Timber.d("Gain is " + checkedId);
+        switch (group.getId()) {
             case R.id.rbGainAuto:
-                Timber.d("Gain is Auto");
+                switch (checkedId) {
+                    case R.id.rbGainAuto:
+                        Timber.d("Gain is Auto");
+                        break;
+                    case R.id.rbGainLow:
+                        Timber.d("Gain is Low");
+                        break;
+                    case R.id.rbGainHigh:
+                        Timber.d("Gain is High");
+                        break;
+                }
                 break;
-            case R.id.rbGainLow:
-                Timber.d("Gain is Low");
-                break;
-            case R.id.rbGainHigh:
-                Timber.d("Gain is High");
+            case R.id.rgUnits:
+                switch (checkedId) {
+                    case R.id.rbUnitsC:
+                        break;
+                    case R.id.rbUnitsF:
+                        break;
+                }
                 break;
         }
     }
+
+}
 
     public void onCameraIPAddressChanged(CharSequence text) {
         Timber.d("Camera Ip Address is " + text);
     }
 
     public void onSwitchChanged(CompoundButton button, Boolean isChecked) {
-        switch(button.getId()) {
+        switch (button.getId()) {
             case R.id.switchSavePictureOnSave:
-                Timber.d("Picture on Save is %s checked", (isChecked?"":"not"));
+                Timber.d("Picture on Save is %s checked", (isChecked ? "" : "not"));
+                break;
+            case R.id.switchManualRange:
+                Timber.d("Manual Range is %s checked", (isChecked ? "" : "not"));
+                manualRange.setValue(isChecked);
                 break;
         }
     }
 
     public void onButtonClicked(View buttonView) {
-        switch(buttonView.getId()) {
+        switch (buttonView.getId()) {
             case R.id.btnExportResolution:
                 Timber.d("Export Resolution button was clicked");
                 break;
