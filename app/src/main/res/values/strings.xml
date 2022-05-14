@@ -26,4 +26,8 @@
     <string name="units">Units</string>
     <string name="version">Version</string>
     <string name="privacy_policy">Privacy Policy</string>
+    <string name="min">Min</string>
+    <string name="max">Max</string>
+    <string name="camera_ip_address">Camera IP Address</string>
+    <string name="palette">Palette</string>
 </resources>
