@@ -18,46 +18,20 @@ import timber.log.Timber;
 
 public class SettingsViewModel extends ViewModel {
 
-    public MutableLiveData<String> emissivity;
-    public MutableLiveData<Boolean> manualRange;
-
     public SettingsViewModel() {
-        emissivity = new MutableLiveData<String>();
-        manualRange = new MutableLiveData<Boolean>();
-    }
-
-    public MutableLiveData<String> getEmissivity() {
-        if (emissivity == null) {
-            emissivity = new MutableLiveData<String>();
-        }
-        return emissivity;
-    }
-
-    public MutableLiveData<Boolean> getManualRangeSwitch() {
-        if (manualRange == null) {
-            manualRange = new MutableLiveData<Boolean>();
-        }
-        return manualRange;
-    }
-
-    public void setEmissivity(String value) {
-        emissivity.setValue(value);
     }
 
 
     public void onEmissivityTextChanged(CharSequence text) {
         Timber.d("Emissivity is " + text);
-        setEmissivity(text.toString());
     }
 
     public void onMinRangeTextChanged(CharSequence text) {
         Timber.d("Min Range is " + text);
-        setEmissivity(text.toString());
     }
 
     public void onMaxRangeTextChanged(CharSequence text) {
         Timber.d("Max Range is " + text);
-        setEmissivity(text.toString());
     }
 
     public void onRadioGroupChanged(RadioGroup group, int checkedId) {
@@ -84,10 +58,9 @@ public class SettingsViewModel extends ViewModel {
                         break;
                 }
                 break;
-        }
+        };
     }
 
-}
 
     public void onCameraIPAddressChanged(CharSequence text) {
         Timber.d("Camera Ip Address is " + text);
@@ -100,7 +73,6 @@ public class SettingsViewModel extends ViewModel {
                 break;
             case R.id.switchManualRange:
                 Timber.d("Manual Range is %s checked", (isChecked ? "" : "not"));
-                manualRange.setValue(isChecked);
                 break;
         }
     }

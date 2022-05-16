@@ -48,7 +48,7 @@ public class SettingsFragment extends Fragment {
                 Timber.d("Emissivity is " + value);
             }
         };
-        settingsViewModel.getEmissivity().observe(this, emissivityObserver);
+        //TODO settingsViewModel.getEmissivity().observe(this, emissivityObserver);
 
         //Create the observer for the Manual Range Switch
         final Observer<Boolean> manualRangeObserver = new Observer<Boolean>() {
@@ -62,8 +62,8 @@ public class SettingsFragment extends Fragment {
                 }
             }
         };
-        settingsViewModel.getEmissivity().observe(this, emissivityObserver);
-        settingsViewModel.getManualRangeSwitch().observe(this, manualRangeObserver);
+        //TODO settingsViewModel.getEmissivity().observe(this, emissivityObserver);
+        //TODO settingsViewModel.getManualRangeSwitch().observe(this, manualRangeObserver);
 
         return root;
     }
