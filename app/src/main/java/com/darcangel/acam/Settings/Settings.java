@@ -30,7 +30,7 @@ public class Settings {
     }
 
     private MutableLiveData<URL> cameraAddress;                //remote address of camera
-    private MutableLiveData<EMISSIVITY> emissivity;
+    private MutableLiveData<Integer> emissivity;
     private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
     private MutableLiveData<UNITS> displayUnits;              // F or C
     private MutableLiveData<Float> streamRate;
@@ -53,14 +53,14 @@ public class Settings {
         }
     }
 
-    public MutableLiveData<EMISSIVITY> getEmissivity() {
+    public MutableLiveData<Integer> getEmissivity() {
         if (emissivity == null) {
-            emissivity = new MutableLiveData<EMISSIVITY>();
+            emissivity = new MutableLiveData<Integer>();
         }
         return emissivity;
     }
 
-    public void setEmissivity(EMISSIVITY value) {
+    public void setEmissivity(Integer value) {
         emissivity.setValue(value);
     }
 
