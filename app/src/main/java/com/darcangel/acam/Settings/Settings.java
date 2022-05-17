@@ -3,6 +3,7 @@ package com.darcangel.acam.Settings;
 import android.content.SharedPreferences;
 import android.util.Pair;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.net.URL;
@@ -29,7 +30,7 @@ public class Settings {
 
     }
 
-    private MutableLiveData<URL> cameraAddress;                //remote address of camera
+    private MutableLiveData<String> cameraAddress;                //remote address of camera
     private MutableLiveData<Integer> emissivity;
     private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
     private MutableLiveData<UNITS> displayUnits;              // F or C
@@ -46,12 +47,25 @@ public class Settings {
 
 
 
+
     public Settings(SharedPreferences prefs) {
         if(prefs == null || prefs.getAll() == null) {
-            //initailized the prefs
-
+            //initailize the prefs
+            cameraAddress = new MutableLiveData<String>("");
         }
     }
+
+    public LiveData<String> getCameraAddress() {
+        if(cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
+        }
+        return cameraAddress;
+    }
+
+    public void setCameraAddress(String address) {
+        cameraAddress.setValue(address);
+    }
+
 
     public MutableLiveData<Integer> getEmissivity() {
         if (emissivity == null) {

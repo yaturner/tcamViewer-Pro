@@ -20,8 +20,15 @@ import androidx.lifecycle.ViewModelProvider;
 import timber.log.Timber;
 
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
+import com.darcangel.acam.Settings.Settings;
+
+
+import javax.inject.Inject;
 
 public class SettingsFragment extends Fragment {
+
+@Inject
+Settings settings;
 
     private FragmentSettingsBinding binding;
     private ViewGroup container;
@@ -38,8 +45,16 @@ public class SettingsFragment extends Fragment {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        binding.emissivity.setText("98.6");
         binding.setModel(settingsViewModel);
+
+        //Observer for Camera IP Address
+        settings.getCameraAddress().observe(this, new Observer<String>() {
+                    @Override
+                    public void onChanged(String s) {
+                        Timber.d("Camera Address is no %s", s);
+                    }
+                }
+        );
 
         //Create the observer
         final Observer<String> emissivityObserver = new Observer<String>() {
@@ -55,7 +70,7 @@ public class SettingsFragment extends Fragment {
             @Override
             public void onChanged(Boolean value) {
                 Timber.d("Manual Range Switch is " + value);
-                if(value) {
+                if (value) {
                     binding.layoutManualRange.setVisibility(View.VISIBLE);
                 } else {
                     binding.layoutManualRange.setVisibility(View.GONE);

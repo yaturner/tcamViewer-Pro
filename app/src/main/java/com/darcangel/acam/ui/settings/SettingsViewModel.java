@@ -1,15 +1,9 @@
 package com.darcangel.acam.ui.settings;
 
-import android.util.Log;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.view.View;
 import android.widget.RadioGroup;
 
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.databinding.adapters.TextViewBindingAdapter;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.darcangel.acam.R;
