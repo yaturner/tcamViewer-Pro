@@ -2,8 +2,10 @@ package com.darcangel.acam;
 
 import android.app.Application;
 
+import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
 
+@HiltAndroidApp
 public class AcamApplication extends Application {
     //private DaggerController mDaggerController;
 

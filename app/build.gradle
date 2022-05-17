@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'dagger.hilt.android.plugin'
 }
 
 android {
@@ -34,6 +35,11 @@ android {
         viewBinding true
         dataBinding true
     }
+
+    hilt {
+        enableAggregatingTask = true
+    }
+
 }
 
 dependencies {
