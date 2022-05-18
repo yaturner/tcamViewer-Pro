@@ -11,6 +11,10 @@
         <variable
             name="model"
             type="com.darcangel.acam.ui.settings.SettingsViewModel" />
+
+        <variable
+            name="listener"
+            type="com.darcangel.acam.ui.settings.SettingsListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -76,7 +80,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/agc" />
 
                 <!--Emissivity-->
@@ -92,7 +96,7 @@
                         android:layout_width="wrap_content"
                         android:id="@+id/emissivity"
                         android:inputType="number"
-                        android:afterTextChanged="@{(text) -> model.onEmissivityTextChanged(text)}"/>
+                        android:afterTextChanged="@{(text) -> listener.onEmissivityTextChanged(text)}"/>
 
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -112,7 +116,7 @@
                         android:layout_gravity="end"
                         android:layout_weight="1"
                         android:orientation="horizontal"
-                        android:onCheckedChanged="@{(group, checkedId) -> model.onRadioGroupChanged(group, checkedId)}">
+                        android:onCheckedChanged="@{(group, checkedId) -> listener.onRadioGroupChanged(group, checkedId)}">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainAuto"
@@ -158,7 +162,7 @@
                         style="@style/SettingsTextEnd"
                         android:id="@+id/cameraIPAddress"
                         android:inputType="textUri"
-                        android:afterTextChanged="@{(text) -> model.onCameraIPAddressChanged(text)}"
+                        android:afterTextChanged="@{(text) -> listener.onCameraIPAddressChanged(text)}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -169,7 +173,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/save_picture_on_save" />
 
                 <!--Export MetaData-->
@@ -179,7 +183,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/export_metadata" />
 
                 <!--Export Resolution-->
@@ -193,7 +197,7 @@
                         style="@style/SettingsTextEnd"
                         android:id="@+id/btnExportResolution"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
-                        android:onClick="@{(buttonView) -> model.onButtonClicked(buttonView)}" />
+                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Manual Range-->
@@ -203,7 +207,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/manual_range" />
 
                 <androidx.appcompat.widget.LinearLayoutCompat
@@ -223,7 +227,7 @@
                         <EditText
                             style="@style/SettingsTextEnd"
                             android:inputType="number"
-                            android:afterTextChanged="@{(text) -> model.onMinRangeTextChanged(text)}" />
+                            android:afterTextChanged="@{(text) -> listener.onMinRangeTextChanged(text)}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                     <!--Max-->
@@ -237,7 +241,7 @@
                         <EditText
                             style="@style/SettingsTextEnd"
                             android:inputType="number"
-                            android:afterTextChanged="@{(text) -> model.onMaxRangeTextChanged(text)}" />
+                            android:afterTextChanged="@{(text) -> listener.onMaxRangeTextChanged(text)}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -260,7 +264,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/shutter_sound" />
 
                 <!--Spotmeter-->
@@ -270,7 +274,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> model.onSwitchChanged(buttonView, isChecked)}"
+                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/spotmeter" />
 
                 <!--Units-->

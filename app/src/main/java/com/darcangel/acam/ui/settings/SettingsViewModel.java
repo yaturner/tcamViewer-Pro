@@ -1,9 +1,13 @@
 package com.darcangel.acam.ui.settings;
 
+import android.content.SharedPreferences;
+import android.util.Pair;
 import android.widget.CompoundButton;
 import android.view.View;
 import android.widget.RadioGroup;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.darcangel.acam.R;
@@ -15,67 +19,71 @@ public class SettingsViewModel extends ViewModel {
     public SettingsViewModel() {
     }
 
-
-    public void onEmissivityTextChanged(CharSequence text) {
-        Timber.d("Emissivity is " + text);
+    private enum UNITS {
+        FAHRENHEIT,
+        CELSIUS
     }
 
-    public void onMinRangeTextChanged(CharSequence text) {
-        Timber.d("Min Range is " + text);
+    private enum PALETTE {
+        WHITE_HOT,
+        BLACK_HOT,
+        ARTIC,
+        FUSION,
+        IRON_BLACK,
+        RAINBOW,
+        RAINBOW_HC,
+        SEPIA,
+        BLEND
     }
 
-    public void onMaxRangeTextChanged(CharSequence text) {
-        Timber.d("Max Range is " + text);
+    public enum EMISSIVITY {
+
     }
 
-    public void onRadioGroupChanged(RadioGroup group, int checkedId) {
-        Timber.d("Gain is " + checkedId);
-        switch (group.getId()) {
-            case R.id.rbGainAuto:
-                switch (checkedId) {
-                    case R.id.rbGainAuto:
-                        Timber.d("Gain is Auto");
-                        break;
-                    case R.id.rbGainLow:
-                        Timber.d("Gain is Low");
-                        break;
-                    case R.id.rbGainHigh:
-                        Timber.d("Gain is High");
-                        break;
-                }
-                break;
-            case R.id.rgUnits:
-                switch (checkedId) {
-                    case R.id.rbUnitsC:
-                        break;
-                    case R.id.rbUnitsF:
-                        break;
-                }
-                break;
-        };
-    }
+    private MutableLiveData<String> cameraAddress;                //remote address of camera
+    private MutableLiveData<Integer> emissivity;
+    private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
+    private MutableLiveData<UNITS> displayUnits;              // F or C
+    private MutableLiveData<Float> streamRate;
+    private MutableLiveData<Boolean> updateCameraClock;       // update camera clock when connected
+    private MutableLiveData<Boolean> scaleDisplay;
+    private MutableLiveData<Pair<Integer, Integer>> exportResolution; // HxW for exporting image
+    private MutableLiveData<String> downloadFolder;
+    private MutableLiveData<Boolean> autoRange;
+    private MutableLiveData<Boolean> displaySpotmeter;
+    private MutableLiveData<Boolean> exportMetadata;
+    private MutableLiveData<PALETTE> palette;
+    private MutableLiveData<Integer> streamDelay;
 
+    //Getters and Setters
 
-    public void onCameraIPAddressChanged(CharSequence text) {
-        Timber.d("Camera Ip Address is " + text);
-    }
-
-    public void onSwitchChanged(CompoundButton button, Boolean isChecked) {
-        switch (button.getId()) {
-            case R.id.switchSavePictureOnSave:
-                Timber.d("Picture on Save is %s checked", (isChecked ? "" : "not"));
-                break;
-            case R.id.switchManualRange:
-                Timber.d("Manual Range is %s checked", (isChecked ? "" : "not"));
-                break;
+    public LiveData<String> getCameraAddress() {
+        if (cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
         }
+        return cameraAddress;
     }
 
-    public void onButtonClicked(View buttonView) {
-        switch (buttonView.getId()) {
-            case R.id.btnExportResolution:
-                Timber.d("Export Resolution button was clicked");
-                break;
+    public void setCameraAddress(String address) {
+        cameraAddress.setValue(address);
+    }
+
+
+    public MutableLiveData<Integer> getEmissivity() {
+        if (emissivity == null) {
+            emissivity = new MutableLiveData<Integer>();
         }
+        return emissivity;
+    }
+
+    public void setEmissivity(Integer value) {
+        emissivity.setValue(value);
+    }
+
+    //misc
+    @Override
+    public void onCleared() {
+        // Dispose All your Subscriptions to avoid memory leaks
+        super.onCleared();
     }
 }
