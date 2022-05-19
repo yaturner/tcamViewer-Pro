@@ -34,42 +34,7 @@ public class SettingsFragment extends Fragment {
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        binding.setModel(settingsViewModel);
-
-        //Observer for Camera IP Address
-/*
-        MainActivity.getInstance().getSharedViewModel().getCameraAddress().observe(this, new Observer<String>() {
-                    @Override
-                    public void onChanged(String s) {
-                        Timber.d("Camera Address is no %s", s);
-                    }
-                }
-        );
-*/
-
-        //Create the observer
-        final Observer<String> emissivityObserver = new Observer<String>() {
-            @Override
-            public void onChanged(String value) {
-                Timber.d("Emissivity is " + value);
-            }
-        };
-        //TODO settingsViewModel.getEmissivity().observe(this, emissivityObserver);
-
-        //Create the observer for the Manual Range Switch
-        final Observer<Boolean> manualRangeObserver = new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean value) {
-                Timber.d("Manual Range Switch is " + value);
-                if (value) {
-                    binding.layoutManualRange.setVisibility(View.VISIBLE);
-                } else {
-                    binding.layoutManualRange.setVisibility(View.GONE);
-                }
-            }
-        };
-        //TODO settingsViewModel.getEmissivity().observe(this, emissivityObserver);
-        //TODO settingsViewModel.getManualRangeSwitch().observe(this, manualRangeObserver);
+        binding.setListener(settingsViewModel.getSettingsListener());
 
         return root;
     }

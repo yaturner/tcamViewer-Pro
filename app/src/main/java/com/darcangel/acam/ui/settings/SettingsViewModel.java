@@ -1,6 +1,8 @@
 package com.darcangel.acam.ui.settings;
 
 import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Debug;
 import android.util.Pair;
 import android.widget.CompoundButton;
 import android.view.View;
@@ -10,13 +12,22 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.darcangel.acam.BuildConfig;
 import com.darcangel.acam.R;
 
 import timber.log.Timber;
+import com.darcangel.acam.ui.Emissivity;
+import com.darcangel.acam.ui.settings.SettingsListener;
 
 public class SettingsViewModel extends ViewModel {
 
+    private SettingsListener settingsListener = null;
+
     public SettingsViewModel() {
+        if(settingsListener == null) {
+            settingsListener = new SettingsListener();
+        }
+        init();
     }
 
     private enum UNITS {
@@ -33,11 +44,7 @@ public class SettingsViewModel extends ViewModel {
         RAINBOW,
         RAINBOW_HC,
         SEPIA,
-        BLEND
-    }
-
-    public enum EMISSIVITY {
-
+        BANDED
     }
 
     private MutableLiveData<String> cameraAddress;                //remote address of camera
@@ -56,11 +63,7 @@ public class SettingsViewModel extends ViewModel {
     private MutableLiveData<Integer> streamDelay;
 
     //Getters and Setters
-
-    public LiveData<String> getCameraAddress() {
-        if (cameraAddress == null) {
-            cameraAddress = new MutableLiveData<>();
-        }
+    public MutableLiveData<String> getCameraAddress() {
         return cameraAddress;
     }
 
@@ -68,11 +71,7 @@ public class SettingsViewModel extends ViewModel {
         cameraAddress.setValue(address);
     }
 
-
     public MutableLiveData<Integer> getEmissivity() {
-        if (emissivity == null) {
-            emissivity = new MutableLiveData<Integer>();
-        }
         return emissivity;
     }
 
@@ -80,6 +79,129 @@ public class SettingsViewModel extends ViewModel {
         emissivity.setValue(value);
     }
 
+
+    public MutableLiveData<Pair<Integer, Integer>> getManualRange() {
+        return manualRange;
+    }
+
+    public void setManualRange(MutableLiveData<Pair<Integer, Integer>> manualRange) {
+        this.manualRange = manualRange;
+    }
+
+    public MutableLiveData<UNITS> getDisplayUnits() {
+        return displayUnits;
+    }
+
+    public void setDisplayUnits(MutableLiveData<UNITS> displayUnits) {
+        this.displayUnits = displayUnits;
+    }
+
+    public MutableLiveData<Float> getStreamRate() {
+        return streamRate;
+    }
+
+    public void setStreamRate(MutableLiveData<Float> streamRate) {
+        this.streamRate = streamRate;
+    }
+
+    public MutableLiveData<Boolean> getUpdateCameraClock() {
+        return updateCameraClock;
+    }
+
+    public void setUpdateCameraClock(MutableLiveData<Boolean> updateCameraClock) {
+        this.updateCameraClock = updateCameraClock;
+    }
+
+    public MutableLiveData<Boolean> getScaleDisplay() {
+        return scaleDisplay;
+    }
+
+    public void setScaleDisplay(MutableLiveData<Boolean> scaleDisplay) {
+        this.scaleDisplay = scaleDisplay;
+    }
+
+    public MutableLiveData<Pair<Integer, Integer>> getExportResolution() {
+        return exportResolution;
+    }
+
+    public void setExportResolution(MutableLiveData<Pair<Integer, Integer>> exportResolution) {
+        this.exportResolution = exportResolution;
+    }
+
+    public MutableLiveData<String> getDownloadFolder() {
+        return downloadFolder;
+    }
+
+    public void setDownloadFolder(MutableLiveData<String> downloadFolder) {
+        this.downloadFolder = downloadFolder;
+    }
+
+    public MutableLiveData<Boolean> getAutoRange() {
+        return autoRange;
+    }
+
+    public void setAutoRange(MutableLiveData<Boolean> autoRange) {
+        this.autoRange = autoRange;
+    }
+
+    public MutableLiveData<Boolean> getDisplaySpotmeter() {
+        return displaySpotmeter;
+    }
+
+    public void setDisplaySpotmeter(MutableLiveData<Boolean> displaySpotmeter) {
+        this.displaySpotmeter = displaySpotmeter;
+    }
+
+    public MutableLiveData<Boolean> getExportMetadata() {
+        return exportMetadata;
+    }
+
+    public void setExportMetadata(MutableLiveData<Boolean> exportMetadata) {
+        this.exportMetadata = exportMetadata;
+    }
+
+    public MutableLiveData<PALETTE> getPalette() {
+        return palette;
+    }
+
+    public void setPalette(MutableLiveData<PALETTE> palette) {
+        this.palette = palette;
+    }
+
+    public MutableLiveData<Integer> getStreamDelay() {
+        return streamDelay;
+    }
+
+    public void setStreamDelay(MutableLiveData<Integer> streamDelay) {
+        this.streamDelay = streamDelay;
+    }
+
+    public SettingsListener getSettingsListener() {
+        return settingsListener;
+    }
+
+    //Misc
+
+    private void init() {
+        if(BuildConfig.DEBUG) {
+            cameraAddress = new MutableLiveData<String>("192.168.0.42");
+        } else {
+            cameraAddress = new MutableLiveData<String>();
+        }
+        emissivity = new MutableLiveData<Integer>() ;
+        manualRange =new MutableLiveData<Pair<Integer, Integer>>();
+        displayUnits = new MutableLiveData<UNITS>();
+        streamRate = new MutableLiveData<Float>();
+        updateCameraClock = new MutableLiveData<Boolean>();
+        scaleDisplay = new MutableLiveData<Boolean>();
+        exportResolution = new MutableLiveData<Pair<Integer, Integer>>();
+        downloadFolder = new MutableLiveData<String>();
+        autoRange = new MutableLiveData<Boolean>();
+        displaySpotmeter = new MutableLiveData<Boolean>();
+        exportMetadata = new MutableLiveData<Boolean>();
+        palette = new MutableLiveData<PALETTE>();
+        streamDelay = new MutableLiveData<Integer>();
+    }
     //misc
     @Override
     public void onCleared() {

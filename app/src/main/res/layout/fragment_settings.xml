@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+<!--
         <variable
             name="settings"
             type="com.darcangel.acam.ui.settings.SettingsFragment" />
@@ -11,6 +12,7 @@
         <variable
             name="model"
             type="com.darcangel.acam.ui.settings.SettingsViewModel" />
+-->
 
         <variable
             name="listener"
@@ -163,6 +165,7 @@
                         android:id="@+id/cameraIPAddress"
                         android:inputType="textUri"
                         android:afterTextChanged="@{(text) -> listener.onCameraIPAddressChanged(text)}"
+                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 

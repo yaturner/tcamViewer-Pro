@@ -12,7 +12,9 @@ import com.darcangel.acam.R;
 import timber.log.Timber;
 
 public class SettingsListener {
-    private ViewModel settingsViewModel;
+    private SettingsViewModel settingsViewModel;
+    private String cameraAddress;
+    private Boolean cameraFocus = new Boolean(false);
 
     public SettingsListener() {
         settingsViewModel = MainActivity.getInstance().getSettingsViewModel();
@@ -20,7 +22,10 @@ public class SettingsListener {
 
     // UI callbacks
     public void onCameraIPAddressChanged(CharSequence text) {
-        Timber.d("Camera Ip Address is " + text);
+        String address = text.toString();
+        Timber.d("Camera Ip Address is " + address);
+        //don't set the value until we lose focus
+        this.cameraAddress = address;
     }
 
     public void onSwitchChanged(CompoundButton button, Boolean isChecked) {
@@ -80,5 +85,18 @@ public class SettingsListener {
                 break;
         }
     };
+
+    public void onFocusChange(View view,  Boolean hasFocus) {
+        switch(view.getId()) {
+            case R.id.cameraIPAddress:
+                Timber.d("Camera address does %s have focus", (hasFocus?"":"not"));
+                //if the cameraAddress had focus and is now losing it, update the address
+                if(cameraFocus && !hasFocus) {
+                    settingsViewModel.setCameraAddress(cameraAddress);
+                }
+                cameraFocus = hasFocus;
+                break;
+        }
+    }
 }
 

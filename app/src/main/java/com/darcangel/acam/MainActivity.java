@@ -1,6 +1,7 @@
 package com.darcangel.acam;
 
 import android.os.Bundle;
+import android.view.View;
 
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
@@ -8,6 +9,7 @@ import com.darcangel.acam.ui.settings.SettingsViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
@@ -18,14 +20,20 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.darcangel.acam.databinding.ActivityMainBinding;
 
+import dagger.hilt.android.AndroidEntryPoint;
+import timber.log.Timber;
+
+@AndroidEntryPoint
 public class MainActivity extends AppCompatActivity implements ViewModelStoreOwner {
 
     private ActivityMainBinding binding;
-    private ViewModel settingsViewModel;
-    private ViewModel libraryViewModel;
-    private ViewModel cameraViewModel;
+    private SettingsViewModel settingsViewModel;
+    private LibraryViewModel libraryViewModel;
+    private CameraViewModel cameraViewModel;
 
-    public static MainActivity getInstance() {return _instance;}
+    public static MainActivity getInstance() {
+        return _instance;
+    }
 
     private static MainActivity _instance = null;
 
@@ -42,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
         cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
 
+        observe();
+
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -53,15 +63,27 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
-    public ViewModel getSettingsViewModel() {
+    private void observe() {
+        //Observer for Camera IP Address
+        settingsViewModel.getCameraAddress().observe(this, s -> Timber.d("Camera Address is now " + s));
+
+        //Create the observer for emissivity
+        settingsViewModel.getEmissivity().observe(this, s -> Timber.d("Emissivity is " + s));
+
+        //Create the observer for the Manual Range Switch
+        settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
+    }
+
+
+    public SettingsViewModel getSettingsViewModel() {
         return settingsViewModel;
     }
 
-    public ViewModel getLibraryViewModel() {
+    public LibraryViewModel getLibraryViewModel() {
         return libraryViewModel;
     }
 
-    public ViewModel getCameraViewModel() {
+    public CameraViewModel getCameraViewModel() {
         return cameraViewModel;
     }
 
