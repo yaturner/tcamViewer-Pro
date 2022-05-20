@@ -1,5 +1,6 @@
 package com.darcangel.acam.ui.settings;
 
+import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ public class SettingsFragment extends Fragment {
 
     private FragmentSettingsBinding binding;
     private ViewGroup container;
+    private SettingsViewModel settingsViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -28,7 +30,7 @@ public class SettingsFragment extends Fragment {
 
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        SettingsViewModel settingsViewModel =
+        settingsViewModel =
                 new ViewModelProvider(this).get(SettingsViewModel.class);
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
@@ -37,11 +39,5 @@ public class SettingsFragment extends Fragment {
         binding.setListener(settingsViewModel.getSettingsListener());
 
         return root;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
     }
 }

@@ -1,8 +1,11 @@
 package com.darcangel.acam;
 
+import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 
+import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
@@ -36,19 +39,25 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private static MainActivity _instance = null;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         _instance = this;
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        init();
+    }
+
+    private void init() {
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
         cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
+
+        sharedPreferences = this.getSharedPreferences("tcam", MODE_PRIVATE);
 
         observe();
 
@@ -64,16 +73,28 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private void observe() {
+
         //Observer for Camera IP Address
-        settingsViewModel.getCameraAddress().observe(this, s -> Timber.d("Camera Address is now " + s));
+        settingsViewModel.getCameraAddress().observe(this, s -> {
+            Timber.d("Camera Address is now " + s);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(Constants.KEY_CAMERA_IP_ADDRESS, s);
+            editor.commit();
+        });
 
         //Create the observer for emissivity
-        settingsViewModel.getEmissivity().observe(this, s -> Timber.d("Emissivity is " + s));
+        settingsViewModel.getEmissivity().observe(this, s -> {
+            Timber.d("EmissivityList is " + s);
+        });
 
         //Create the observer for the Manual Range Switch
         settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
     }
 
+
+    public SharedPreferences getSharedPreferences() {
+        return sharedPreferences;
+    }
 
     public SettingsViewModel getSettingsViewModel() {
         return settingsViewModel;

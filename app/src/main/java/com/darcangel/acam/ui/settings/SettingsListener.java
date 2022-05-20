@@ -1,13 +1,14 @@
 package com.darcangel.acam.ui.settings;
 
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 
-import androidx.lifecycle.ViewModel;
-
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
+
+import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -15,6 +16,10 @@ public class SettingsListener {
     private SettingsViewModel settingsViewModel;
     private String cameraAddress;
     private Boolean cameraFocus = new Boolean(false);
+
+    private static final Pattern IP_PATTERN = Pattern.compile(
+            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+
 
     public SettingsListener() {
         settingsViewModel = MainActivity.getInstance().getSettingsViewModel();
@@ -48,7 +53,7 @@ public class SettingsListener {
     }
 
     public void onEmissivityTextChanged(CharSequence text) {
-        Timber.d("Emissivity is " + text);
+        Timber.d("EmissivityList is " + text);
     }
 
     public void onMinRangeTextChanged(CharSequence text) {
@@ -92,11 +97,33 @@ public class SettingsListener {
                 Timber.d("Camera address does %s have focus", (hasFocus?"":"not"));
                 //if the cameraAddress had focus and is now losing it, update the address
                 if(cameraFocus && !hasFocus) {
-                    settingsViewModel.setCameraAddress(cameraAddress);
+                    if (isValidIPAddress(cameraAddress)) {
+                        settingsViewModel.getCameraAddress().postValue(cameraAddress);
+                    }
                 }
                 cameraFocus = hasFocus;
                 break;
         }
+    }
+
+    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+        //initial layout, the view is the dropdown list, the parent is the spinner
+        if (view == null) {
+            return;
+        }
+        switch(parent.getId()) {
+            case R.id.spEmissivity:
+                Timber.d("Emissivity selected pos = %d, id = %d", pos, id);
+                settingsViewModel.getEmissivity().postValue(pos);
+        }
+    }
+
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+    private Boolean isValidIPAddress(String address) {
+        return IP_PATTERN.matcher(address).matches();
     }
 }
 

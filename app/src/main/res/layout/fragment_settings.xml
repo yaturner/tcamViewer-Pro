@@ -4,16 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-<!--
-        <variable
-            name="settings"
-            type="com.darcangel.acam.ui.settings.SettingsFragment" />
-
-        <variable
-            name="model"
-            type="com.darcangel.acam.ui.settings.SettingsViewModel" />
--->
-
         <variable
             name="listener"
             type="com.darcangel.acam.ui.settings.SettingsListener" />
@@ -85,22 +75,21 @@
                     android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/agc" />
 
-                <!--Emissivity-->
+                <!--EmissivityList-->
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
                         style="@style/SettingsTextStart"
                         android:text="@string/emissivity" />
 
-                    <EditText
+                    <Spinner
                         style="@style/SettingsTextEnd"
                         android:layout_height="wrap_content"
                         android:layout_width="wrap_content"
-                        android:id="@+id/emissivity"
-                        android:inputType="number"
-                        android:afterTextChanged="@{(text) -> listener.onEmissivityTextChanged(text)}"/>
-
-
+                        android:id="@+id/spEmissivity"
+                        android:entries="@array/emissivity_strings"
+                        android:onItemSelected="@{(parent, view, pos, id) -> listener.onItemSelected(parent, view, pos, id)}"
+                        android:onNothingSelected="@{(parent) -> listener.onNothingSelected(parent)}"/>
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Gain Radio Buttons-->

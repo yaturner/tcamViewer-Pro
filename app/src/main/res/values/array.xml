@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="emissivity_strings">
+        <item>Aluminum, polished</item>
+        <item>Aluminum, oxidized</item>
+        <item>Brass, tarnished</item>
+        <item>Brass, polished</item>
+        <item>Brick, common</item>
+        <item>Brick, plastered</item>
+        <item>Carbon</item>
+        <item>Chipboard, untreated</item>
+        <item>Clay, fired</item>
+        <item>Concrete</item>
+        <item>Elec Tape, Black</item>
+        <item>Enamel</item>
+        <item>Formica</item>
+        <item>Soil</item>
+        <item>Glass Pane</item>
+        <item>Granite</item>
+        <item>Iron, hot rolled</item>
+        <item>Iron sheet, galvanized</item>
+        <item>Lacquer, black</item>
+        <item>Lacquer, white</item>
+        <item>Lead, oxidized</item>
+        <item>Leather, tanned</item>
+        <item>Oil, thick</item>
+        <item>Paint, oil, avg</item>
+        <item>Paper, white</item>
+        <item>Plasterboard</item>
+        <item>Plastic, PCB</item>
+        <item>Plastic, PVC</item>
+        <item>Porcelain, glazed</item>
+        <item>Rubber</item>
+        <item>Snow</item>
+        <item>Steel, rolled</item>
+        <item>Tar Paper</item>
+        <item>Varnish, oak floor</item>
+        <item>Water</item>
+        <item>Wood, plywood</item>
+    </string-array>
+
+    <integer-array name="emissivity_values">
+        <item>5</item>
+        <item>25</item>
+        <item>22</item>
+        <item>3</item>
+        <item>85</item>
+        <item>94</item>
+        <item>96</item>
+        <item>90</item>
+        <item>91</item>
+        <item>95</item>
+        <item>96</item>
+        <item>90</item>
+        <item>93</item>
+        <item>93</item>
+        <item>97</item>
+        <item>86</item>
+        <item>77</item>
+        <item>28</item>
+        <item>97</item>
+        <item>87</item>
+        <item>63</item>
+        <item>77</item>
+        <item>82</item>
+        <item>94</item>
+        <item>90</item>
+        <item>90</item>
+        <item>91</item>
+        <item>93</item>
+        <item>92</item>
+        <item>94</item>
+        <item>80</item>
+        <item>50</item>
+        <item>92</item>
+        <item>92</item>
+        <item>98</item>
+        <item>82</item>
+    </integer-array>
+</resources>

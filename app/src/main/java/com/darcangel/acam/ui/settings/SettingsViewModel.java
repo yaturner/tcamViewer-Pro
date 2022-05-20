@@ -1,23 +1,19 @@
 package com.darcangel.acam.ui.settings;
 
-import android.content.SharedPreferences;
-import android.os.Build;
-import android.os.Debug;
+import android.icu.text.MessagePattern;
 import android.util.Pair;
-import android.widget.CompoundButton;
-import android.view.View;
-import android.widget.RadioGroup;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.darcangel.acam.BuildConfig;
+import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 
-import timber.log.Timber;
-import com.darcangel.acam.ui.Emissivity;
-import com.darcangel.acam.ui.settings.SettingsListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class SettingsViewModel extends ViewModel {
 
@@ -46,6 +42,10 @@ public class SettingsViewModel extends ViewModel {
         SEPIA,
         BANDED
     }
+
+    private String[] emissivityString;
+    private int[] emissivityValue;
+
 
     private MutableLiveData<String> cameraAddress;                //remote address of camera
     private MutableLiveData<Integer> emissivity;
@@ -180,6 +180,14 @@ public class SettingsViewModel extends ViewModel {
         return settingsListener;
     }
 
+    public String[] getEmissivityString(final int index) {
+        return emissivityString[index];
+    }
+
+    public int[] getEmissivityValue(final int index) {
+        return emissivityValue[index];
+    }
+
     //Misc
 
     private void init() {
@@ -188,7 +196,13 @@ public class SettingsViewModel extends ViewModel {
         } else {
             cameraAddress = new MutableLiveData<String>();
         }
-        emissivity = new MutableLiveData<Integer>() ;
+        if(emissivityString == null || emissivityString.length == 0) {
+            emissivityString = MainActivity.getInstance().getResources().getStringArray(R.array.emissivity_strings);
+        }
+        if(emissivityValue == null || emissivityValue.length == 0) {
+            emissivityValue = MainActivity.getInstance().getResources().getIntArray(R.array.emissivity_values);
+        }
+       emissivity = new MutableLiveData<Integer>() ;
         manualRange =new MutableLiveData<Pair<Integer, Integer>>();
         displayUnits = new MutableLiveData<UNITS>();
         streamRate = new MutableLiveData<Float>();
