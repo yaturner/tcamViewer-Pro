@@ -8,25 +8,32 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.darcangel.acam.AcamApplication;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
-import com.darcangel.acam.network.CameraSocketIO;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class CameraFragment extends Fragment {
 
     private FragmentCameraBinding binding;
+    private Socket cameraSocket;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if(cameraSocket == null) {
+            cameraSocket = ((AcamApplication)MainActivity.getInstance().getApplication()).getCameraSocket();
+        }
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -63,7 +70,11 @@ public class CameraFragment extends Fragment {
                 activity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
-                // save profile changes
+                try {
+                    cameraSocket.getOutputStream().write("\2get_status\3".getBytes(StandardCharsets.UTF_8));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             }
             default:
@@ -82,6 +93,7 @@ public class CameraFragment extends Fragment {
     private void setMenuItems(Menu menu) {
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+/*
         if(MainActivity.getInstance().getCameraSocketIO() == null) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
@@ -89,6 +101,7 @@ public class CameraFragment extends Fragment {
             itemConnect.setVisible(false);
             itemDisconnect.setVisible(true);
         }
+*/
     }
 
     @Override
