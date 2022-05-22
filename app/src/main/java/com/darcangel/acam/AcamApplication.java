@@ -13,16 +13,6 @@ import timber.log.Timber;
 @HiltAndroidApp
 public class AcamApplication extends Application {
     //private DaggerController mDaggerController;
-    private Socket cameraSocket;
-    {
-        try {
-            cameraSocket = new Socket("http://192.168.0.42", 5001);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
 
     public void onCreate() {
         super.onCreate();
@@ -34,9 +24,5 @@ public class AcamApplication extends Application {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
-    }
-
-    public Socket getCameraSocket() {
-        return cameraSocket;
     }
 }

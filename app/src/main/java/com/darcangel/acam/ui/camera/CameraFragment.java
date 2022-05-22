@@ -31,9 +31,11 @@ public class CameraFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+/*
         if(cameraSocket == null) {
             cameraSocket = ((AcamApplication)MainActivity.getInstance().getApplication()).getCameraSocket();
         }
+*/
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,

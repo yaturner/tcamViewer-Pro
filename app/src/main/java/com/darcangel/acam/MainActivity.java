@@ -1,7 +1,12 @@
 package com.darcangel.acam;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.IBinder;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -13,6 +18,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.ActivityMainBinding;
+import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
@@ -35,6 +41,19 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private static MainActivity _instance = null;
     private SharedPreferences sharedPreferences;
+
+    private CameraService cameraService;
+    private Boolean isCameraServiceBound = new Boolean(false);
+
+    private ServiceConnection cameraConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            cameraService = ((CameraService.LocalBinder)service).getService();
+
+        }
+        public void onServiceDisconnected(ComponentName className) {
+            cameraService = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
+        startCameraService();
     }
 
     private void observe() {
@@ -87,6 +107,25 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
     }
 
+    private void startCameraService() {
+        startService(new Intent(this,CameraService.class));
+        doBindService();
+    }
+
+    private void doBindService() {
+        bindService(new Intent(this, CameraService.class), cameraConnection, Context.BIND_AUTO_CREATE);
+        isCameraServiceBound = true;
+        /////cameraService.IsBoundable();
+    }
+
+
+    private void doUnbindService() {
+        if (isCameraServiceBound) {
+            // Detach our existing connection.
+            unbindService(cameraConnection);
+            isCameraServiceBound = false;
+        }
+    }
 
     public SharedPreferences getSharedPreferences() {
         return sharedPreferences;
@@ -104,4 +143,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return cameraViewModel;
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        doUnbindService();
+    }
 }
