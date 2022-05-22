@@ -30,4 +30,7 @@
     <string name="max">Max</string>
     <string name="camera_ip_address">Camera IP Address</string>
     <string name="palette">Palette</string>
+    <string name="connect">connect</string>
+    <string name="get">get</string>
+    <string name="disconnect">disconnect</string>
 </resources>

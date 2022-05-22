@@ -180,11 +180,11 @@ public class SettingsViewModel extends ViewModel {
         return settingsListener;
     }
 
-    public String[] getEmissivityString(final int index) {
+    public String getEmissivityString(final int index) {
         return emissivityString[index];
     }
 
-    public int[] getEmissivityValue(final int index) {
+    public int getEmissivityValue(final int index) {
         return emissivityValue[index];
     }
 

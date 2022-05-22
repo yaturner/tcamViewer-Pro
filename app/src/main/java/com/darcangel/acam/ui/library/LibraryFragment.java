@@ -11,11 +11,19 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.databinding.FragmentLibraryBinding;
+import com.darcangel.acam.network.CameraSocketIO;
 
 public class LibraryFragment extends Fragment {
 
     private FragmentLibraryBinding binding;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(false);
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {

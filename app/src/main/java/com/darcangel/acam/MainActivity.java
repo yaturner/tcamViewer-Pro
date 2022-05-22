@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.darcangel.acam.constants.Constants;
+import com.darcangel.acam.network.CameraSocketIO;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
@@ -22,6 +23,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.darcangel.acam.databinding.ActivityMainBinding;
+
+import java.net.Socket;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
@@ -40,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private static MainActivity _instance = null;
     private SharedPreferences sharedPreferences;
+    private CameraSocketIO cameraSocketIO;
+    private Thread cameraSocketIOThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +75,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        cameraSocketIO = new CameraSocketIO();
+        cameraSocketIOThread = new Thread(cameraSocketIO);
+        cameraSocketIOThread.start();
+
     }
 
     private void observe() {
@@ -108,4 +118,19 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return cameraViewModel;
     }
 
+    public CameraSocketIO getCameraSocketIO() {
+        if(cameraSocketIO == null) {
+            cameraSocketIO = new CameraSocketIO();
+            cameraSocketIOThread = new Thread(cameraSocketIO);
+            cameraSocketIOThread.start();
+        }
+        return cameraSocketIO;
+    }
+
+    public void destroyCameraSocketIOThread() {
+        if(cameraSocketIOThread != null) {
+            cameraSocketIOThread.stop();
+            cameraSocketIOThread = null;
+        }
+    }
 }
