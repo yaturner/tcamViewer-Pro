@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.darcangel.acam.AcamApplication;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
+import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
 import com.darcangel.acam.service.CameraService;
 
@@ -80,7 +81,7 @@ public class CameraFragment extends Fragment {
                             Timber.d("response = %s", response);
                         }
                     };
-                    MainActivity.getInstance().getCameraService().sendCmd("\2{\"cmd\":\"get_status\"}\3", callback);
+                    MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_STATUS, callback);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
