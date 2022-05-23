@@ -11,13 +11,18 @@ import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.Provider;
+
+import timber.log.Timber;
 
 public class CameraService extends Service {
 
-    Socket cameraSocket;
-    PrintStream printStream;
-    final IBinder cameraBinder = new LocalBinder();
+    private Socket cameraSocket;
+    private PrintStream printStream;
+    private byte[] response = new byte[128];
+    private String command;
+    private final IBinder cameraBinder = new LocalBinder();
 
     @Override
     public void onCreate() {
@@ -47,12 +52,19 @@ public class CameraService extends Service {
 
     /***************User APi methods***************/
     public void connect() {
-        Runnable connect = new connectSocket();
+        Runnable connect = new ConnectSocket();
         new Thread(connect).start();
     }
 
+    public String sendCmd(final String cmd) throws IOException {
+        command = cmd;
+        Runnable sendCmd = new SendCmd();
+        new Thread(sendCmd).start();
+        return new String(response);
+    }
 
-    class connectSocket implements Runnable {
+
+    class ConnectSocket implements Runnable {
 
         @Override
         public void run() {
@@ -64,9 +76,17 @@ public class CameraService extends Service {
             }
         }
     }
-
-    public void IsBoundable(){
-        Toast.makeText(this,"I bind like butter", Toast.LENGTH_LONG).show();
+    
+    class SendCmd implements Runnable {
+        @Override
+        public void run() {
+            try {
+                cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
+                cameraSocket.getInputStream().read(response);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override

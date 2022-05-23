@@ -24,6 +24,8 @@ import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.IOException;
+
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
@@ -108,6 +110,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             cameraService = binder.getService();
             isCameraServiceBound = true;
             cameraService.connect();
+            try {
+                String response = cameraService.sendCmd("\2{\"cmd\":\"get_status\"}\3");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
