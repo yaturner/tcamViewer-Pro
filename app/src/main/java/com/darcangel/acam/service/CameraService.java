@@ -20,29 +20,37 @@ public class CameraService extends Service {
     final IBinder cameraBinder = new LocalBinder();
 
     @Override
-    public IBinder onBind(Intent arg0) {
-        // TODO Auto-generated method stub
-        return cameraBinder;
-    }
-
-    @Override
     public void onCreate() {
         super.onCreate();
         cameraSocket = new Socket();
     }
 
+    /**
+     *
+     * @param arg0
+     * @return the binder
+     */
+    @Override
+    public IBinder onBind(Intent intent) {
+        // TODO Auto-generated method stub
+        return cameraBinder;
+    }
+
+    /**
+     * Binder class
+     */
     public class LocalBinder extends Binder {
         public CameraService getService() {
             return CameraService.this;
         }
     }
 
-    public void onStart(Intent intent, int startId) {
-//        super.onStart(intent, startId);
-        Toast.makeText(this, "Service created ...", Toast.LENGTH_LONG).show();
+    /***************User APi methods***************/
+    public void connect() {
         Runnable connect = new connectSocket();
         new Thread(connect).start();
     }
+
 
     class connectSocket implements Runnable {
 

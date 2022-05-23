@@ -43,17 +43,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private SharedPreferences sharedPreferences;
 
     private CameraService cameraService;
-    private Boolean isCameraServiceBound = new Boolean(false);
-
-    private ServiceConnection cameraConnection = new ServiceConnection() {
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            cameraService = ((CameraService.LocalBinder)service).getService();
-
-        }
-        public void onServiceDisconnected(ComponentName className) {
-            cameraService = null;
-        }
-    };
+    private boolean isCameraServiceBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,22 +97,37 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
     }
 
-    private void startCameraService() {
-        startService(new Intent(this,CameraService.class));
-        doBindService();
-    }
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection connection = new ServiceConnection() {
 
-    private void doBindService() {
-        bindService(new Intent(this, CameraService.class), cameraConnection, Context.BIND_AUTO_CREATE);
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
+            cameraService = binder.getService();
+            isCameraServiceBound = true;
+            cameraService.connect();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isCameraServiceBound = false;
+        }
+    };
+
+    private void startCameraService() {
+        Intent intent = new Intent(this, CameraService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
         isCameraServiceBound = true;
         /////cameraService.IsBoundable();
     }
 
 
-    private void doUnbindService() {
+    private void destroyCameraService() {
         if (isCameraServiceBound) {
             // Detach our existing connection.
-            unbindService(cameraConnection);
+            unbindService(connection);
             isCameraServiceBound = false;
         }
     }
@@ -146,6 +151,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        doUnbindService();
+        destroyCameraService();
     }
 }
