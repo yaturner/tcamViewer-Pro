@@ -47,6 +47,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
 
+    public interface CameraCallback {
+        void callback(String response);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         sharedPreferences = this.getSharedPreferences("tcam", MODE_PRIVATE);
 
         observe();
+        startCameraService();
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -77,7 +82,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-        startCameraService();
     }
 
     private void observe() {
@@ -109,12 +113,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
             cameraService = binder.getService();
             isCameraServiceBound = true;
-            cameraService.connect();
-            try {
-                String response = cameraService.sendCmd("\2{\"cmd\":\"get_status\"}\3");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
 
         @Override
@@ -127,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         Intent intent = new Intent(this, CameraService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
         isCameraServiceBound = true;
-        /////cameraService.IsBoundable();
     }
 
 
@@ -153,6 +150,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     public CameraViewModel getCameraViewModel() {
         return cameraViewModel;
+    }
+
+    public CameraService getCameraService() {
+        return cameraService;
     }
 
     @Override

@@ -17,25 +17,24 @@ import com.darcangel.acam.AcamApplication;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
+import com.darcangel.acam.service.CameraService;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+import timber.log.Timber;
+
 public class CameraFragment extends Fragment {
 
     private FragmentCameraBinding binding;
     private Socket cameraSocket;
+    private CameraService cameraService;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-/*
-        if(cameraSocket == null) {
-            cameraSocket = ((AcamApplication)MainActivity.getInstance().getApplication()).getCameraSocket();
-        }
-*/
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -47,8 +46,6 @@ public class CameraFragment extends Fragment {
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-//        final TextView textView = binding.textCamera;
-//        cameraViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 
@@ -58,12 +55,16 @@ public class CameraFragment extends Fragment {
         setMenuItems(menu);
     }
 
+    // Since this is the first fragment we can get a race condition where cameraService isn't
+    //  bound when the menu options are active so we always call the getter
+    //TODO use LiveData
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         MainActivity activity = MainActivity.getInstance();
         switch (item.getItemId()) {
             case R.id.action_connect:  {
                 //Start the SocketIO thread
+                MainActivity.getInstance().getCameraService().connect();
                 activity.invalidateOptionsMenu();
                 break;
             }
@@ -73,7 +74,13 @@ public class CameraFragment extends Fragment {
                 break;
             case R.id.action_get: {
                 try {
-                    cameraSocket.getOutputStream().write("\2get_status\3".getBytes(StandardCharsets.UTF_8));
+                    MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+                        @Override
+                        public void callback(String response) {
+                            Timber.d("response = %s", response);
+                        }
+                    };
+                    MainActivity.getInstance().getCameraService().sendCmd("\2{\"cmd\":\"get_status\"}\3", callback);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

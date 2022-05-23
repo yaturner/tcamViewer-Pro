@@ -6,6 +6,9 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.widget.Toast;
 
+import com.darcangel.acam.MainActivity;
+
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
@@ -20,9 +23,11 @@ public class CameraService extends Service {
 
     private Socket cameraSocket;
     private PrintStream printStream;
-    private byte[] response = new byte[128];
+    private byte[] buffer = new byte[4096];
+    private String response;
     private String command;
     private final IBinder cameraBinder = new LocalBinder();
+    private BufferedInputStream bufferedInputStream;
 
     @Override
     public void onCreate() {
@@ -56,14 +61,16 @@ public class CameraService extends Service {
         new Thread(connect).start();
     }
 
-    public String sendCmd(final String cmd) throws IOException {
+    public void sendCmd(final String cmd, MainActivity.CameraCallback callback) throws IOException {
         command = cmd;
-        Runnable sendCmd = new SendCmd();
+        Runnable sendCmd = new SendCmd(callback);
         new Thread(sendCmd).start();
-        return new String(response);
     }
 
 
+    /**
+     * Thread to connect to the camera
+     */
     class ConnectSocket implements Runnable {
 
         @Override
@@ -76,16 +83,38 @@ public class CameraService extends Service {
             }
         }
     }
-    
+
+    /**
+     * Thread to send a command and receive the response
+     */
     class SendCmd implements Runnable {
+        MainActivity.CameraCallback callback;
+
+        public SendCmd(MainActivity.CameraCallback callback) {
+            this.callback = callback;
+        }
+
         @Override
         public void run() {
+            boolean eof = false;
+            int bytesRead = 0;
+            response = "";
+
             try {
+                bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
-                cameraSocket.getInputStream().read(response);
+                while(!eof) {
+                    bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
+                    response = response += new String(buffer, 0, bytesRead);
+                    if (response.substring(response.length() -1).equals("\3")) {
+                        eof = true;
+                    }
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            callback.callback(response);
         }
     }
 
