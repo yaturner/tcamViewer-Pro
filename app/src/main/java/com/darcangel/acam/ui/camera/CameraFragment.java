@@ -1,6 +1,7 @@
 package com.darcangel.acam.ui.camera;
 
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,6 +20,10 @@ import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
 import com.darcangel.acam.service.CameraService;
+import com.darcangel.acam.utils.Util;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -66,31 +71,41 @@ public class CameraFragment extends Fragment {
         MainActivity activity = MainActivity.getInstance();
         MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
             @Override
-            public void callback(String response) {
-                Timber.d("response = %s, item = %d", response, item.getItemId());
-                switch (item.getItemId()) {
-                    case R.id.action_connect:
-                        if (response.equals(Constants.SUCCESS)) {
-                            socketConnected = true;
-                        } else {
-                            socketConnected = false;
-                        }
-                        activity.invalidateOptionsMenu();
-                        break;
-                    case R.id.action_disconnect:
-                        if (response.equals(Constants.SUCCESS)) {
-                            socketConnected = false;
-                        } else {
-                            socketConnected = true;
-                        }
-                        activity.invalidateOptionsMenu();
-                        break;
-                    case R.id.action_get:
-                        break;
-                };
+            public void callback(JSONObject response) {
+                try {
+                    Timber.d("response = %s, item = %d", response, item.getItemId());
+                    String resultCode = response.getString("result");
+                    switch (item.getItemId()) {
+                        case R.id.action_connect:
+                            if (resultCode.equals("OK")) {
+                                socketConnected = true;
+                            } else {
+                                socketConnected = false;
+                            }
+                            activity.invalidateOptionsMenu();
+                            break;
+                        case R.id.action_disconnect:
+                            if (resultCode.equals("OK")) {
+                                socketConnected = false;
+                            } else {
+                                socketConnected = true;
+                            }
+                            activity.invalidateOptionsMenu();
+                            break;
+                        case R.id.action_get:
+                            if(resultCode.equals("OK")) {
+                                JSONObject responseObj = response.getJSONObject("response");
+                                Bitmap image = Util.processImageResponse(responseObj);
+                            }
+                            break;
+                    }
+                    ;
+                } catch (JSONException e) {
+                    //TODO handle this
+                }
             }
         };
-
+        // command switch
         switch (item.getItemId()) {
             case R.id.action_connect:  {
                 MainActivity.getInstance().getCameraService().connect(callback);
@@ -101,7 +116,7 @@ public class CameraFragment extends Fragment {
                 break;
             case R.id.action_get: {
                 try {
-                    MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_STATUS, callback);
+                    MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -123,12 +138,15 @@ public class CameraFragment extends Fragment {
     private void setMenuItems(Menu menu) {
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        MenuItem itemGet = menu.findItem(R.id.action_get);
         if(!socketConnected) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
+            itemGet.setEnabled(false);
         } else {
             itemConnect.setVisible(false);
             itemDisconnect.setVisible(true);
+            itemGet.setEnabled(true);
         }
     }
 

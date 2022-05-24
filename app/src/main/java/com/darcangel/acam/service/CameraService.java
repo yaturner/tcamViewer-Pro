@@ -9,6 +9,9 @@ import android.widget.Toast;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -95,10 +98,11 @@ public class CameraService extends Service {
                 cameraSocket.connect(socketAddress);
             } catch (IOException e) {
                 e.printStackTrace();
-                callback.callback(Constants.FAIL);
+                callback.callback(parseResponse(Constants.ERROR, null));
                 return;
             }
-            callback.callback(Constants.SUCCESS);
+
+            callback.callback(parseResponse(Constants.SUCCESS, null));
         }
     }
 
@@ -119,10 +123,10 @@ public class CameraService extends Service {
                 cameraSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
-                callback.callback(Constants.FAIL);
+                callback.callback(parseResponse(Constants.ERROR, null));
                 return;
             }
-            callback.callback(Constants.SUCCESS);
+            callback.callback(parseResponse(Constants.SUCCESS, null));
         }
     }
 
@@ -154,10 +158,26 @@ public class CameraService extends Service {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                callback.callback(Constants.FAIL);
+                callback.callback(parseResponse(Constants.ERROR, null));
             }
 
-            callback.callback(response);
+            callback.callback(parseResponse(Constants.SUCCESS, response));
+        }
+    }
+
+    JSONObject parseResponse(final String resultCode, String response) {
+        try {
+            JSONObject object = new JSONObject(resultCode);
+            if (response != null) {
+                //strip out start/stop bytes
+                response = response.substring(1, response.length() -1);
+                JSONObject responseObj = new JSONObject(response);
+                object.put("response", responseObj);
+            }
+            return object;
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null; //TODO fix this
         }
     }
 

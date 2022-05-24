@@ -25,6 +25,8 @@ import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -49,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private boolean isCameraServiceBound = false;
 
     public interface CameraCallback {
-        void callback(String response);
+        void callback(JSONObject response);
     }
 
     @Override
