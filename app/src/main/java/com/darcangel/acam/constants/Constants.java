@@ -1,8 +1,13 @@
 package com.darcangel.acam.constants;
 
 public final class Constants {
-    public final static String KEY_CAMERA_IP_ADDRESS = "cam_addr";
+    public final static String SUCCESS = "success";
+    public final static String FAIL = "fail";
+
+    public final static String KEY_CAMERA_IP_ADDRESS = "cam_address";
+
     public final static String CHAT_SERVER_URL = "http://192.168.0.42"; //TESTING ONLY
+
     public final static String CMD_GET_STATUS  = "\2{\"cmd\":\"get_status\"}\3";
     public final static String CMD_GET_CONFIG  = "\2{\"cmd\":\"get_config\"}\3";
     public final static String CMD_GET_WIFI    = "\2{\"cmd\":\"get_wifi\"}\3";

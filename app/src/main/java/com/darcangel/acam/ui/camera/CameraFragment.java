@@ -31,6 +31,8 @@ public class CameraFragment extends Fragment {
     private FragmentCameraBinding binding;
     private Socket cameraSocket;
     private CameraService cameraService;
+    private CameraViewModel cameraViewModel;
+    private boolean socketConnected = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,7 @@ public class CameraFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        CameraViewModel cameraViewModel =
+        cameraViewModel =
                 new ViewModelProvider(this).get(CameraViewModel.class);
 
         binding = FragmentCameraBinding.inflate(inflater, container, false);
@@ -62,25 +64,43 @@ public class CameraFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         MainActivity activity = MainActivity.getInstance();
+        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+            @Override
+            public void callback(String response) {
+                Timber.d("response = %s, item = %d", response, item.getItemId());
+                switch (item.getItemId()) {
+                    case R.id.action_connect:
+                        if (response.equals(Constants.SUCCESS)) {
+                            socketConnected = true;
+                        } else {
+                            socketConnected = false;
+                        }
+                        activity.invalidateOptionsMenu();
+                        break;
+                    case R.id.action_disconnect:
+                        if (response.equals(Constants.SUCCESS)) {
+                            socketConnected = false;
+                        } else {
+                            socketConnected = true;
+                        }
+                        activity.invalidateOptionsMenu();
+                        break;
+                    case R.id.action_get:
+                        break;
+                };
+            }
+        };
+
         switch (item.getItemId()) {
             case R.id.action_connect:  {
-                //Start the SocketIO thread
-                MainActivity.getInstance().getCameraService().connect();
-                activity.invalidateOptionsMenu();
+                MainActivity.getInstance().getCameraService().connect(callback);
                 break;
             }
             case R.id.action_disconnect:
-                //activity.destroyCameraSocketIOThread();
-                activity.invalidateOptionsMenu();
+                MainActivity.getInstance().getCameraService().disconnect(callback);
                 break;
             case R.id.action_get: {
                 try {
-                    MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-                        @Override
-                        public void callback(String response) {
-                            Timber.d("response = %s", response);
-                        }
-                    };
                     MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_STATUS, callback);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -103,16 +123,15 @@ public class CameraFragment extends Fragment {
     private void setMenuItems(Menu menu) {
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
-/*
-        if(MainActivity.getInstance().getCameraSocketIO() == null) {
+        if(!socketConnected) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
         } else {
             itemConnect.setVisible(false);
             itemDisconnect.setVisible(true);
         }
-*/
     }
+
 
     @Override
     public void onDestroyView() {

@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
@@ -113,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
             cameraService = binder.getService();
             isCameraServiceBound = true;
+
         }
 
         @Override

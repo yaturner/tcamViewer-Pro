@@ -7,6 +7,7 @@ import android.os.IBinder;
 import android.widget.Toast;
 
 import com.darcangel.acam.MainActivity;
+import com.darcangel.acam.constants.Constants;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -56,9 +57,14 @@ public class CameraService extends Service {
     }
 
     /***************User APi methods***************/
-    public void connect() {
-        Runnable connect = new ConnectSocket();
+    public void connect(MainActivity.CameraCallback callback) {
+        Runnable connect = new ConnectSocket(callback);
         new Thread(connect).start();
+    }
+
+    public void disconnect(MainActivity.CameraCallback callback) {
+        Runnable disconnect = new DisconnectSocket(callback);
+        new Thread(disconnect).start();
     }
 
     public void sendCmd(final String cmd, MainActivity.CameraCallback callback) throws IOException {
@@ -67,11 +73,20 @@ public class CameraService extends Service {
         new Thread(sendCmd).start();
     }
 
+    public boolean isConnected() {
+        return cameraSocket.isConnected();
+    }
 
     /**
      * Thread to connect to the camera
      */
     class ConnectSocket implements Runnable {
+
+        MainActivity.CameraCallback callback;
+
+        public ConnectSocket(MainActivity.CameraCallback callback) {
+            this.callback = callback;
+        }
 
         @Override
         public void run() {
@@ -80,7 +95,34 @@ public class CameraService extends Service {
                 cameraSocket.connect(socketAddress);
             } catch (IOException e) {
                 e.printStackTrace();
+                callback.callback(Constants.FAIL);
+                return;
             }
+            callback.callback(Constants.SUCCESS);
+        }
+    }
+
+    /**
+     * Thread to disconnect socket
+     */
+    class DisconnectSocket implements Runnable {
+
+        MainActivity.CameraCallback callback;
+
+        public DisconnectSocket(MainActivity.CameraCallback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+            try {
+                cameraSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                callback.callback(Constants.FAIL);
+                return;
+            }
+            callback.callback(Constants.SUCCESS);
         }
     }
 
@@ -112,6 +154,7 @@ public class CameraService extends Service {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                callback.callback(Constants.FAIL);
             }
 
             callback.callback(response);
