@@ -1,7 +1,7 @@
 package com.darcangel.acam.pallete;
 
-public class Rainbow {
-    public static int palette[][] = {
+public final class Rainbow {
+    public static final int palette[][] = {
             {1, 3, 74},
             {0, 3, 74},
             {0, 3, 75},

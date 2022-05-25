@@ -9,6 +9,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -38,6 +39,7 @@ public class CameraFragment extends Fragment {
     private CameraService cameraService;
     private CameraViewModel cameraViewModel;
     private boolean socketConnected = false;
+    private View root = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,8 +54,7 @@ public class CameraFragment extends Fragment {
                 new ViewModelProvider(this).get(CameraViewModel.class);
 
         binding = FragmentCameraBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-
+        root = binding.getRoot();
         return root;
     }
 
@@ -96,6 +97,15 @@ public class CameraFragment extends Fragment {
                             if(resultCode.equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
                                 Bitmap image = Util.processImageResponse(responseObj);
+                                MainActivity.getInstance().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if(image != null) {
+                                            ImageView imageView = (ImageView)root.findViewById(R.id.ivCamera);
+                                            imageView.setImageBitmap(image);
+                                        }
+                                    }
+                                });
                             }
                             break;
                     }
@@ -108,7 +118,31 @@ public class CameraFragment extends Fragment {
         // command switch
         switch (item.getItemId()) {
             case R.id.action_connect:  {
-                MainActivity.getInstance().getCameraService().connect(callback);
+                try {
+                    MainActivity.getInstance().getCameraService().connect(callback);
+                    Thread.sleep(500);
+                    String cmd = String.format(Constants.CMD_SET_TIME, "{" +
+                            "    \"sec\": 14,\n" +
+                            "    \"min\": 10,\n" +
+                            "    \"hour\": 21,\n" +
+                            "    \"dow\": 2,\n" +
+                            "    \"day\": 18,\n" +
+                            "    \"mon\": 5,\n" +
+                            "    \"year\": 50\n" +
+                            "  }");
+                    MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+                    Thread.sleep(500);
+                    cmd = String.format(Constants.CMD_SET_CONFIG, "{" +
+                            "     \"agc_enabled\": 0," +
+                            "     \"emissivity\": 10," +
+                            "     \"gain_mode\": 2" +
+                            "    }");
+                    MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
                 break;
             }
             case R.id.action_disconnect:
