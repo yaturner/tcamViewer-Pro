@@ -66,57 +66,9 @@ public class CameraFragment extends Fragment {
         setMenuItems(menu);
     }
 
-    // Since this is the first fragment we can get a race condition where cameraService isn't
-    //  bound when the menu options are active so we always call the getter
     //TODO use LiveData
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        MainActivity activity = MainActivity.getInstance();
-        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-            @Override
-            public void callback(JSONObject response) {
-                try {
-                    Timber.d("response = %s, item = %d", response, item.getItemId());
-                    String resultCode = response.getString("result");
-                    switch (item.getItemId()) {
-                        case R.id.action_connect:
-                            if (resultCode.equals("OK")) {
-                                socketConnected = true;
-                            } else {
-                                socketConnected = false;
-                            }
-                            activity.invalidateOptionsMenu();
-                            break;
-                        case R.id.action_disconnect:
-                            if (resultCode.equals("OK")) {
-                                socketConnected = false;
-                            } else {
-                                socketConnected = true;
-                            }
-                            activity.invalidateOptionsMenu();
-                            break;
-                        case R.id.action_get:
-                            if(resultCode.equals("OK")) {
-                                JSONObject responseObj = response.getJSONObject("response");
-                                Bitmap image = MainActivity.getInstance().getUtil().processImageResponse(responseObj);
-                                MainActivity.getInstance().runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if(image != null) {
-                                            ImageView imageView = (ImageView)root.findViewById(R.id.ivCamera);
-                                            imageView.setImageBitmap(image);
-                                        }
-                                    }
-                                });
-                            }
-                            break;
-                    }
-                    ;
-                } catch (JSONException e) {
-                    //TODO handle this
-                }
-            }
-        };
         // command switch
         switch (item.getItemId()) {
             case R.id.action_connect:  {
@@ -124,14 +76,16 @@ public class CameraFragment extends Fragment {
                 break;
             }
             case R.id.action_disconnect:
-                MainActivity.getInstance().getCameraService().disconnect(callback);
+                disconnectFromCamera();
                 break;
             case R.id.action_get: {
-                try {
-                    MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                getImage();
+                break;
+            }
+            case R.id.action_palette: {
+                break;
+            }
+            case R.id.action_stream: {
                 break;
             }
             default:
@@ -141,25 +95,33 @@ public class CameraFragment extends Fragment {
         return true;
     }
 
+    /**
+     * connectToCamera
+     */
     private void connectToCamera() {
-            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-                @Override
-                public void callback(JSONObject response) {
-                    try {
-                        if (response.has("result")) {
-                            if (response.getString("result").equals("OK")) {
-                                setTime();
-                            } else {
-                                //TODO handle error
-                            }
+        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+            @Override
+            public void callback(JSONObject response) {
+                try {
+                    if (response.has("result")) {
+                        if (response.getString("result").equals("OK")) {
+                            socketConnected = true;
+                            MainActivity.getInstance().invalidateOptionsMenu();
+                            setTime();
                         } else {
                             //TODO handle error
+                            socketConnected = false;
                         }
-                    } catch (JSONException e1) {
+                    } else {
                         //TODO handle error
+                        socketConnected = false;
                     }
+                } catch (JSONException e1) {
+                    //TODO handle error
+                    socketConnected = false;
                 }
-            };
+            }
+        };
         try {
             MainActivity.getInstance().getCameraService().connect(callback);
         } catch (Exception e) {
@@ -167,6 +129,43 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    /**
+     * disconnectFromCamera
+     */
+    private void disconnectFromCamera() {
+        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+            @Override
+            public void callback(JSONObject response) {
+                try {
+                    if (response.has("result")) {
+                        if (response.getString("result").equals("OK")) {
+                            socketConnected = false;
+                            MainActivity.getInstance().invalidateOptionsMenu();
+                            setTime();
+                        } else {
+                            //TODO handle error
+                            socketConnected = true;
+                        }
+                    } else {
+                        //TODO handle error
+                        socketConnected = true;
+                    }
+                } catch (JSONException e1) {
+                    //TODO handle error
+                    socketConnected = true;
+                }
+            }
+        };
+        try {
+            MainActivity.getInstance().getCameraService().disconnect(callback);
+        } catch (Exception e) {
+
+        }
+    }
+
+    /**
+     * setTime
+     */
     private void setTime() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.ARGS_SET_TIME);
         String args = simpleDateFormat.format(new Date());
@@ -196,8 +195,11 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    /**
+     * setConfig
+     */
     private void setConfig() {
-        String args = String.format(null, Constants.CMD_SET_CONFIG);
+        String args = String.format(Constants.ARGS_SET_CONFIG, 0, 20, 1); //
         String cmd = String.format(Constants.CMD_SET_CONFIG, args);
         try {
             MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
@@ -205,7 +207,11 @@ public class CameraFragment extends Fragment {
                 public void callback(JSONObject response) {
                     try {
                         if (response.has("result")) {
-                            if(response)
+                            if(response.getString("result").equals("OK")) {
+
+                            } else {
+                                //TODO handle error
+                            }
                         }
                     } catch (JSONException e1) {
                         //TODO handle error
@@ -215,6 +221,52 @@ public class CameraFragment extends Fragment {
         MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * getImage
+     */
+    private void getImage() {
+        String args = String.format(Constants.ARGS_SET_CONFIG, 0, 20, 0);
+        String cmd = String.format(Constants.CMD_SET_CONFIG, args);
+        try {
+            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+                @Override
+                public void callback(JSONObject response) {
+                    try {
+                        if (response.has("result")) {
+                            if (response.getString("result").equals("OK")) {
+                                JSONObject responseObj = response.getJSONObject("response");
+                                Bitmap image = MainActivity.getInstance().getUtil().processImageResponse(responseObj);
+                                //show the image on the UI thread
+                                MainActivity.getInstance().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (image != null) {
+                                            ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
+                                            imageView.setImageBitmap(image);
+                                        }
+                                    }
+                                });
+                            } else {
+                                //TODO handle error
+                            }
+                        } else {
+                            //TODO handle error
+                        }
+                    } catch (JSONException e1) {
+                        //TODO handle error
+                    }
+                }
+            };
+            try {
+                MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e2) {
+            //TODO handle error
         }
     }
 
@@ -228,14 +280,20 @@ public class CameraFragment extends Fragment {
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);
+        MenuItem itemPalette = menu.findItem(R.id.action_palette);
+        MenuItem itemStream = menu.findItem(R.id.action_stream);
         if(!socketConnected) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemGet.setEnabled(false);
+            itemPalette.setEnabled(false);
+            itemStream.setEnabled(false);
         } else {
             itemConnect.setVisible(false);
             itemDisconnect.setVisible(true);
             itemGet.setEnabled(true);
+            itemPalette.setEnabled(true);
+            itemStream.setEnabled(true);
         }
     }
 

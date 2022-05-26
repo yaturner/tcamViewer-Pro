@@ -16,5 +16,12 @@
         android:id="@+id/action_get"
         android:title="@string/get"
         app:showAsAction="ifRoom|withText" />
-
+    <item
+        android:id="@+id/action_palette"
+        android:title="Palette"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/action_stream"
+        android:title="Stream"
+        app:showAsAction="ifRoom|withText" />
 </menu>
