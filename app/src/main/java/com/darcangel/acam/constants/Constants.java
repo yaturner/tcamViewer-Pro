@@ -22,15 +22,15 @@ public final class Constants {
     public final static String CMD_SET_WIFI   = "\2{\"cmd\":\"set_wifi\"}\3";
     public final static String CMD_GET_IMAGE   = "\2{\"cmd\":\"get_image\"}\3";
 
-    public final static String ARGS_SET_TIME   = "{\n" +
-            "    \"sec\": %d,\n" +
-            "    \"min\": %d,\n" +
-            "    \"hour\": %d,\n" +
-            "    \"dow\": %d,\n" +
-            "    \"day\": %d,\n" +
-            "    \"mon\": %d,\n" +
-            "    \"year\": %d\n" +
-            "  }";
+    public final static String ARGS_SET_TIME   = "'{'" +
+            "    '\"sec\":' s," +
+            "    '\"min\":' m," +
+            "    '\"hour\":' k," +
+            "    '\"dow\":' d," +
+            "    '\"day\":\"' E\"," +
+            "    '\"mon\":' M," +
+            "    '\"year\":' y" +
+            "  '}'";
     public final static String ARGS_SET_CONFIG = "{\n" +
             "    \"agc_enabled\": %d,\n" +
             "    \"emissivity\": %d,\n" +
@@ -64,6 +64,9 @@ public final class Constants {
             "    \"sta_ssid\": \"%s\",\n" +
             "    \"sta_pw\": \"%s\",\n" +
             "  }";
+
+    public final static int TELEMETRY_MASK_AGC = (1<<12);
+    public final static int TELEMETRY_MASK_SHUTDOWN = (1<<20);
 
     private Constants() {
     }

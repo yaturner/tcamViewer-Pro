@@ -23,6 +23,7 @@ import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
+import com.darcangel.acam.utils.Util;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
+    private Util util = new Util();
 
     public interface CameraCallback {
         void callback(JSONObject response);
@@ -158,6 +160,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     public CameraService getCameraService() {
         return cameraService;
+    }
+
+    public Util getUtil() {
+        return util;
     }
 
     @Override

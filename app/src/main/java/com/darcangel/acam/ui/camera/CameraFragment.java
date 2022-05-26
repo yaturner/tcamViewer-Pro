@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import timber.log.Timber;
 
@@ -96,7 +98,7 @@ public class CameraFragment extends Fragment {
                         case R.id.action_get:
                             if(resultCode.equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
-                                Bitmap image = Util.processImageResponse(responseObj);
+                                Bitmap image = MainActivity.getInstance().getUtil().processImageResponse(responseObj);
                                 MainActivity.getInstance().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
@@ -121,23 +123,17 @@ public class CameraFragment extends Fragment {
                 try {
                     MainActivity.getInstance().getCameraService().connect(callback);
                     Thread.sleep(500);
-                    String cmd = String.format(Constants.CMD_SET_TIME, "{" +
-                            "    \"sec\": 14,\n" +
-                            "    \"min\": 10,\n" +
-                            "    \"hour\": 21,\n" +
-                            "    \"dow\": 2,\n" +
-                            "    \"day\": 18,\n" +
-                            "    \"mon\": 5,\n" +
-                            "    \"year\": 50\n" +
-                            "  }");
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.ARGS_SET_TIME);
+                    String args = simpleDateFormat.format(new Date());
+                    String cmd = String.format(Constants.CMD_SET_TIME, args);
                     MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
                     Thread.sleep(500);
                     cmd = String.format(Constants.CMD_SET_CONFIG, "{" +
                             "     \"agc_enabled\": 0," +
                             "     \"emissivity\": 10," +
-                            "     \"gain_mode\": 2" +
+                            "     \"gain_mode\": 1" +
                             "    }");
-                    MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+                    ///MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e1) {
