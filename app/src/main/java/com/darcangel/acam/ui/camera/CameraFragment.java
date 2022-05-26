@@ -120,25 +120,7 @@ public class CameraFragment extends Fragment {
         // command switch
         switch (item.getItemId()) {
             case R.id.action_connect:  {
-                try {
-                    MainActivity.getInstance().getCameraService().connect(callback);
-                    Thread.sleep(500);
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.ARGS_SET_TIME);
-                    String args = simpleDateFormat.format(new Date());
-                    String cmd = String.format(Constants.CMD_SET_TIME, args);
-                    MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
-                    Thread.sleep(500);
-                    cmd = String.format(Constants.CMD_SET_CONFIG, "{" +
-                            "     \"agc_enabled\": 0," +
-                            "     \"emissivity\": 10," +
-                            "     \"gain_mode\": 1" +
-                            "    }");
-                    ///MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
+                connectToCamera();
                 break;
             }
             case R.id.action_disconnect:
@@ -157,6 +139,83 @@ public class CameraFragment extends Fragment {
         }
 
         return true;
+    }
+
+    private void connectToCamera() {
+            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+                @Override
+                public void callback(JSONObject response) {
+                    try {
+                        if (response.has("result")) {
+                            if (response.getString("result").equals("OK")) {
+                                setTime();
+                            } else {
+                                //TODO handle error
+                            }
+                        } else {
+                            //TODO handle error
+                        }
+                    } catch (JSONException e1) {
+                        //TODO handle error
+                    }
+                }
+            };
+        try {
+            MainActivity.getInstance().getCameraService().connect(callback);
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void setTime() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.ARGS_SET_TIME);
+        String args = simpleDateFormat.format(new Date());
+        String cmd = String.format(Constants.CMD_SET_TIME, args);
+        try {
+            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+                @Override
+                public void callback(JSONObject response) {
+                    try {
+                        if (response.has("result")) {
+                            if (response.getString("result").equals("OK")) {
+                                setConfig();
+                            } else {
+                                //TODO handle error
+                            }
+                        } else {
+                            //TODO handle error
+                        }
+                    } catch (JSONException e1) {
+                        //TODO handle error
+                    }
+                }
+            };
+            MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setConfig() {
+        String args = String.format(null, Constants.CMD_SET_CONFIG);
+        String cmd = String.format(Constants.CMD_SET_CONFIG, args);
+        try {
+            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+                @Override
+                public void callback(JSONObject response) {
+                    try {
+                        if (response.has("result")) {
+                            if(response)
+                        }
+                    } catch (JSONException e1) {
+                        //TODO handle error
+                    }
+                }
+            };
+        MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
