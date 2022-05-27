@@ -10,6 +10,8 @@
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.33" />
         <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.16354166666666667" />
         <entry key="app/src/main/res/menu/camera_menu.xml" value="0.1921875" />
+        <entry key="app/src/main/res/xml/palette_filter.xml" value="0.18342391304347827" />
+        <entry key="app/src/main/res/xml/popup_palette.xml" value="0.18342391304347827" />
       </map>
     </option>
   </component>

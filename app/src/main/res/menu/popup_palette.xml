@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:id="@+id/filter_bought_user"
+        android:title="Купленые"/>
+    <item
+        android:id="@+id/filter_price_user"
+        android:title="Цена"/>
+    <item
+        android:id="@+id/filter_author_user"
+        android:title="Автор"/>
+</menu>

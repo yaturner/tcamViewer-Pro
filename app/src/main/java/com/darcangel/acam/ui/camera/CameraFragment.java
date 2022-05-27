@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -40,13 +41,20 @@ public class CameraFragment extends Fragment {
     private Socket cameraSocket;
     private CameraService cameraService;
     private CameraViewModel cameraViewModel;
-    private boolean socketConnected = false;
     private View root = null;
+    private boolean isCameraConnected = false;
+    private boolean isConnectingToCamera = false;
+    private boolean isVisibleToUser = false;
+    private Bitmap image = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if(savedInstanceState != null) {
+            isCameraConnected = savedInstanceState.getBoolean(Constants.KEY_IS_CAMERA_CONNECTED);
+            image = savedInstanceState.getParcelable(Constants.KEY_CAMERA_IMAGE);
+        }
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -57,7 +65,33 @@ public class CameraFragment extends Fragment {
 
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
+        if(image != null) {
+            MainActivity.getInstance().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (image != null) {
+                        ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
+                        imageView.setImageBitmap(image);
+                    }
+                }
+            });
+        }
         return root;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(Constants.KEY_IS_CAMERA_CONNECTED, isCameraConnected);
+        if(image != null) {
+            outState.putParcelable(Constants.KEY_CAMERA_IMAGE, image);
+        }
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        this.isVisibleToUser = isVisibleToUser;
     }
 
     @Override
@@ -72,6 +106,7 @@ public class CameraFragment extends Fragment {
         // command switch
         switch (item.getItemId()) {
             case R.id.action_connect:  {
+                isConnectingToCamera = true;
                 connectToCamera();
                 break;
             }
@@ -83,6 +118,11 @@ public class CameraFragment extends Fragment {
                 break;
             }
             case R.id.action_palette: {
+//                View menuItemView = MainActivity.getInstance().getWindow().findViewById(R.id.action_palette);
+//                item.hasSubMenu();
+//                PopupMenu popupMenu = new PopupMenu(MainActivity.getInstance(), menuItemView);
+//                popupMenu.inflate(R.menu.popup_palette);
+//                popupMenu.show();
                 break;
             }
             case R.id.action_stream: {
@@ -105,20 +145,22 @@ public class CameraFragment extends Fragment {
                 try {
                     if (response.has("result")) {
                         if (response.getString("result").equals("OK")) {
-                            socketConnected = true;
+                            isCameraConnected = true;
                             MainActivity.getInstance().invalidateOptionsMenu();
-                            setTime();
+                            if(isConnectingToCamera) {
+                                setTime();
+                            }
                         } else {
                             //TODO handle error
-                            socketConnected = false;
+                            isCameraConnected = false;
                         }
                     } else {
                         //TODO handle error
-                        socketConnected = false;
+                        isCameraConnected = false;
                     }
                 } catch (JSONException e1) {
                     //TODO handle error
-                    socketConnected = false;
+                    isCameraConnected = false;
                 }
             }
         };
@@ -139,20 +181,19 @@ public class CameraFragment extends Fragment {
                 try {
                     if (response.has("result")) {
                         if (response.getString("result").equals("OK")) {
-                            socketConnected = false;
+                            isCameraConnected = false;
                             MainActivity.getInstance().invalidateOptionsMenu();
-                            setTime();
                         } else {
                             //TODO handle error
-                            socketConnected = true;
+                            isCameraConnected = true;
                         }
                     } else {
                         //TODO handle error
-                        socketConnected = true;
+                        isCameraConnected = true;
                     }
                 } catch (JSONException e1) {
                     //TODO handle error
-                    socketConnected = true;
+                    isCameraConnected = true;
                 }
             }
         };
@@ -177,7 +218,9 @@ public class CameraFragment extends Fragment {
                     try {
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
-                                setConfig();
+                                if(isConnectingToCamera) {
+                                    setConfig();
+                                }
                             } else {
                                 //TODO handle error
                             }
@@ -201,6 +244,7 @@ public class CameraFragment extends Fragment {
     private void setConfig() {
         String args = String.format(Constants.ARGS_SET_CONFIG, 0, 20, 1); //
         String cmd = String.format(Constants.CMD_SET_CONFIG, args);
+        isConnectingToCamera = false;
         try {
             MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
                 @Override
@@ -238,7 +282,7 @@ public class CameraFragment extends Fragment {
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
-                                Bitmap image = MainActivity.getInstance().getUtil().processImageResponse(responseObj);
+                                image = MainActivity.getInstance().getUtil().processImageResponse(responseObj);
                                 //show the image on the UI thread
                                 MainActivity.getInstance().runOnUiThread(new Runnable() {
                                     @Override
@@ -282,7 +326,7 @@ public class CameraFragment extends Fragment {
         MenuItem itemGet = menu.findItem(R.id.action_get);
         MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
-        if(!socketConnected) {
+        if(!isCameraConnected) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemGet.setEnabled(false);

@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         //Observer for Camera IP Address
         settingsViewModel.getCameraAddress().observe(this, s -> {
-            Timber.d("Camera Address is now " + s);
+            Timber.d("Camera Address is now %s", s);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putString(Constants.KEY_CAMERA_IP_ADDRESS, s);
             editor.commit();
