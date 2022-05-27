@@ -1,16 +1,21 @@
 package com.darcangel.acam;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Spinner;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
@@ -19,6 +24,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.darcangel.acam.Factory.PaletteFactory;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.ActivityMainBinding;
 import com.darcangel.acam.service.CameraService;
@@ -49,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private static MainActivity _instance = null;
     private SharedPreferences sharedPreferences;
+    private PaletteFactory paletteFactory;
 
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
@@ -70,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         setContentView(binding.getRoot());
 
         init();
+        getPermissions();
     }
 
     private void init() {
@@ -78,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
 
         sharedPreferences = this.getSharedPreferences("tcam", MODE_PRIVATE);
+        paletteFactory = new PaletteFactory();
 
         observe();
         startCameraService();
@@ -92,6 +101,34 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
+
+    private void getPermissions() {
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_GRANTED) {
+            // You can use the API that requires the permission.
+            //performAction(...);
+        } else {
+            // You can directly ask for the permission.
+            // The registered ActivityResultCallback gets the result of this request.
+            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
+                    Constants.REQUEST_WRITE_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case Constants.REQUEST_WRITE_PERMISSION:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                }
+        };
+    }
+
 
     private void observe() {
 
@@ -189,6 +226,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     public Util getUtil() {
         return util;
     }
+
+    public PaletteFactory getPaletteFactory() {
+        return paletteFactory;
+    }
+
 
     @Override
     protected void onDestroy() {

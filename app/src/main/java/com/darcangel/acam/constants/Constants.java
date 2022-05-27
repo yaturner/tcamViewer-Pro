@@ -4,6 +4,8 @@ public final class Constants {
     public final static String SUCCESS = "{\"result\":\"OK\"}";
     public final static String ERROR = "{\"result\":\"ERROR\"}";
 
+    public final static int REQUEST_WRITE_PERMISSION = 2001;
+
     public final static int IMAGE_HEIGHT = 120;
     public final static int IMAGE_WIDTH  = 160;
 

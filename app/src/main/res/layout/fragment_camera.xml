@@ -105,10 +105,11 @@
         tools:srcCompat="@drawable/main_camera" />
 
     <ImageView
+        android:id="@+id/ivColorBar"
         android:layout_width="20sp"
         android:layout_height="240dp"
         android:scaleType="fitXY"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="40dp"
         app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
         app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
         app:layout_constraintStart_toEndOf="@+id/ivCamera"

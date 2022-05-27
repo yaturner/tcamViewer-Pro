@@ -1,6 +1,9 @@
 package com.darcangel.acam.utils;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.media.MediaMetadataRetriever;
+import android.os.Environment;
 import android.util.Pair;
 
 import com.darcangel.acam.constants.Constants;
@@ -9,6 +12,8 @@ import com.darcangel.acam.pallete.Rainbow;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Base64;
 
 
@@ -24,23 +29,28 @@ public class Util {
     private int FFCState;
     private int FFCDesired;
 
+    private int[] pixels;
+    private int[] imageData;
+    private int[] imageNorm;
+    private int diff;
+    int max = Integer.MIN_VALUE;
+    int min = Integer.MAX_VALUE;
+
     private int offsetA = 0;
     private int offsetB = 80;
     private int offsetC = 160;
 
 
-    public Bitmap processImageResponse(JSONObject response) throws JSONException {
+    public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
         String radiometricString = response.getString("radiometric");
         String telemetryString = response.getString("telemetry");
         byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
         Bitmap image = null;
 
-        int max = Integer.MIN_VALUE;
-        int min = Integer.MAX_VALUE;
         int imageLen = imageBytes.length;
-        int[] imageData = new int[imageLen / 2];
-        int[] imageNorm = new int[imageLen / 2];
-        int[] pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
+        imageData = new int[imageLen / 2];
+        imageNorm = new int[imageLen / 2];
+        pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
         int[] telemetryData;
 
         telemetryData = parseTelemetryData(telemetryString);
@@ -62,15 +72,15 @@ public class Util {
         }
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
-                pixels[i] = rgbToPixel(Rainbow.palette[imageData[i]]);
+                pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            int diff = max - min;
+            diff = max - min;
             for (int i = 0; i < imageNorm.length; i++) {
                 imageNorm[i] = Math.min(((imageData[i] - min) * 255) / diff, 255);
             }
             for (int i = 0; i < pixels.length; i++) {
-                pixels[i] = rgbToPixel(Rainbow.palette[imageNorm[i]]);
+                pixels[i] = rgbToPixel(palette[imageNorm[i]]);
             }
         }
         image = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -85,7 +95,7 @@ public class Util {
         return (0xff << 24) | (r << 16) | ((g << 8) | b);
     }
 
-    private static int[] parseTelemetryData(String telemetryString) {
+    private int[] parseTelemetryData(String telemetryString) {
         byte[] telemetryBytes = Base64.getDecoder().decode(telemetryString.getBytes());
         int[] telemetryData;
 
@@ -98,4 +108,31 @@ public class Util {
         return telemetryData;
     }
 
+    public Bitmap createColorBar(int[][] palette) {
+        int[] pixels = new int[24*256];
+        for(int row = 0; row < 256; row++) {
+            for(int col = 0; col < 24; col++) {
+                pixels[row*24+col] = rgbToPixel(palette[row]);
+            }
+        }
+        Bitmap image = Bitmap.createBitmap(pixels, 24, 256, Bitmap.Config.ARGB_8888);
+        return image;
+    }
+
+    public Bitmap remapCurrentImage(int[][] palette) {
+        if(AGC) {
+            for (int i = 0; i < pixels.length; i++) {
+                pixels[i] = rgbToPixel(palette[imageData[i]]);
+            }
+        } else {
+            diff = max - min;
+            for (int i = 0; i < imageNorm.length; i++) {
+                imageNorm[i] = Math.min(((imageData[i] - min) * 255) / diff, 255);
+            }
+            for (int i = 0; i < pixels.length; i++) {
+                pixels[i] = rgbToPixel(palette[imageNorm[i]]);
+            }
+        }
+        return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+    }
 }

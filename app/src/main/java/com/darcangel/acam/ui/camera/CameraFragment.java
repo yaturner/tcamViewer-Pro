@@ -21,10 +21,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.darcangel.acam.AcamApplication;
+import com.darcangel.acam.Factory.PaletteFactory;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
+import com.darcangel.acam.pallete.Rainbow;
 import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.utils.Util;
 
@@ -140,10 +142,23 @@ public class CameraFragment extends Fragment {
             }
             case R.id.action_palette: {
                 String title = ((MenuItemImpl)item).getTitle().toString();
-                if(!title.equals("Palette")) {
+                if(!title.equalsIgnoreCase("Palette") &&
+                        !title.equalsIgnoreCase(selectedPalette)) {
                     selectedPalette = title;
-                    mainActivity.invalidateOptionsMenu();
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.ivColorBar.setImageBitmap(
+                                    mainActivity.getUtil().createColorBar(mainActivity.getPaletteFactory()
+                                            .getPaletteByName(selectedPalette)));
+                            binding.ivCamera.setImageBitmap(
+                                    mainActivity.getUtil().remapCurrentImage(mainActivity.getPaletteFactory()
+                                            .getPaletteByName(selectedPalette)));
+                        }
+                    });
                 }
+
+                mainActivity.invalidateOptionsMenu();
                 break;
             }
             case R.id.action_stream: {
@@ -302,14 +317,19 @@ public class CameraFragment extends Fragment {
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
-                                image = mainActivity.getUtil().processImageResponse(responseObj);
+                                image = mainActivity.getUtil().processImageResponse(responseObj,
+                                        mainActivity.getPaletteFactory().getPaletteByName(selectedPalette));
                                 //show the image on the UI thread
                                 mainActivity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (image != null) {
                                             ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
+                                            ImageView colorBar = (ImageView) root.findViewById(R.id.ivColorBar);
                                             imageView.setImageBitmap(image);
+                                            colorBar.setImageBitmap(
+                                                    mainActivity.getUtil().createColorBar(mainActivity.getPaletteFactory()
+                                                    .getPaletteByName(selectedPalette)));
                                             binding.llButtonBar.setVisibility(View.VISIBLE);
                                         }
                                     }
@@ -343,8 +363,9 @@ public class CameraFragment extends Fragment {
     }
 
     private void setMenuItems(Menu menu) {
-        MenuItem itemFileQuit = menu.findItem(R.id.action_file_quit);
         MenuItem itemFile = menu.findItem(R.id.action_file);
+        // File submenu items
+        MenuItem itemFileQuit = menu.findItem(R.id.action_file_quit);
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);
