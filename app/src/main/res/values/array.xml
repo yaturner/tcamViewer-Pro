@@ -77,4 +77,28 @@
         <item>98</item>
         <item>82</item>
     </integer-array>
+
+    <string-array name="palette_names">
+        <item>Arctic</item>
+        <item>Banded</item>
+        <item>Blackhot</item>
+        <item>DoubleRainbow</item>
+        <item>Fusion</item>
+        <item>Gray</item>
+        <item>Ironblack</item>
+        <item>Rainbow</item>
+        <item>Sepia</item>
+    </string-array>
+
+    <integer-array name="palette_ids">
+        <item name="arctic" type="id" />
+        <item name="banded" type="id" />
+        <item name="blackhot" type="id" />
+        <item name="doubleRainbow" type="id" />
+        <item name="fusion" type="id" />
+        <item name="gray" type="id" />
+        <item name="ironblack" type="id" />
+        <item name="sepia" type="id" />
+    </integer-array>
+
 </resources>

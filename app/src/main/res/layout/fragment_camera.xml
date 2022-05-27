@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".10" />
+        app:layout_constraintGuide_percent=".01" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/glCameraBottom"
@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_percent=".05" />
+        app:layout_constraintGuide_percent=".01" />
 
 
     <androidx.constraintlayout.widget.Guideline
@@ -56,16 +56,64 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent=".65" />
 
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/llButtonBar"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:weightSum="8"
+        android:orientation="vertical"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
+        app:layout_constraintEnd_toStartOf="@+id/ivCamera"
+        app:layout_constraintStart_toStartOf="@+id/glCameraStart"
+        app:layout_constraintTop_toTopOf="@+id/glCameraTop">
+
+        <Button
+            android:id="@+id/btnS"
+            style="@style/SmallBtn"
+            android:text="S   "/>
+
+        <Button
+            style="@style/SmallBtn"
+            android:text="M1 "/>
+
+        <Button
+            style="@style/SmallBtn"
+            android:text="M2 "/>
+
+        <Button
+            style="@style/SmallBtn"
+            android:text="M3 "/>
+
+        <Button
+            android:id="@+id/btnFFC"
+            style="@style/SmallBtn"
+            android:text="FFC"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
     <ImageView
         android:id="@+id/ivCamera"
         android:layout_width="320dp"
         android:layout_height="240dp"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toTopOf="@+id/glCameraBottom"
-        app:layout_constraintEnd_toStartOf="@+id/glCameraEnd"
-        app:layout_constraintStart_toStartOf="@+id/glCameraStart"
-        app:layout_constraintTop_toBottomOf="@+id/glCameraTop"
+        app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
+        app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
+        app:layout_constraintStart_toEndOf="@+id/llButtonBar"
+        app:layout_constraintTop_toTopOf="@+id/glCameraTop"
         tools:srcCompat="@drawable/main_camera" />
+
+    <ImageView
+        android:layout_width="20sp"
+        android:layout_height="240dp"
+        android:scaleType="fitXY"
+        android:layout_marginStart="20dp"
+        app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
+        app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
+        app:layout_constraintStart_toEndOf="@+id/ivCamera"
+        app:layout_constraintTop_toTopOf="@+id/glCameraTop" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

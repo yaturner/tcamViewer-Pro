@@ -33,4 +33,12 @@
     <string name="connect">connect</string>
     <string name="get">get</string>
     <string name="disconnect">disconnect</string>
+    <string name="get_image">Get Image</string>
+    <string name="acquiring">Acquiring...</string>
+    <string name="exit">Exit</string>
+    <string name="browse">Browse</string>
+    <string name="save">Save</string>
+    <string name="export">Export</string>
+    <string name="quit">Quit</string>
+    <string name="open">Open</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.darcangel.acam;
 
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -7,6 +8,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -52,6 +54,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private boolean isCameraServiceBound = false;
     private Util util = new Util();
 
+    private ProgressDialog progressDialog;
+    ;
+
     public interface CameraCallback {
         void callback(JSONObject response);
     }
@@ -86,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
-
     }
 
     private void observe() {
@@ -106,6 +110,26 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         //Create the observer for the Manual Range Switch
         settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
+    }
+
+    public void showProgessDialog(final String title, final String msg) {
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(this);
+        }
+        if (!progressDialog.isShowing()) {
+            progressDialog.setMessage(msg);
+            progressDialog.setTitle(title);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+    }
+
+    public void dismissProgressDialog()
+    {
+        if(progressDialog != null || progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
     }
 
     /** Defines callbacks for service binding, passed to bindService() */

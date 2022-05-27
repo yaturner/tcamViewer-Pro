@@ -1,5 +1,6 @@
 package com.darcangel.acam.ui.camera;
 
+import android.app.appsearch.GetByDocumentIdRequest;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -7,12 +8,15 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -46,6 +50,10 @@ public class CameraFragment extends Fragment {
     private boolean isConnectingToCamera = false;
     private boolean isVisibleToUser = false;
     private Bitmap image = null;
+    private String[] paletteNames = null;
+    private String selectedPalette;
+
+    private MainActivity mainActivity = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,18 +63,22 @@ public class CameraFragment extends Fragment {
             isCameraConnected = savedInstanceState.getBoolean(Constants.KEY_IS_CAMERA_CONNECTED);
             image = savedInstanceState.getParcelable(Constants.KEY_CAMERA_IMAGE);
         }
+
+        mainActivity = MainActivity.getInstance();
+        paletteNames = mainActivity.getResources().getStringArray(R.array.palette_names);
+        selectedPalette = "Rainbow";
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         cameraViewModel =
                 new ViewModelProvider(this).get(CameraViewModel.class);
 
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
         if(image != null) {
-            MainActivity.getInstance().runOnUiThread(new Runnable() {
+            mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (image != null) {
@@ -75,8 +87,17 @@ public class CameraFragment extends Fragment {
                     }
                 }
             });
+            binding.llButtonBar.setVisibility(View.VISIBLE);
+        } else {
+            //no image no buttons
+            binding.llButtonBar.setVisibility(View.INVISIBLE);
         }
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+
     }
 
     @Override
@@ -118,11 +139,11 @@ public class CameraFragment extends Fragment {
                 break;
             }
             case R.id.action_palette: {
-//                View menuItemView = MainActivity.getInstance().getWindow().findViewById(R.id.action_palette);
-//                item.hasSubMenu();
-//                PopupMenu popupMenu = new PopupMenu(MainActivity.getInstance(), menuItemView);
-//                popupMenu.inflate(R.menu.popup_palette);
-//                popupMenu.show();
+                String title = ((MenuItemImpl)item).getTitle().toString();
+                if(!title.equals("Palette")) {
+                    selectedPalette = title;
+                    mainActivity.invalidateOptionsMenu();
+                }
                 break;
             }
             case R.id.action_stream: {
@@ -146,7 +167,7 @@ public class CameraFragment extends Fragment {
                     if (response.has("result")) {
                         if (response.getString("result").equals("OK")) {
                             isCameraConnected = true;
-                            MainActivity.getInstance().invalidateOptionsMenu();
+                            mainActivity.invalidateOptionsMenu();
                             if(isConnectingToCamera) {
                                 setTime();
                             }
@@ -165,7 +186,7 @@ public class CameraFragment extends Fragment {
             }
         };
         try {
-            MainActivity.getInstance().getCameraService().connect(callback);
+            ((MainActivity)mainActivity).getCameraService().connect(callback);
         } catch (Exception e) {
 
         }
@@ -182,7 +203,7 @@ public class CameraFragment extends Fragment {
                     if (response.has("result")) {
                         if (response.getString("result").equals("OK")) {
                             isCameraConnected = false;
-                            MainActivity.getInstance().invalidateOptionsMenu();
+                            mainActivity.invalidateOptionsMenu();
                         } else {
                             //TODO handle error
                             isCameraConnected = true;
@@ -198,7 +219,7 @@ public class CameraFragment extends Fragment {
             }
         };
         try {
-            MainActivity.getInstance().getCameraService().disconnect(callback);
+            mainActivity.getCameraService().disconnect(callback);
         } catch (Exception e) {
 
         }
@@ -232,7 +253,7 @@ public class CameraFragment extends Fragment {
                     }
                 }
             };
-            MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -262,7 +283,7 @@ public class CameraFragment extends Fragment {
                     }
                 }
             };
-        MainActivity.getInstance().getCameraService().sendCmd(cmd, callback);
+        mainActivity.getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -272,24 +293,24 @@ public class CameraFragment extends Fragment {
      * getImage
      */
     private void getImage() {
-        String args = String.format(Constants.ARGS_SET_CONFIG, 0, 20, 0);
-        String cmd = String.format(Constants.CMD_SET_CONFIG, args);
         try {
             MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
                 @Override
                 public void callback(JSONObject response) {
                     try {
+                        mainActivity.dismissProgressDialog();
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
-                                image = MainActivity.getInstance().getUtil().processImageResponse(responseObj);
+                                image = mainActivity.getUtil().processImageResponse(responseObj);
                                 //show the image on the UI thread
-                                MainActivity.getInstance().runOnUiThread(new Runnable() {
+                                mainActivity.runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         if (image != null) {
                                             ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
                                             imageView.setImageBitmap(image);
+                                            binding.llButtonBar.setVisibility(View.VISIBLE);
                                         }
                                     }
                                 });
@@ -305,7 +326,8 @@ public class CameraFragment extends Fragment {
                 }
             };
             try {
-                MainActivity.getInstance().getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
+                mainActivity.showProgessDialog(getString(R.string.get_image), getString(R.string.acquiring));
+                mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -321,11 +343,23 @@ public class CameraFragment extends Fragment {
     }
 
     private void setMenuItems(Menu menu) {
+        MenuItem itemFileQuit = menu.findItem(R.id.action_file_quit);
+        MenuItem itemFile = menu.findItem(R.id.action_file);
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);
         MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
+        SubMenu paletteSubMenu = itemPalette.getSubMenu();
+
+        if(selectedPalette != null && !selectedPalette.isEmpty()) {
+            itemPalette.setTitle(selectedPalette);
+        }
+        //since this fragment can be recreated, prevent multiple items
+        paletteSubMenu.clear();
+        for(int i=0; i<paletteNames.length; i++) {
+            paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE,paletteNames[i]);
+        }
         if(!isCameraConnected) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
