@@ -6,6 +6,8 @@ public final class Constants {
 
     public final static int REQUEST_WRITE_PERMISSION = 2001;
 
+    public final static int RESULT_CODE_CREATE_DOCUMENT = 3001;
+
     public final static int IMAGE_HEIGHT = 120;
     public final static int IMAGE_WIDTH  = 160;
 

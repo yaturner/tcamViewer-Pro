@@ -1,8 +1,11 @@
 package com.darcangel.acam.ui.camera;
 
 import android.app.appsearch.GetByDocumentIdRequest;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 
+import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -33,7 +37,9 @@ import com.darcangel.acam.utils.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileDescriptor;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -57,10 +63,17 @@ public class CameraFragment extends Fragment {
 
     private MainActivity mainActivity = null;
 
+    public interface FileSelectionEntryPoint {
+        Fragment fileSelectionOwner = null;
+        void onFileCreated(FileDescriptor fileDescriptor);
+        void onFileSelected(FileDescriptor fileDescriptor);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
         if(savedInstanceState != null) {
             isCameraConnected = savedInstanceState.getBoolean(Constants.KEY_IS_CAMERA_CONNECTED);
             image = savedInstanceState.getParcelable(Constants.KEY_CAMERA_IMAGE);
@@ -158,13 +171,18 @@ public class CameraFragment extends Fragment {
                         }
                     });
                 }
-
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
             case R.id.action_stream: {
                 break;
             }
+            // file menu items
+            case R.id.action_file_quit:
+                mainActivity.quit();
+                break;
+            case R.id.action_file_export:
+                exportImage(image);
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -356,6 +374,14 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    private void exportImage(@NonNull final Bitmap image) {
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/png,image/jpg"); //not needed, but maybe usefull
+        intent.putExtra(Intent.EXTRA_TITLE, "image"); //not needed, but maybe usefull
+        startActivityForResult(intent, Constants.RESULT_CODE_CREATE_DOCUMENT);
+    }
+
     @Override
     public void onPrepareOptionsMenu(@NonNull Menu menu) {
         super.onPrepareOptionsMenu(menu);
@@ -395,6 +421,39 @@ public class CameraFragment extends Fragment {
             itemStream.setEnabled(true);
         }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case Constants.REQUEST_WRITE_PERMISSION:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                }
+        };
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch(requestCode) {
+            case Constants.RESULT_CODE_CREATE_DOCUMENT:
+                if(resultCode == -1) {
+                    Uri uri = data.getData();
+                    Timber.d("uri = %s", uri.toString());
+                    try {
+                        OutputStream outputStream = mainActivity.getContentResolver().openOutputStream(uri);
+                        //FileOutputStream fileOutputStream = new FileOutputStream(outputStream);
+                        image.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    } catch(IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+        }
+    }
+
 
 
     @Override

@@ -1,6 +1,7 @@
 package com.darcangel.acam;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -8,10 +9,18 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.widget.Spinner;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -27,6 +36,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.darcangel.acam.Factory.PaletteFactory;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.ActivityMainBinding;
+import com.darcangel.acam.dialogs.CameraPreferences;
 import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
@@ -36,7 +46,10 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.concurrent.Callable;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
@@ -62,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private Util util;
 
     private ProgressDialog progressDialog;
-    ;
 
     public interface CameraCallback {
         void callback(JSONObject response);
@@ -99,6 +111,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        CameraPreferences dialog = new CameraPreferences(this);
+        dialog.show();
     }
 
     private void getPermissions() {
@@ -114,20 +129,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
                     Constants.REQUEST_WRITE_PERMISSION);
         }
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case Constants.REQUEST_WRITE_PERMISSION:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                }
-        };
-    }
-
 
     private void observe() {
 
@@ -200,6 +201,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             unbindService(connection);
             isCameraServiceBound = false;
         }
+    }
+
+    public void quit() {
+        finishAndRemoveTask();
     }
 
     public SharedPreferences getSharedPreferences() {

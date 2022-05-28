@@ -6,56 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.camera.CameraFragment">
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".05" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glCameraTop"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".01" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glCameraBottom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        app:layout_constraintGuide_percent=".80" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glCameraEnd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".60" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glCameraStart"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".01" />
-
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="573dp" />
-
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/glScaleEnd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent=".65" />
-
+    <include layout="@layout/guidelines" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/llButtonBar"
