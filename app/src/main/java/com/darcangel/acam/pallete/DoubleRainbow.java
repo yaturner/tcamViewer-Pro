@@ -1,6 +1,6 @@
 package com.darcangel.acam.pallete;
 
-public class DoubleRainBow {
+public class DoubleRainbow {
     public static int palette[][] = {
             {18, 15, 18},
             {25, 17, 26},

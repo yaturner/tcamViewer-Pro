@@ -13,6 +13,7 @@ public final class Constants {
     public final static String KEY_IS_CAMERA_CONNECTED = "cam_connected";
     public final static String KEY_IS_SOCKET_CONNECTED = "soc_connected";
     public final static String KEY_CAMERA_IMAGE = "cam_image";
+    public final static String KEY_SELETED_PALETTE = "pal_selected";
 
     public final static String CHAT_SERVER_URL = "http://192.168.0.42"; //TESTING ONLY
 

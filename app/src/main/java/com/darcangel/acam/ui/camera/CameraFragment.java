@@ -64,6 +64,7 @@ public class CameraFragment extends Fragment {
         if(savedInstanceState != null) {
             isCameraConnected = savedInstanceState.getBoolean(Constants.KEY_IS_CAMERA_CONNECTED);
             image = savedInstanceState.getParcelable(Constants.KEY_CAMERA_IMAGE);
+            selectedPalette = savedInstanceState.getString(Constants.KEY_SELETED_PALETTE);
         }
 
         mainActivity = MainActivity.getInstance();
@@ -79,27 +80,30 @@ public class CameraFragment extends Fragment {
 
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
-        if(image != null) {
-            mainActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (image != null) {
-                        ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
-                        imageView.setImageBitmap(image);
-                    }
-                }
-            });
-            binding.llButtonBar.setVisibility(View.VISIBLE);
-        } else {
-            //no image no buttons
-            binding.llButtonBar.setVisibility(View.INVISIBLE);
-        }
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    binding.ivColorBar.setVisibility(View.VISIBLE);
+                    binding.ivColorBar.setImageBitmap(mainActivity.getUtil().createColorBar(
+                            mainActivity.getPaletteFactory().getPaletteByName(selectedPalette)));
+                    if (image != null) {
+                        binding.ivCamera.setImageBitmap(image);
+                        binding.llButtonBar.setVisibility(View.VISIBLE);
+                    } else {
+                        //no image no buttons
+                        binding.llButtonBar.setVisibility(View.INVISIBLE);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -109,12 +113,7 @@ public class CameraFragment extends Fragment {
         if(image != null) {
             outState.putParcelable(Constants.KEY_CAMERA_IMAGE, image);
         }
-    }
-
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        this.isVisibleToUser = isVisibleToUser;
+        outState.putString(Constants.KEY_SELETED_PALETTE, selectedPalette);
     }
 
     @Override
@@ -148,12 +147,14 @@ public class CameraFragment extends Fragment {
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            binding.ivColorBar.setImageBitmap(
-                                    mainActivity.getUtil().createColorBar(mainActivity.getPaletteFactory()
-                                            .getPaletteByName(selectedPalette)));
-                            binding.ivCamera.setImageBitmap(
-                                    mainActivity.getUtil().remapCurrentImage(mainActivity.getPaletteFactory()
-                                            .getPaletteByName(selectedPalette)));
+                            int[][] palette = mainActivity.getPaletteFactory()
+                                    .getPaletteByName(selectedPalette);
+                            if(palette != null) {
+                                binding.ivColorBar.setImageBitmap(mainActivity.getUtil().createColorBar(palette));
+                                if (image != null) {
+                                    binding.ivCamera.setImageBitmap(mainActivity.getUtil().remapCurrentImage(palette));
+                                }
+                            }
                         }
                     });
                 }
@@ -325,13 +326,12 @@ public class CameraFragment extends Fragment {
                                     public void run() {
                                         if (image != null) {
                                             ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
-                                            ImageView colorBar = (ImageView) root.findViewById(R.id.ivColorBar);
                                             imageView.setImageBitmap(image);
-                                            colorBar.setImageBitmap(
-                                                    mainActivity.getUtil().createColorBar(mainActivity.getPaletteFactory()
-                                                    .getPaletteByName(selectedPalette)));
                                             binding.llButtonBar.setVisibility(View.VISIBLE);
                                         }
+                                        binding.ivColorBar.setImageBitmap(
+                                                mainActivity.getUtil().createColorBar(mainActivity.getPaletteFactory()
+                                                        .getPaletteByName(selectedPalette)));
                                     }
                                 });
                             } else {

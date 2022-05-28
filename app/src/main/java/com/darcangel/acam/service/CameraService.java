@@ -60,27 +60,46 @@ public class CameraService extends Service {
     }
 
     /***************User APi methods***************/
+    /**
+     * connect
+     * @param callback
+     */
     public void connect(MainActivity.CameraCallback callback) {
         Runnable connect = new ConnectSocket(callback);
         new Thread(connect).start();
     }
 
+    /**
+     * disconnect
+     * @param callback
+     */
     public void disconnect(MainActivity.CameraCallback callback) {
         Runnable disconnect = new DisconnectSocket(callback);
         new Thread(disconnect).start();
     }
 
+    /**
+     * sendCmd
+     * @param cmd
+     * @param callback
+     * @throws IOException
+     */
     public void sendCmd(final String cmd, MainActivity.CameraCallback callback) throws IOException {
         command = cmd;
         Runnable sendCmd = new SendCmd(callback);
         new Thread(sendCmd).start();
     }
 
+    /**
+     * isConnected
+     * @return
+     */
     public boolean isConnected() {
         return cameraSocket.isConnected();
     }
 
     /**
+     * connectSocket
      * Thread to connect to the camera
      */
     class ConnectSocket implements Runnable {
@@ -107,6 +126,7 @@ public class CameraService extends Service {
     }
 
     /**
+     * DisconnectSocket
      * Thread to disconnect socket
      */
     class DisconnectSocket implements Runnable {
@@ -131,6 +151,7 @@ public class CameraService extends Service {
     }
 
     /**
+     * SendCmd
      * Thread to send a command and receive the response
      */
     class SendCmd implements Runnable {
@@ -165,6 +186,12 @@ public class CameraService extends Service {
         }
     }
 
+    /**
+     * parseResponse
+     * @param resultCode
+     * @param response
+     * @return
+     */
     JSONObject parseResponse(final String resultCode, String response) {
         try {
             JSONObject object = new JSONObject(resultCode);
@@ -181,6 +208,9 @@ public class CameraService extends Service {
         }
     }
 
+    /**
+     * onDestroy
+     */
     @Override
     public void onDestroy() {
         super.onDestroy();

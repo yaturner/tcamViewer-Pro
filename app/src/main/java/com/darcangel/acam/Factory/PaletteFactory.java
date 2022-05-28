@@ -3,7 +3,7 @@ package com.darcangel.acam.Factory;
 import com.darcangel.acam.pallete.Arctic;
 import com.darcangel.acam.pallete.Banded;
 import com.darcangel.acam.pallete.Blackhot;
-import com.darcangel.acam.pallete.DoubleRainBow;
+import com.darcangel.acam.pallete.DoubleRainbow;
 import com.darcangel.acam.pallete.Fusion;
 import com.darcangel.acam.pallete.Gray;
 import com.darcangel.acam.pallete.Ironblack;
@@ -15,7 +15,7 @@ public class PaletteFactory {
             "Arctic",
             "Banded",
             "Blackhot",
-            "CoubleRainbow",
+            "DoubleRainbow",
             "Fusion",
             "Gray",
             "Ironblack",
@@ -26,7 +26,7 @@ public class PaletteFactory {
             Arctic.palette,
             Banded.palette,
             Blackhot.pallete,
-            DoubleRainBow.palette,
+            DoubleRainbow.palette,
             Fusion.palette,
             Gray.palette,
             Ironblack.palette,

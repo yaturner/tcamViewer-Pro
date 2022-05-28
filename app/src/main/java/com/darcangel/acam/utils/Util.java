@@ -42,6 +42,16 @@ public class Util {
 
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
+        if(pixels != null) {
+            pixels = null;
+        }
+        if(imageData != null) {
+            imageData = null;
+        }
+        if(imageNorm != null) {
+            imageNorm = null;
+        }
+
         String radiometricString = response.getString("radiometric");
         String telemetryString = response.getString("telemetry");
         byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());

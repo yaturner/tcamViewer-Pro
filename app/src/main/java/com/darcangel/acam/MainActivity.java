@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
-    private Util util = new Util();
+    private Util util;
 
     private ProgressDialog progressDialog;
     ;
@@ -86,7 +86,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
 
         sharedPreferences = this.getSharedPreferences("tcam", MODE_PRIVATE);
-        paletteFactory = new PaletteFactory();
 
         observe();
         startCameraService();
@@ -224,10 +223,16 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public Util getUtil() {
+        if(util == null) {
+            util = new Util();
+        }
         return util;
     }
 
     public PaletteFactory getPaletteFactory() {
+        if(paletteFactory == null) {
+            paletteFactory = new PaletteFactory();
+        }
         return paletteFactory;
     }
 
