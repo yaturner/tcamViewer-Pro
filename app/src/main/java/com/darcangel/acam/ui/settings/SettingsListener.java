@@ -41,6 +41,10 @@ public class SettingsListener {
             case R.id.switchManualRange:
                 Timber.d("Manual Range is %s checked", (isChecked ? "" : "not"));
                 break;
+            case R.id.switchAGC:
+                Timber.d("AGC is %s checked", (isChecked ? "" : "not"));
+                settingsViewModel.setAGC(isChecked);
+                break;
         }
     }
 
@@ -126,4 +130,3 @@ public class SettingsListener {
         return IP_PATTERN.matcher(address).matches();
     }
 }
-

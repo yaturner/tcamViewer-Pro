@@ -16,10 +16,9 @@
     <string name="application_settings">Application Settings</string>
     <string name="emissivity">Emissivity</string>
     <string name="export_picture_on_save">Export Picture on Save</string>
-    <string name="save_picture_on_save">Save Picture on Save</string>
+    <string name="save_picture_on_save">Export Picture on Save</string>
     <string name="export_metadata">Export Metadata</string>
     <string name="export_resolution">Export Resolution</string>
-    <string name="camera_ip_settings">Camera IP Settings</string>
     <string name="manual_range">Manual Range</string>
     <string name="shutter_sound">Shutter Sound</string>
     <string name="spotmeter">Spotmeter</string>

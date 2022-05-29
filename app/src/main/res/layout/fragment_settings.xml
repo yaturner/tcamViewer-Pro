@@ -63,7 +63,7 @@
                 <!--Heading-->
                 <TextView
                     style="@style/SettingsHeading"
-                    android:text="@string/camera_settings" />
+                    android:text="@string/camera_ip_address" />
 
                 <!--AGC-->
                 <androidx.appcompat.widget.SwitchCompat
@@ -147,7 +147,7 @@
                     <TextView
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
-                        android:text="@string/camera_ip_settings" />
+                        android:text="@string/camera_ip_address" />
 
                     <EditText
                         style="@style/SettingsTextEnd"

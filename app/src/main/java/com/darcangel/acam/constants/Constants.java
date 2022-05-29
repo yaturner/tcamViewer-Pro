@@ -11,14 +11,29 @@ public final class Constants {
     public final static int IMAGE_HEIGHT = 120;
     public final static int IMAGE_WIDTH  = 160;
 
+    //Settings keys for SharedPrefs
+    public final static String KEY_AGC = "agc";
+    public final static String KEY_EMISSIVITY = "emissivity";
+    public final static String KEY_GAIN = "gain";
     public final static String KEY_CAMERA_IP_ADDRESS = "cam_address";
+    public final static String KEY_EXPORT_PICTURE_ON_SAVE = "export_on_save";
+    public final static String KEY_EXPORT_METADATA = "export_metadata";
+    public final static String KEY_EXPORT_RESOLUTION = "export_resolution";
+    public final static String KEY_MANUAL_RANGE = "manual_range";
+    public final static String KEY_MANUAL_RANGE_MAX = "manual_range_max";
+    public final static String KEY_MANUAL_RANGE_MIN = "manual_range_min";
+    public final static String KEY_PALETTE = "palette";
+    public final static String KEY_SHUTTER_SOUND = "shutter_sound";
+    public final static String KEY_SPOTMETER = "spotmeter";
+    public final static String KEY_UNITS = "units";
+
+    //Bundle keys
     public final static String KEY_IS_CAMERA_CONNECTED = "cam_connected";
     public final static String KEY_IS_SOCKET_CONNECTED = "soc_connected";
     public final static String KEY_CAMERA_IMAGE = "cam_image";
-    public final static String KEY_SELETED_PALETTE = "pal_selected";
+    public final static String KEY_SELECTED_PALETTE = "pal_selected";
 
-    public final static String CHAT_SERVER_URL = "http://192.168.0.42"; //TESTING ONLY
-
+    //Camera Commands
     public final static String CMD_GET_STATUS  = "\2{\"cmd\":\"get_status\"}\3";
     public final static String CMD_GET_CONFIG  = "\2{\"cmd\":\"get_config\"}\3";
     public final static String CMD_GET_WIFI    = "\2{\"cmd\":\"get_wifi\"}\3";
@@ -30,6 +45,7 @@ public final class Constants {
     public final static String CMD_SET_WIFI   = "\2{\"cmd\":\"set_wifi\"}\3";
     public final static String CMD_GET_IMAGE   = "\2{\"cmd\":\"get_image\"}\3";
 
+    //Camera Command args
     public final static String ARGS_SET_TIME   = "'{'" +
             "    '\"sec\":' s," +
             "    '\"min\":' m," +

@@ -1,6 +1,5 @@
 package com.darcangel.acam.ui.settings;
 
-import android.icu.text.MessagePattern;
 import android.util.Pair;
 
 import androidx.lifecycle.MutableLiveData;
@@ -10,43 +9,12 @@ import com.darcangel.acam.BuildConfig;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 public class SettingsViewModel extends ViewModel {
 
-    private SettingsListener settingsListener = null;
-
-    public SettingsViewModel() {
-        if(settingsListener == null) {
-            settingsListener = new SettingsListener();
-        }
-        init();
-    }
-
-    private enum UNITS {
-        FAHRENHEIT,
-        CELSIUS
-    }
-
-    private enum PALETTE {
-        WHITE_HOT,
-        BLACK_HOT,
-        ARTIC,
-        FUSION,
-        IRON_BLACK,
-        RAINBOW,
-        RAINBOW_HC,
-        SEPIA,
-        BANDED
-    }
-
+    private SettingsListener settingsListener;
     private String[] emissivityString;
     private int[] emissivityValue;
-
-
+    private MutableLiveData<Boolean> AGC;
     private MutableLiveData<String> cameraAddress;                //remote address of camera
     private MutableLiveData<Integer> emissivity;
     private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
@@ -62,7 +30,22 @@ public class SettingsViewModel extends ViewModel {
     private MutableLiveData<PALETTE> palette;
     private MutableLiveData<Integer> streamDelay;
 
+    public SettingsViewModel() {
+        if (settingsListener == null) {
+            settingsListener = new SettingsListener();
+        }
+        init();
+    }
+
     //Getters and Setters
+    public MutableLiveData<Boolean> getAGC() {
+        return AGC;
+    }
+
+    public void setAGC(Boolean value) {
+        this.AGC.postValue(value);
+    }
+
     public MutableLiveData<String> getCameraAddress() {
         return cameraAddress;
     }
@@ -78,7 +61,6 @@ public class SettingsViewModel extends ViewModel {
     public void setEmissivity(Integer value) {
         emissivity.setValue(value);
     }
-
 
     public MutableLiveData<Pair<Integer, Integer>> getManualRange() {
         return manualRange;
@@ -188,22 +170,23 @@ public class SettingsViewModel extends ViewModel {
         return emissivityValue[index];
     }
 
-    //Misc
-
     private void init() {
-        if(BuildConfig.DEBUG) {
+        //set the default values
+        if (BuildConfig.DEBUG) {
             cameraAddress = new MutableLiveData<String>("192.168.0.42");
         } else {
             cameraAddress = new MutableLiveData<String>();
         }
-        if(emissivityString == null || emissivityString.length == 0) {
+        if (emissivityString == null || emissivityString.length == 0) {
             emissivityString = MainActivity.getInstance().getResources().getStringArray(R.array.emissivity_strings);
         }
-        if(emissivityValue == null || emissivityValue.length == 0) {
+        if (emissivityValue == null || emissivityValue.length == 0) {
             emissivityValue = MainActivity.getInstance().getResources().getIntArray(R.array.emissivity_values);
         }
-       emissivity = new MutableLiveData<Integer>() ;
-        manualRange =new MutableLiveData<Pair<Integer, Integer>>();
+
+        AGC = new MutableLiveData<Boolean>();
+        emissivity = new MutableLiveData<Integer>();
+        manualRange = new MutableLiveData<Pair<Integer, Integer>>();
         displayUnits = new MutableLiveData<UNITS>();
         streamRate = new MutableLiveData<Float>();
         updateCameraClock = new MutableLiveData<Boolean>();
@@ -216,10 +199,29 @@ public class SettingsViewModel extends ViewModel {
         palette = new MutableLiveData<PALETTE>();
         streamDelay = new MutableLiveData<Integer>();
     }
+
     //misc
     @Override
     public void onCleared() {
         // Dispose All your Subscriptions to avoid memory leaks
         super.onCleared();
+    }
+
+    //Misc
+    private enum UNITS {
+        FAHRENHEIT,
+        CELSIUS
+    }
+
+    private enum PALETTE {
+        WHITE_HOT,
+        BLACK_HOT,
+        ARTIC,
+        FUSION,
+        IRON_BLACK,
+        RAINBOW,
+        RAINBOW_HC,
+        SEPIA,
+        BANDED
     }
 }
