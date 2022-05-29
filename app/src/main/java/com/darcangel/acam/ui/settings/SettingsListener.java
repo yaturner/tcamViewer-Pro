@@ -115,11 +115,11 @@ public class SettingsListener {
         if (view == null) {
             return;
         }
-        switch(parent.getId()) {
-            case R.id.spEmissivity:
-                Timber.d("Emissivity selected pos = %d, id = %d", pos, id);
-                settingsViewModel.getEmissivity().postValue(pos);
-        }
+//        switch(parent.getId()) {
+//            case R.id.spEmissivity:
+//                Timber.d("Emissivity selected pos = %d, id = %d", pos, id);
+//                settingsViewModel.getEmissivity().postValue(pos);
+//        }
     }
 
     public void onNothingSelected(AdapterView<?> parent) {

@@ -14,7 +14,7 @@
     <string name="camera_settings">CAMERA SETTINGS</string>
     <string name="wifi_network">WiFi/Network</string>
     <string name="application_settings">Application Settings</string>
-    <string name="emissivity">Emissivity</string>
+    <string name="emissivity">Emissivity \%</string>
     <string name="export_picture_on_save">Export Picture on Save</string>
     <string name="save_picture_on_save">Export Picture on Save</string>
     <string name="export_metadata">Export Metadata</string>

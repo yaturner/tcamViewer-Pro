@@ -63,7 +63,8 @@
                 <!--Heading-->
                 <TextView
                     style="@style/SettingsHeading"
-                    android:text="@string/camera_ip_address" />
+                    android:text="@string/camera_settings"
+                    android:textAllCaps="true"/>
 
                 <!--AGC-->
                 <androidx.appcompat.widget.SwitchCompat
@@ -75,13 +76,28 @@
                     android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
                     android:text="@string/agc" />
 
-                <!--EmissivityList-->
+                <!--Emissivity-->
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
                         style="@style/SettingsTextStart"
                         android:text="@string/emissivity" />
 
+                    <EditText
+                        style="@style/SettingsEditTextEnd"
+                        android:id="@+id/etEmissivity"
+                        android:inputType="numberDecimal"
+                        android:afterTextChanged="@{(text) -> listener.onEmissivityTextChanged(text)}"
+                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
+                        android:textAlignment="textEnd" />
+
+                    <ImageButton
+                        style="@style/SettingsBtnEnd"
+                        android:id="@+id/btnEmissivityHint"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}" />
+
+<!--
                     <Spinner
                         style="@style/SettingsTextEnd"
                         android:layout_height="wrap_content"
@@ -90,6 +106,7 @@
                         android:entries="@array/emissivity_strings"
                         android:onItemSelected="@{(parent, view, pos, id) -> listener.onItemSelected(parent, view, pos, id)}"
                         android:onNothingSelected="@{(parent) -> listener.onNothingSelected(parent)}"/>
+-->
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Gain Radio Buttons-->
@@ -150,7 +167,7 @@
                         android:text="@string/camera_ip_address" />
 
                     <EditText
-                        style="@style/SettingsTextEnd"
+                        style="@style/SettingsEditTextEnd"
                         android:id="@+id/cameraIPAddress"
                         android:inputType="textUri"
                         android:afterTextChanged="@{(text) -> listener.onCameraIPAddressChanged(text)}"
@@ -186,7 +203,7 @@
                         android:text="@string/export_resolution" />
 
                     <ImageButton
-                        style="@style/SettingsTextEnd"
+                        style="@style/SettingsBtnEnd"
                         android:id="@+id/btnExportResolution"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
                         android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}" />
@@ -217,7 +234,7 @@
                             android:text="@string/min"/>
 
                         <EditText
-                            style="@style/SettingsTextEnd"
+                            style="@style/SettingsEditTextEnd"
                             android:inputType="number"
                             android:afterTextChanged="@{(text) -> listener.onMinRangeTextChanged(text)}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -231,7 +248,7 @@
                             android:text="@string/max"/>
 
                         <EditText
-                            style="@style/SettingsTextEnd"
+                            style="@style/SettingsEditTextEnd"
                             android:inputType="number"
                             android:afterTextChanged="@{(text) -> listener.onMaxRangeTextChanged(text)}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
@@ -246,7 +263,10 @@
 
                     <ImageButton
                         style="@style/SettingsBtnEnd"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp" />
+
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Shutter Sound-->
@@ -320,7 +340,7 @@
                         android:text="@string/privacy_policy" />
 
                     <ImageButton
-                        style="@style/SettingsTextEnd"
+                        style="@style/SettingsBtnEnd"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 

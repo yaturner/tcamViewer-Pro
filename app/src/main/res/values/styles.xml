@@ -25,6 +25,16 @@
         <item name="android:layout_weight">.25</item>
     </style>
 
+    <style name="SettingsEditTextEnd">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:background">@drawable/edittext_box</item>
+        <item name="android:textAlignment">textEnd</item>
+        <item name="android:layout_gravity">end|center_vertical</item>
+        <item name="android:layout_weight">.25</item>
+    </style>
+
     <style name="SettingsBtnStart">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -34,13 +44,10 @@
         <item name="android:layout_weight">.95</item>
     </style>
 
-    <style name="SettingsBtnEnd">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
+    <style name="SettingsBtnEnd" parent="@style/SmallBtn">
         <item name="android:textColor">@color/black</item>
         <item name="android:textAlignment">textEnd</item>
         <item name="android:layout_gravity">end</item>
-        <item name="android:layout_weight">.05</item>
     </style>
 
     <style name="SettingsRadioButton">
@@ -55,13 +62,14 @@
         <item name="android:layout_gravity">start</item>
         <item name="android:layout_marginBottom">10sp</item>
         <item name="android:textAllCaps">true</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">#808080</item>
+        <item name="android:background">#c0c0c0</item>
     </style>
 
     <style name="SmallBtn">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
         <item name="android:minHeight">0dp</item>
         <item name="android:minWidth">0dp</item>
     </style>

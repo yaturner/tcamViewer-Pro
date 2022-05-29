@@ -111,27 +111,51 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private void observe() {
 
-        //Observer for Camera IP Address
-        settingsViewModel.getCameraAddress().observe(this, s -> {
-            Timber.d("Camera Address is now %s", s);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString(Constants.KEY_CAMERA_IP_ADDRESS, s);
-            editor.commit();
-        });
-
         //Create the observer for the AGC Switch
-        settingsViewModel.getAGC().observe(this, s -> Timber.d("AGC Switch is " + s));
+        settingsViewModel.getAGC().observe(this, s -> {
+            Timber.d("AGC Switch is " + s);
+            putSharedPreferences(Constants.KEY_AGC, s);
+        });
 
         //Create the observer for emissivity
         settingsViewModel.getEmissivity().observe(this, s -> {
             Timber.d("EmissivityList is " + s);
+            putSharedPreferences(Constants.KEY_EMISSIVITY, s);
+        });
+
+        //Create the observer for gain
+        settingsViewModel.get().observe(this, settingsViewModel -> {
+            Timber.d("Emissivity is now %s", s);
+            putSharedPreferences(Constants.KEY_EMISSIVITY, s);
+        });
+
+        //Observer for Camera IP Address
+        settingsViewModel.getCameraAddress().observe(this, s -> {
+            Timber.d("Camera Address is now %s", s);
+            putSharedPreferences(Constants.KEY_CAMERA_IP_ADDRESS, s);
         });
 
         //Create the observer for the Manual Range Switch
         settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
     }
 
-    public void showProgessDialog(final String title, final String msg) {
+    private void putSharedPreferences(final String key, final Object value) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        if (value instanceof Boolean) {
+            editor.putBoolean(key, (Boolean)value);
+        } else if (value instanceof String) {
+            editor.putString(key, (String)value);
+        } else if(value instanceof Integer) {
+            editor.putInt(key, (Integer)value);
+        } else if(value instanceof Float) {
+            editor.putFloat(key, (Float)value);
+        } else if(value instanceof Long) {
+            editor.putLong(key, (Long)value);
+        }
+        editor.commit();
+    }
+
+    public void showProgressDialog(final String title, final String msg) {
         if (progressDialog == null) {
             progressDialog = new ProgressDialog(this);
         }

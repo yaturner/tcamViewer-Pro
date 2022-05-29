@@ -77,7 +77,7 @@ public class CameraFragment extends Fragment {
         if(savedInstanceState != null) {
             isCameraConnected = savedInstanceState.getBoolean(Constants.KEY_IS_CAMERA_CONNECTED);
             image = savedInstanceState.getParcelable(Constants.KEY_CAMERA_IMAGE);
-            selectedPalette = savedInstanceState.getString(Constants.KEY_SELETED_PALETTE);
+            selectedPalette = savedInstanceState.getString(Constants.KEY_SELECTED_PALETTE);
         }
 
         mainActivity = MainActivity.getInstance();
@@ -126,7 +126,7 @@ public class CameraFragment extends Fragment {
         if(image != null) {
             outState.putParcelable(Constants.KEY_CAMERA_IMAGE, image);
         }
-        outState.putString(Constants.KEY_SELETED_PALETTE, selectedPalette);
+        outState.putString(Constants.KEY_SELECTED_PALETTE, selectedPalette);
     }
 
     @Override
@@ -364,7 +364,7 @@ public class CameraFragment extends Fragment {
                 }
             };
             try {
-                mainActivity.showProgessDialog(getString(R.string.get_image), getString(R.string.acquiring));
+                mainActivity.showProgressDialog(getString(R.string.get_image), getString(R.string.acquiring));
                 mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
             } catch (Exception e) {
                 e.printStackTrace();

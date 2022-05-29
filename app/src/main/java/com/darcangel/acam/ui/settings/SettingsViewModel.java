@@ -12,22 +12,30 @@ import com.darcangel.acam.R;
 public class SettingsViewModel extends ViewModel {
 
     private SettingsListener settingsListener;
+    //Main Setting
     private String[] emissivityString;
     private int[] emissivityValue;
     private MutableLiveData<Boolean> AGC;
     private MutableLiveData<String> cameraAddress;                //remote address of camera
     private MutableLiveData<Integer> emissivity;
-    private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
+    private MutableLiveData<Boolean> exportOnSave;
+    private MutableLiveData<Boolean> exportMetaData;
+    private MutableLiveData<Boolean> exportResolution;
+    private MutableLiveData<Pair<Integer, Integer>> exportResolutionValues; // HxW for exporting image
+    private MutableLiveData<Boolean> manualRange;
+    private MutableLiveData<Pair<Integer, Integer>> manualRangeValues;      //min, max range
+    private MutableLiveData<String> palette;
+    private MutableLiveData<Boolean> shutterSound;
+    private MutableLiveData<Boolean> displaySpotmeter;
     private MutableLiveData<UNITS> displayUnits;              // F or C
+
+
+    private MutableLiveData<Integer> gain;
     private MutableLiveData<Float> streamRate;
     private MutableLiveData<Boolean> updateCameraClock;       // update camera clock when connected
     private MutableLiveData<Boolean> scaleDisplay;
-    private MutableLiveData<Pair<Integer, Integer>> exportResolution; // HxW for exporting image
     private MutableLiveData<String> downloadFolder;
     private MutableLiveData<Boolean> autoRange;
-    private MutableLiveData<Boolean> displaySpotmeter;
-    private MutableLiveData<Boolean> exportMetadata;
-    private MutableLiveData<PALETTE> palette;
     private MutableLiveData<Integer> streamDelay;
 
     public SettingsViewModel() {
@@ -44,6 +52,15 @@ public class SettingsViewModel extends ViewModel {
 
     public void setAGC(Boolean value) {
         this.AGC.postValue(value);
+    }
+
+
+    public MutableLiveData<Integer> getGain() {
+        return gain;
+    }
+
+    public void setGain(Integer value) {
+        this.gain.postValue(value);
     }
 
     public MutableLiveData<String> getCameraAddress() {
@@ -168,6 +185,18 @@ public class SettingsViewModel extends ViewModel {
 
     public int getEmissivityValue(final int index) {
         return emissivityValue[index];
+    }
+
+    public void setAGC(MutableLiveData<Boolean> AGC) {
+        this.AGC = AGC;
+    }
+
+    public void setCameraAddress(MutableLiveData<String> cameraAddress) {
+        this.cameraAddress = cameraAddress;
+    }
+
+    public void setEmissivity(MutableLiveData<Integer> emissivity) {
+        this.emissivity = emissivity;
     }
 
     private void init() {
