@@ -98,6 +98,7 @@ public class CameraFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -317,7 +318,7 @@ public class CameraFragment extends Fragment {
                     }
                 }
             };
-        mainActivity.getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -374,6 +375,10 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    /**
+     * exportImage
+     * @param image
+     */
     private void exportImage(@NonNull final Bitmap image) {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);

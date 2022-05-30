@@ -41,4 +41,5 @@
     <string name="quit">Quit</string>
     <string name="open">Open</string>
     <string name="display_spot_meter">Display Spot Meter</string>
+    <string name="camera_config">Camera Configuration</string>
 </resources>

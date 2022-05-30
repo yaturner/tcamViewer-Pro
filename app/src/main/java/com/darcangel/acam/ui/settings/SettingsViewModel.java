@@ -79,13 +79,13 @@ public class SettingsViewModel extends ViewModel {
         emissivity.setValue(value);
     }
 
-    public MutableLiveData<Pair<Integer, Integer>> getManualRange() {
-        return manualRange;
-    }
-
-    public void setManualRange(MutableLiveData<Pair<Integer, Integer>> manualRange) {
-        this.manualRange = manualRange;
-    }
+//    public MutableLiveData<Pair<Integer, Integer>> getManualRange() {
+//        return manualRange.getValue();
+//    }
+//
+//    public void setManualRange(MutableLiveData<Pair<Integer, Integer>> manualRange) {
+//        this.manualRange = manualRange;
+//    }
 
     public MutableLiveData<UNITS> getDisplayUnits() {
         return displayUnits;
@@ -119,13 +119,13 @@ public class SettingsViewModel extends ViewModel {
         this.scaleDisplay = scaleDisplay;
     }
 
-    public MutableLiveData<Pair<Integer, Integer>> getExportResolution() {
-        return exportResolution;
-    }
-
-    public void setExportResolution(MutableLiveData<Pair<Integer, Integer>> exportResolution) {
-        this.exportResolution = exportResolution;
-    }
+//    public MutableLiveData<Pair<Integer, Integer>> getExportResolution() {
+//        return exportResolution;
+//    }
+//
+//    public void setExportResolution(MutableLiveData<Pair<Integer, Integer>> exportResolution) {
+//        this.exportResolution = exportResolution;
+//    }
 
     public MutableLiveData<String> getDownloadFolder() {
         return downloadFolder;
@@ -151,20 +151,20 @@ public class SettingsViewModel extends ViewModel {
         this.displaySpotmeter = displaySpotmeter;
     }
 
-    public MutableLiveData<Boolean> getExportMetadata() {
-        return exportMetadata;
+    public MutableLiveData<Boolean> getExportMetaData() {
+        return exportMetaData;
     }
 
-    public void setExportMetadata(MutableLiveData<Boolean> exportMetadata) {
-        this.exportMetadata = exportMetadata;
+    public void setExportMetaData(Boolean value) {
+        this.exportMetaData.postValue(value);
     }
 
-    public MutableLiveData<PALETTE> getPalette() {
+    public MutableLiveData<String> getPalette() {
         return palette;
     }
 
-    public void setPalette(MutableLiveData<PALETTE> palette) {
-        this.palette = palette;
+    public void setPalette(String palette) {
+        this.palette.postValue(palette);
     }
 
     public MutableLiveData<Integer> getStreamDelay() {
@@ -215,17 +215,19 @@ public class SettingsViewModel extends ViewModel {
 
         AGC = new MutableLiveData<Boolean>();
         emissivity = new MutableLiveData<Integer>();
-        manualRange = new MutableLiveData<Pair<Integer, Integer>>();
+        manualRange = new MutableLiveData<Boolean>();
+        manualRangeValues = new MutableLiveData<Pair<Integer, Integer>>();
         displayUnits = new MutableLiveData<UNITS>();
         streamRate = new MutableLiveData<Float>();
         updateCameraClock = new MutableLiveData<Boolean>();
         scaleDisplay = new MutableLiveData<Boolean>();
-        exportResolution = new MutableLiveData<Pair<Integer, Integer>>();
+        exportResolution = new MutableLiveData<Boolean>();
+        exportResolutionValues = new MutableLiveData<Pair<Integer, Integer>>();
         downloadFolder = new MutableLiveData<String>();
         autoRange = new MutableLiveData<Boolean>();
         displaySpotmeter = new MutableLiveData<Boolean>();
-        exportMetadata = new MutableLiveData<Boolean>();
-        palette = new MutableLiveData<PALETTE>();
+        exportMetaData = new MutableLiveData<Boolean>();
+        palette = new MutableLiveData<String>();
         streamDelay = new MutableLiveData<Integer>();
     }
 

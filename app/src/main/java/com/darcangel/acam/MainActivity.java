@@ -28,6 +28,7 @@ import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
+import com.darcangel.acam.utils.CameraUtils;
 import com.darcangel.acam.utils.Util;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private static MainActivity _instance = null;
     private SharedPreferences sharedPreferences;
     private PaletteFactory paletteFactory;
+    private CameraUtils cameraUtils;
 
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
@@ -124,10 +126,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         });
 
         //Create the observer for gain
-        settingsViewModel.get().observe(this, settingsViewModel -> {
-            Timber.d("Emissivity is now %s", s);
-            putSharedPreferences(Constants.KEY_EMISSIVITY, s);
-        });
+//        settingsViewModel.getGain().observe(this, s -> {
+//            Timber.d("Gain is now %s", s);
+//            putSharedPreferences(Constants.KEY_GAIN, s);
+//        });
 
         //Observer for Camera IP Address
         settingsViewModel.getCameraAddress().observe(this, s -> {
@@ -136,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         });
 
         //Create the observer for the Manual Range Switch
-        settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
+//        settingsViewModel.getManualRange().observe(this, s -> Timber.d("Manual Range Switch is " + s));
     }
 
     private void putSharedPreferences(final String key, final Object value) {
@@ -230,6 +232,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public CameraService getCameraService() {
+        if(cameraService == null) {
+            cameraService = new CameraService();
+        }
         return cameraService;
     }
 
@@ -245,6 +250,13 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             paletteFactory = new PaletteFactory();
         }
         return paletteFactory;
+    }
+
+    public CameraUtils getCameraUtils() {
+        if(cameraUtils == null) {
+            cameraUtils = new CameraUtils();
+        }
+        return cameraUtils;
     }
 
 

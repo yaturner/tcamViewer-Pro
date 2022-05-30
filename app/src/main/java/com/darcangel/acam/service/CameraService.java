@@ -95,7 +95,11 @@ public class CameraService extends Service {
      * @return
      */
     public boolean isConnected() {
-        return cameraSocket.isConnected();
+        if(cameraSocket != null) {
+            return cameraSocket.isConnected();
+        } else {
+            return false;
+        }
     }
 
     /**
