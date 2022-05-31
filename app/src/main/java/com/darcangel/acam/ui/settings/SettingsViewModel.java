@@ -12,22 +12,21 @@ import com.darcangel.acam.R;
 public class SettingsViewModel extends ViewModel {
 
     private SettingsListener settingsListener;
-    //Main Setting
     private String[] emissivityString;
     private int[] emissivityValue;
+
+    //Settings Fragment
     private MutableLiveData<Boolean> AGC;
-    private MutableLiveData<String> cameraAddress;                //remote address of camera
+    private MutableLiveData<String> cameraAddress;                //IP address of camera
     private MutableLiveData<Integer> emissivity;
     private MutableLiveData<Boolean> exportOnSave;
     private MutableLiveData<Boolean> exportMetaData;
-    private MutableLiveData<Boolean> exportResolution;
-    private MutableLiveData<Pair<Integer, Integer>> exportResolutionValues; // HxW for exporting image
-    private MutableLiveData<Boolean> manualRange;
-    private MutableLiveData<Pair<Integer, Integer>> manualRangeValues;      //min, max range
+    private MutableLiveData<Pair<Integer, Integer>> exportResolution; // HxW for exporting image
+    private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
     private MutableLiveData<String> palette;
     private MutableLiveData<Boolean> shutterSound;
     private MutableLiveData<Boolean> displaySpotmeter;
-    private MutableLiveData<UNITS> displayUnits;              // F or C
+    private MutableLiveData<UNITS> Units;              // F or C
 
 
     private MutableLiveData<Integer> gain;
@@ -46,139 +45,350 @@ public class SettingsViewModel extends ViewModel {
     }
 
     //Getters and Setters
+
+    /**
+     * AGC
+     */
     public MutableLiveData<Boolean> getAGC() {
+        if(AGC == null) {
+            AGC = new MutableLiveData<Boolean>();
+        }
         return AGC;
     }
 
     public void setAGC(Boolean value) {
+        if(AGC == null) {
+            AGC = new MutableLiveData<Boolean>();
+        }
         this.AGC.postValue(value);
     }
 
 
+    /**
+     *
+     * Gain
+     */
     public MutableLiveData<Integer> getGain() {
+        if(gain == null) {
+            gain = new MutableLiveData<Integer>();
+        }
         return gain;
     }
 
     public void setGain(Integer value) {
+        if(gain == null) {
+            gain = new MutableLiveData<Integer>();
+        }
         this.gain.postValue(value);
     }
 
+    /**
+     *
+     * CameraAddress
+     */
     public MutableLiveData<String> getCameraAddress() {
+        if(cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
+        }
         return cameraAddress;
     }
 
     public void setCameraAddress(String address) {
+        if(cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
+        }
         cameraAddress.setValue(address);
     }
 
+    /**
+     *
+     * emissivity
+     */
     public MutableLiveData<Integer> getEmissivity() {
+        if(emissivity == null) {
+            emissivity = new MutableLiveData<Integer>();
+        }
         return emissivity;
     }
 
     public void setEmissivity(Integer value) {
+        if(emissivity == null) {
+            emissivity = new MutableLiveData<>();
+        }
         emissivity.setValue(value);
     }
 
-//    public MutableLiveData<Pair<Integer, Integer>> getManualRange() {
-//        return manualRange.getValue();
-//    }
-//
-//    public void setManualRange(MutableLiveData<Pair<Integer, Integer>> manualRange) {
-//        this.manualRange = manualRange;
-//    }
-
-    public MutableLiveData<UNITS> getDisplayUnits() {
-        return displayUnits;
+    /**
+     *
+     * exportOnSave
+     */
+    public MutableLiveData<Boolean> getExportOnSave() {
+        if(exportOnSave == null) {
+            exportOnSave = new MutableLiveData<>();
+        }
+        return exportOnSave;
     }
 
-    public void setDisplayUnits(MutableLiveData<UNITS> displayUnits) {
-        this.displayUnits = displayUnits;
+    public void setExportOnSave(Boolean value) {
+        if(exportOnSave == null) {
+            exportOnSave = new MutableLiveData<>();
+        }
+        this.exportOnSave.setValue(value);
     }
 
+    /**
+     *
+     * manual range
+     */
+    public MutableLiveData<Pair<Integer, Integer>> getManualRange() {
+        if(manualRange == null) {
+            manualRange = new MutableLiveData<>();
+        }
+        return manualRange;
+    }
+
+    public void setManualRange(Integer min, Integer max) {
+        if(manualRange == null) {
+            manualRange = new MutableLiveData<>();
+        }
+        this.manualRange.setValue(new Pair<Integer, Integer>(min, max));
+    }
+
+    public void setManualRange(Pair<Integer, Integer> value) {
+        if(manualRange == null) {
+            manualRange = new MutableLiveData<>();
+        }
+        this.manualRange.setValue(value);
+    }
+
+    /**
+     *
+     * display units
+     */
+    public MutableLiveData<UNITS> getUnits() {
+        if(Units == null) {
+            Units = new MutableLiveData<>();
+        }
+        return Units;
+    }
+
+    public void setUnits(UNITS value) {
+        if(Units == null) {
+            Units = new MutableLiveData<>();
+        }
+        this.Units.setValue(value);
+    }
+
+    /**
+     *
+     * stream rate
+     */
     public MutableLiveData<Float> getStreamRate() {
+        if(streamRate == null) {
+            streamRate = new MutableLiveData<>();
+        }
         return streamRate;
     }
 
-    public void setStreamRate(MutableLiveData<Float> streamRate) {
-        this.streamRate = streamRate;
+    public void setStreamRate(Float value) {
+        if(streamRate == null) {
+            streamRate = new MutableLiveData<>();
+        }
+        this.streamRate.setValue(value);
     }
 
+    /**
+     *
+     * update camera clock
+     */
     public MutableLiveData<Boolean> getUpdateCameraClock() {
+        if(updateCameraClock == null) {
+            updateCameraClock = new MutableLiveData<>();
+        }
         return updateCameraClock;
     }
 
-    public void setUpdateCameraClock(MutableLiveData<Boolean> updateCameraClock) {
-        this.updateCameraClock = updateCameraClock;
+    public void setUpdateCameraClock(Boolean value) {
+        if(updateCameraClock == null) {
+            updateCameraClock = new MutableLiveData<>();
+        }
+        this.updateCameraClock.setValue(value);
     }
 
+    /**
+     *
+     * scale display
+     */
     public MutableLiveData<Boolean> getScaleDisplay() {
+        if(scaleDisplay == null) {
+            scaleDisplay = new MutableLiveData<>();
+        }
         return scaleDisplay;
     }
 
-    public void setScaleDisplay(MutableLiveData<Boolean> scaleDisplay) {
-        this.scaleDisplay = scaleDisplay;
+    public void setScaleDisplay(Boolean value) {
+        if(scaleDisplay == null) {
+            scaleDisplay = new MutableLiveData<>();
+        }
+        this.scaleDisplay.setValue(value);
     }
 
-//    public MutableLiveData<Pair<Integer, Integer>> getExportResolution() {
-//        return exportResolution;
-//    }
-//
-//    public void setExportResolution(MutableLiveData<Pair<Integer, Integer>> exportResolution) {
-//        this.exportResolution = exportResolution;
-//    }
+    /**
+     *
+     * export resolution
+     */
+    public MutableLiveData<Pair<Integer, Integer>> getExportResolution() {
+        if(exportResolution == null) {
+            exportResolution = new MutableLiveData<>();
+        }
+        return exportResolution;
+    }
 
+    public void setExportResolution(Integer h, Integer w) {
+        if(exportResolution == null) {
+            exportResolution = new MutableLiveData<>();
+        }
+        this.exportResolution.setValue(new Pair<Integer, Integer>(h, w));
+    }
+
+    public void setExportResolution(Pair<Integer, Integer> value) {
+        if(exportResolution == null) {
+            exportResolution = new MutableLiveData<>();
+        }
+        this.exportResolution.setValue(value);
+    }
+
+    /**
+     *
+     * download folder
+     */
     public MutableLiveData<String> getDownloadFolder() {
+        if(downloadFolder == null) {
+            downloadFolder = new MutableLiveData<>();
+        }
         return downloadFolder;
     }
 
-    public void setDownloadFolder(MutableLiveData<String> downloadFolder) {
-        this.downloadFolder = downloadFolder;
+    public void setDownloadFolder(String value) {
+        if(downloadFolder == null) {
+            downloadFolder = new MutableLiveData<>();
+        }
+        this.downloadFolder.setValue(value);
     }
 
+    /**
+     *
+     * auto range
+     */
     public MutableLiveData<Boolean> getAutoRange() {
+        if(autoRange == null) {
+            autoRange = new MutableLiveData<>();
+        }
         return autoRange;
     }
 
-    public void setAutoRange(MutableLiveData<Boolean> autoRange) {
-        this.autoRange = autoRange;
+    public void setAutoRange(Boolean value) {
+        if(autoRange == null) {
+            autoRange = new MutableLiveData<>();
+        }
+        this.autoRange.setValue(value);
     }
 
+    /**
+     *
+     * display spot meter
+     */
     public MutableLiveData<Boolean> getDisplaySpotmeter() {
+        if(displaySpotmeter == null) {
+            displaySpotmeter = new MutableLiveData<>();
+        }
         return displaySpotmeter;
     }
 
-    public void setDisplaySpotmeter(MutableLiveData<Boolean> displaySpotmeter) {
-        this.displaySpotmeter = displaySpotmeter;
+    public void setDisplaySpotmeter(Boolean value) {
+        if(displaySpotmeter == null) {
+            displaySpotmeter = new MutableLiveData<>();
+        }
+        this.displaySpotmeter.setValue(value);
     }
 
+    /**
+     *
+     * export metadata
+     */
     public MutableLiveData<Boolean> getExportMetaData() {
+        if(exportMetaData == null) {
+            exportMetaData = new MutableLiveData<>();
+        }
         return exportMetaData;
     }
 
     public void setExportMetaData(Boolean value) {
-        this.exportMetaData.postValue(value);
+        if(exportMetaData == null) {
+            exportMetaData = new MutableLiveData<>();
+        }
+        this.exportMetaData.setValue(value);
     }
 
+    /**
+     *
+     * palette
+     */
     public MutableLiveData<String> getPalette() {
+        if(palette == null) {
+            palette = new MutableLiveData<>();
+        }
         return palette;
     }
 
-    public void setPalette(String palette) {
-        this.palette.postValue(palette);
+    public void setPalette(String value) {
+        if(palette == null) {
+            palette = new MutableLiveData<String>();
+        }
+        this.palette.setValue(value);
     }
 
+    /**
+     *
+     * shutter sound
+     */
+    public MutableLiveData<Boolean> getShutterSound() {
+        if (shutterSound == null) {
+            shutterSound = new MutableLiveData<>();
+        }
+        return shutterSound;
+    }
+
+    public void setShutterSound(Boolean value) {
+        if (shutterSound == null) {
+            shutterSound = new MutableLiveData<>();
+        }
+        shutterSound.setValue(value);
+    }
+
+    /**
+     *
+     * stream delay
+     */
     public MutableLiveData<Integer> getStreamDelay() {
+        if(streamDelay == null) {
+            streamDelay = new MutableLiveData<>();
+        }
         return streamDelay;
     }
 
-    public void setStreamDelay(MutableLiveData<Integer> streamDelay) {
-        this.streamDelay = streamDelay;
+    public void setStreamDelay(Integer value) {
+        if(streamDelay == null) {
+            streamDelay = new MutableLiveData<>();
+        }
+        this.streamDelay.setValue(value);
     }
 
-    public SettingsListener getSettingsListener() {
-        return settingsListener;
-    }
-
+    /**
+     * get the string value for a predefined emissivity value
+     * @param index
+     * @return
+     */
     public String getEmissivityString(final int index) {
         return emissivityString[index];
     }
@@ -187,16 +397,12 @@ public class SettingsViewModel extends ViewModel {
         return emissivityValue[index];
     }
 
-    public void setAGC(MutableLiveData<Boolean> AGC) {
-        this.AGC = AGC;
-    }
-
-    public void setCameraAddress(MutableLiveData<String> cameraAddress) {
-        this.cameraAddress = cameraAddress;
-    }
-
-    public void setEmissivity(MutableLiveData<Integer> emissivity) {
-        this.emissivity = emissivity;
+    /**
+     * SettingsListener
+     * @return settings listener
+     */
+    public SettingsListener getSettingsListener() {
+        return settingsListener;
     }
 
     private void init() {
@@ -213,22 +419,6 @@ public class SettingsViewModel extends ViewModel {
             emissivityValue = MainActivity.getInstance().getResources().getIntArray(R.array.emissivity_values);
         }
 
-        AGC = new MutableLiveData<Boolean>();
-        emissivity = new MutableLiveData<Integer>();
-        manualRange = new MutableLiveData<Boolean>();
-        manualRangeValues = new MutableLiveData<Pair<Integer, Integer>>();
-        displayUnits = new MutableLiveData<UNITS>();
-        streamRate = new MutableLiveData<Float>();
-        updateCameraClock = new MutableLiveData<Boolean>();
-        scaleDisplay = new MutableLiveData<Boolean>();
-        exportResolution = new MutableLiveData<Boolean>();
-        exportResolutionValues = new MutableLiveData<Pair<Integer, Integer>>();
-        downloadFolder = new MutableLiveData<String>();
-        autoRange = new MutableLiveData<Boolean>();
-        displaySpotmeter = new MutableLiveData<Boolean>();
-        exportMetaData = new MutableLiveData<Boolean>();
-        palette = new MutableLiveData<String>();
-        streamDelay = new MutableLiveData<Integer>();
     }
 
     //misc
@@ -239,7 +429,7 @@ public class SettingsViewModel extends ViewModel {
     }
 
     //Misc
-    private enum UNITS {
+    public enum UNITS {
         FAHRENHEIT,
         CELSIUS
     }
