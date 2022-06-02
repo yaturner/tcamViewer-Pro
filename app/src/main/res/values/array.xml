@@ -101,4 +101,11 @@
         <item name="sepia" type="id" />
     </integer-array>
 
+    <string-array name="resolution_strings">
+        <item>160 x 120</item>
+        <item>320 x 240</item>
+        <item>400 x 360</item>
+        <item>640 x 480</item>
+    </string-array>
+
 </resources>

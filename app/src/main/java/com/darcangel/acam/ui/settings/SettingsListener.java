@@ -5,6 +5,11 @@ import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 
+import androidx.databinding.BaseObservable;
+import androidx.navigation.NavController;
+import androidx.navigation.NavDirections;
+import androidx.navigation.fragment.NavHostFragment;
+
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 
@@ -12,10 +17,10 @@ import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
-public class SettingsListener {
+public class SettingsListener extends BaseObservable {
     private SettingsViewModel settingsViewModel;
-    private String cameraAddress;
-    private Boolean cameraFocus = new Boolean(false);
+    private String editText = "";
+    private boolean hadFocus = false;
 
     private static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
@@ -26,12 +31,12 @@ public class SettingsListener {
     }
 
     // UI callbacks
-    public void onCameraIPAddressChanged(CharSequence text) {
-        String address = text.toString();
-        Timber.d("Camera Ip Address is " + address);
-        //don't set the value until we lose focus
-        this.cameraAddress = address;
-    }
+//    public void onCameraIPAddressChanged(CharSequence text) {
+//        String address = text.toString();
+//        Timber.d("Camera Ip Address is " + address);
+//        //don't set the value until we lose focus
+//        this.cameraAddress = address;
+//    }
 
     public void onSwitchChanged(CompoundButton button, Boolean isChecked) {
         switch (button.getId()) {
@@ -50,23 +55,25 @@ public class SettingsListener {
 
     public void onButtonClicked(View buttonView) {
         switch (buttonView.getId()) {
-            case R.id.btnExportResolution:
-                Timber.d("Export Resolution button was clicked");
+            case R.id.btnNavWiFiSettings:
+                NavDirections navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
+                MainActivity.getInstance().getNavController().navigate(navDirections);
                 break;
         }
     }
 
-    public void onEmissivityTextChanged(CharSequence text) {
-        Timber.d("EmissivityList is " + text);
+    public void onEditTextChanged(CharSequence text) {
+        Timber.d("editText is " + text);
+        editText = text.toString();
     }
 
-    public void onMinRangeTextChanged(CharSequence text) {
-        Timber.d("Min Range is " + text);
-    }
+//    public void onMinRangeTextChanged(CharSequence text) {
+//        Timber.d("Min Range is " + text);
+//    }
 
-    public void onMaxRangeTextChanged(CharSequence text) {
-        Timber.d("Max Range is " + text);
-    }
+ //   public void onMaxRangeTextChanged(CharSequence text) {
+ //       Timber.d("Max Range is " + text);
+ //   }
 
     public void onRadioGroupChanged(RadioGroup group, int checkedId) {
         Timber.d("Gain is " + checkedId);
@@ -93,33 +100,51 @@ public class SettingsListener {
                 }
                 break;
         }
-    };
+    }
 
-    public void onFocusChange(View view,  Boolean hasFocus) {
-        switch(view.getId()) {
+    ;
+
+    public void onFocusChange(View view, Boolean hasFocus) {
+        switch (view.getId()) {
             case R.id.cameraIPAddress:
-                Timber.d("Camera address does %s have focus", (hasFocus?"":"not"));
+                Timber.d("Camera address does %s have focus", (hasFocus ? "" : "not"));
                 //if the cameraAddress had focus and is now losing it, update the address
-                if(cameraFocus && !hasFocus) {
-                    if (isValidIPAddress(cameraAddress)) {
-                        settingsViewModel.getCameraAddress().postValue(cameraAddress);
+                if (hadFocus && !hasFocus) {
+                    if (isValidIPAddress(editText)) {
+                        settingsViewModel.getCameraAddress().setValue(editText);
+                        editText = "";
+                        break;
                     }
                 }
-                cameraFocus = hasFocus;
+                hadFocus = hasFocus;
+                break;
+            case R.id.etEmissivity:
+                Timber.d("Emissivity does %s have focus", (hasFocus ? "" : "not"));
+                if (hadFocus && !hasFocus) {
+                    try {
+                        if(editText != null && !editText.isEmpty()) {
+                            settingsViewModel.getEmissivity().setValue(Integer.parseInt(editText));
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                    }
+                    editText = "";
+                    break;
+                }
+                hadFocus = hasFocus;
                 break;
         }
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-        //initial layout, the view is the dropdown list, the parent is the spinner
         if (view == null) {
             return;
         }
-//        switch(parent.getId()) {
-//            case R.id.spEmissivity:
-//                Timber.d("Emissivity selected pos = %d, id = %d", pos, id);
-//                settingsViewModel.getEmissivity().postValue(pos);
-//        }
+        switch(parent.getId()) {
+            case R.id.spExportResolution:
+                settingsViewModel.getExportResolution().setValue(pos);
+                break;
+        }
     }
 
     public void onNothingSelected(AdapterView<?> parent) {

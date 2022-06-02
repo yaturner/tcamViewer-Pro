@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="listener"
             type="com.darcangel.acam.ui.settings.SettingsListener" />
@@ -14,34 +15,7 @@
         android:layout_height="wrap_content"
         tools:context=".ui.settings.SettingsFragment">
 
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/glTop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent=".05" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/glBottom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent=".95" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/glStart"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent=".05" />
-
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/glEnd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent=".95" />
+        <include layout="@layout/guidelines" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -64,7 +38,7 @@
                 <TextView
                     style="@style/SettingsHeading"
                     android:text="@string/camera_settings"
-                    android:textAllCaps="true"/>
+                    android:textAllCaps="true" />
 
                 <!--AGC-->
                 <androidx.appcompat.widget.SwitchCompat
@@ -84,29 +58,19 @@
                         android:text="@string/emissivity" />
 
                     <EditText
-                        style="@style/SettingsEditTextEnd"
                         android:id="@+id/etEmissivity"
+                        style="@style/SettingsEditTextEnd"
+                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
                         android:inputType="numberDecimal"
-                        android:afterTextChanged="@{(text) -> listener.onEmissivityTextChanged(text)}"
                         android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
                         android:textAlignment="textEnd" />
 
                     <ImageButton
-                        style="@style/SettingsBtnEnd"
                         android:id="@+id/btnEmissivityHint"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
-                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}" />
+                        style="@style/SettingsBtnEnd"
+                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
-<!--
-                    <Spinner
-                        style="@style/SettingsTextEnd"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"
-                        android:id="@+id/spEmissivity"
-                        android:entries="@array/emissivity_strings"
-                        android:onItemSelected="@{(parent, view, pos, id) -> listener.onItemSelected(parent, view, pos, id)}"
-                        android:onNothingSelected="@{(parent) -> listener.onNothingSelected(parent)}"/>
--->
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Gain Radio Buttons-->
@@ -123,8 +87,8 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:onCheckedChanged="@{(group, checkedId) -> listener.onRadioGroupChanged(group, checkedId)}">
+                        android:onCheckedChanged="@{(group, checkedId) -> listener.onRadioGroupChanged(group, checkedId)}"
+                        android:orientation="horizontal">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainAuto"
@@ -146,12 +110,21 @@
                     </RadioGroup>
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <!--Heading-->
-                <TextView
-                    style="@style/SettingsHeading"
-                    android:text="@string/wifi_network"
-                    android:textAllCaps="false" />
+                <!--Navigate to wifi settings-->
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/wifi_network" />
+
+                <ImageButton
+                    style="@style/SettingsBtnEnd"
+                    android:id="@+id/btnNavWiFiSettings"
+                    android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}"
+                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Heading-->
                 <TextView
@@ -167,10 +140,10 @@
                         android:text="@string/camera_ip_address" />
 
                     <EditText
-                        style="@style/SettingsEditTextEnd"
                         android:id="@+id/cameraIPAddress"
+                        style="@style/SettingsEditTextEnd"
+                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
                         android:inputType="textUri"
-                        android:afterTextChanged="@{(text) -> listener.onCameraIPAddressChanged(text)}"
                         android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -196,18 +169,22 @@
                     android:text="@string/export_metadata" />
 
                 <!--Export Resolution-->
-                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
-                    <TextView
-                        style="@style/SettingsTextStart"
-                        android:text="@string/export_resolution" />
+                <TextView
+                    style="@style/SettingsTextStart"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/export_resolution" />
 
-                    <ImageButton
-                        style="@style/SettingsBtnEnd"
-                        android:id="@+id/btnExportResolution"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
-                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}" />
-                </androidx.appcompat.widget.LinearLayoutCompat>
+                <Spinner
+                    android:id="@+id/spExportResolution"
+                    style="@style/SettingsTextEnd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/resolution_strings"
+                    android:onItemSelected="@{(parent, view, pos, id) -> listener.onItemSelected(parent, view, pos, id)}"
+                    android:onNothingSelected="@{(parent) -> listener.onNothingSelected(parent)}" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Manual Range-->
                 <androidx.appcompat.widget.SwitchCompat
@@ -220,37 +197,35 @@
                     android:text="@string/manual_range" />
 
                 <androidx.appcompat.widget.LinearLayoutCompat
-                    style="@style/SettingsLayout"
                     android:id="@+id/layoutManualRange"
+                    style="@style/SettingsLayout"
                     android:orientation="vertical"
                     android:visibility="gone">
 
                     <!--Min-->
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        style="@style/SettingsLayout">
+                    <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                         <TextView
                             style="@style/SettingsTextStart"
-                            android:text="@string/min"/>
+                            android:text="@string/min" />
 
                         <EditText
                             style="@style/SettingsEditTextEnd"
-                            android:inputType="number"
-                            android:afterTextChanged="@{(text) -> listener.onMinRangeTextChanged(text)}" />
+                            android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
+                            android:inputType="number" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                     <!--Max-->
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        style="@style/SettingsLayout">
+                    <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                         <TextView
                             style="@style/SettingsTextStart"
-                            android:text="@string/max"/>
+                            android:text="@string/max" />
 
                         <EditText
                             style="@style/SettingsEditTextEnd"
-                            android:inputType="number"
-                            android:afterTextChanged="@{(text) -> listener.onMaxRangeTextChanged(text)}" />
+                            android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
+                            android:inputType="number" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -263,9 +238,9 @@
 
                     <ImageButton
                         style="@style/SettingsBtnEnd"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24"
                         android:minWidth="0dp"
-                        android:minHeight="0dp" />
+                        android:minHeight="0dp"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 

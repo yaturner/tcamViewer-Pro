@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private ProgressDialog progressDialog;
 
+    private NavController navController;
+
     public interface CameraCallback {
         void callback(JSONObject response);
     }
@@ -92,7 +94,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_camera, R.id.navigation_settings, R.id.navigation_library)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+
+        navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
@@ -121,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         //Create the observer for emissivity
         settingsViewModel.getEmissivity().observe(this, s -> {
-            Timber.d("EmissivityList is " + s);
+            Timber.d("Emissivity is " + s);
             putSharedPreferences(Constants.KEY_EMISSIVITY, s);
         });
 
@@ -151,9 +154,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         //Observer for Export Resolution
         settingsViewModel.getExportResolution().observe(this, s -> {
-            Timber.d("Export Resolution is %sx%s", s.first, s.second);
-            putSharedPreferences(Constants.KEY_EXPORT_RESOLUTION_HEIGHT, s.first);
-            putSharedPreferences(Constants.KEY_EXPORT_RESOLUTION_WIDTH, s.second);
+            Timber.d("Export Resolution is %d", s);
+            putSharedPreferences(Constants.KEY_EXPORT_RESOLUTION, s);
         });
 
         //Create the observer for the Manual Range
@@ -256,6 +258,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             unbindService(connection);
             isCameraServiceBound = false;
         }
+    }
+
+    public NavController getNavController() {
+        return navController;
     }
 
     public void quit() {

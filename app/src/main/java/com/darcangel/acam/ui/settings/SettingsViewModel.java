@@ -4,6 +4,7 @@ import android.util.Pair;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.navigation.NavController;
 
 import com.darcangel.acam.BuildConfig;
 import com.darcangel.acam.MainActivity;
@@ -12,6 +13,8 @@ import com.darcangel.acam.R;
 public class SettingsViewModel extends ViewModel {
 
     private SettingsListener settingsListener;
+
+    //Hints
     private String[] emissivityString;
     private int[] emissivityValue;
 
@@ -21,7 +24,7 @@ public class SettingsViewModel extends ViewModel {
     private MutableLiveData<Integer> emissivity;
     private MutableLiveData<Boolean> exportOnSave;
     private MutableLiveData<Boolean> exportMetaData;
-    private MutableLiveData<Pair<Integer, Integer>> exportResolution; // HxW for exporting image
+    private MutableLiveData<Integer> exportResolution;  // HxW for exporting image
     private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
     private MutableLiveData<String> palette;
     private MutableLiveData<Boolean> shutterSound;
@@ -237,21 +240,14 @@ public class SettingsViewModel extends ViewModel {
      *
      * export resolution
      */
-    public MutableLiveData<Pair<Integer, Integer>> getExportResolution() {
+    public MutableLiveData<Integer> getExportResolution() {
         if(exportResolution == null) {
             exportResolution = new MutableLiveData<>();
         }
         return exportResolution;
     }
 
-    public void setExportResolution(Integer h, Integer w) {
-        if(exportResolution == null) {
-            exportResolution = new MutableLiveData<>();
-        }
-        this.exportResolution.setValue(new Pair<Integer, Integer>(h, w));
-    }
-
-    public void setExportResolution(Pair<Integer, Integer> value) {
+    public void setExportResolution(Integer value) {
         if(exportResolution == null) {
             exportResolution = new MutableLiveData<>();
         }
@@ -408,10 +404,9 @@ public class SettingsViewModel extends ViewModel {
     private void init() {
         //set the default values
         if (BuildConfig.DEBUG) {
-            cameraAddress = new MutableLiveData<String>("192.168.0.42");
-        } else {
-            cameraAddress = new MutableLiveData<String>();
+            setCameraAddress("192.168.0.42");
         }
+
         if (emissivityString == null || emissivityString.length == 0) {
             emissivityString = MainActivity.getInstance().getResources().getStringArray(R.array.emissivity_strings);
         }

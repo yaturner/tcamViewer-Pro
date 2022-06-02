@@ -11,6 +11,7 @@
         <entry key="app/src/main/res/layout/fragment_camera.xml" value="0.16354166666666667" />
         <entry key="app/src/main/res/layout/fragment_library.xml" value="0.16354166666666667" />
         <entry key="app/src/main/res/layout/fragment_settings.xml" value="0.33" />
+        <entry key="app/src/main/res/layout/fragment_wifi_settings.xml" value="0.1953125" />
         <entry key="app/src/main/res/layout/guidelines.xml" value="0.18342391304347827" />
         <entry key="app/src/main/res/menu/bottom_nav_menu.xml" value="0.16354166666666667" />
         <entry key="app/src/main/res/menu/camera_menu.xml" value="0.1921875" />

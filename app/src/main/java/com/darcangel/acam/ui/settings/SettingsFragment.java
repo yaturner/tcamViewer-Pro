@@ -10,13 +10,17 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
 
 import com.darcangel.acam.MainActivity;
+import com.darcangel.acam.R;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
 
 import org.json.JSONException;
@@ -57,6 +61,9 @@ public class SettingsFragment extends Fragment {
         //get the latest config from the camera
         if(mainActivity.getCameraService().isConnected()) {
             getConfig();
+            binding.btnNavWiFiSettings.setEnabled(true);
+        } else {
+            binding.btnNavWiFiSettings.setEnabled(false);
         }
     }
 

@@ -25,6 +25,9 @@
             android:id="@+id/action_navigation_settings_pop"
             app:popUpTo="@id/navigation_settings"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_navigation_settings_to_wiFiSettingsFragment"
+            app:destination="@id/wiFiSettingsFragment" />
     </fragment>
 
     <fragment
@@ -36,5 +39,14 @@
             android:id="@+id/action_navigation_library_pop"
             app:popUpTo="@id/navigation_library"
             app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/wiFiSettingsFragment"
+        android:name="com.darcangel.acam.ui.settings.WiFiSettingsFragment"
+        android:label="WiFiSettingsFragment"
+        tools:layout="@layout/fragment_wifi_settings">
+        <action
+            android:id="@+id/action_wiFiSettingsFragment_to_navigation_settings"
+            app:destination="@id/navigation_settings" />
     </fragment>
 </navigation>

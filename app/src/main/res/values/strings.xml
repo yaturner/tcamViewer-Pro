@@ -42,4 +42,9 @@
     <string name="open">Open</string>
     <string name="display_spot_meter">Display Spot Meter</string>
     <string name="camera_config">Camera Configuration</string>
+    <string name="camera_is_access_point">Camera is Access Point</string>
+    <string name="ssid">SSID</string>
+    <string name="password">Password</string>
+    <string name="use_static_ip_when_client">Use Static IP when Client</string>
+    <string name="client_static_ip_address">Client Static IP Address</string>
 </resources>
