@@ -2,6 +2,8 @@ package com.darcangel.acam.ui.settings;
 
 import android.util.Pair;
 
+import androidx.databinding.Bindable;
+import androidx.databinding.Observable;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.navigation.NavController;
@@ -10,7 +12,7 @@ import com.darcangel.acam.BuildConfig;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 
-public class SettingsViewModel extends ViewModel {
+public class SettingsViewModel extends ViewModel implements Observable {
 
     private SettingsListener settingsListener;
 
@@ -31,6 +33,8 @@ public class SettingsViewModel extends ViewModel {
     private MutableLiveData<Boolean> displaySpotmeter;
     private MutableLiveData<UNITS> Units;              // F or C
 
+    //WiFi Settings
+    private MutableLiveData<Boolean> AccessPoint;
 
     private MutableLiveData<Integer> gain;
     private MutableLiveData<Float> streamRate;
@@ -100,7 +104,7 @@ public class SettingsViewModel extends ViewModel {
         if(cameraAddress == null) {
             cameraAddress = new MutableLiveData<>();
         }
-        cameraAddress.setValue(address);
+        cameraAddress.postValue(address);
     }
 
     /**
@@ -118,7 +122,7 @@ public class SettingsViewModel extends ViewModel {
         if(emissivity == null) {
             emissivity = new MutableLiveData<>();
         }
-        emissivity.setValue(value);
+        emissivity.postValue(value);
     }
 
     /**
@@ -136,7 +140,7 @@ public class SettingsViewModel extends ViewModel {
         if(exportOnSave == null) {
             exportOnSave = new MutableLiveData<>();
         }
-        this.exportOnSave.setValue(value);
+        this.exportOnSave.postValue(value);
     }
 
     /**
@@ -154,14 +158,14 @@ public class SettingsViewModel extends ViewModel {
         if(manualRange == null) {
             manualRange = new MutableLiveData<>();
         }
-        this.manualRange.setValue(new Pair<Integer, Integer>(min, max));
+        this.manualRange.postValue(new Pair<Integer, Integer>(min, max));
     }
 
     public void setManualRange(Pair<Integer, Integer> value) {
         if(manualRange == null) {
             manualRange = new MutableLiveData<>();
         }
-        this.manualRange.setValue(value);
+        this.manualRange.postValue(value);
     }
 
     /**
@@ -179,7 +183,7 @@ public class SettingsViewModel extends ViewModel {
         if(Units == null) {
             Units = new MutableLiveData<>();
         }
-        this.Units.setValue(value);
+        this.Units.postValue(value);
     }
 
     /**
@@ -197,7 +201,7 @@ public class SettingsViewModel extends ViewModel {
         if(streamRate == null) {
             streamRate = new MutableLiveData<>();
         }
-        this.streamRate.setValue(value);
+        this.streamRate.postValue(value);
     }
 
     /**
@@ -215,7 +219,7 @@ public class SettingsViewModel extends ViewModel {
         if(updateCameraClock == null) {
             updateCameraClock = new MutableLiveData<>();
         }
-        this.updateCameraClock.setValue(value);
+        this.updateCameraClock.postValue(value);
     }
 
     /**
@@ -233,7 +237,7 @@ public class SettingsViewModel extends ViewModel {
         if(scaleDisplay == null) {
             scaleDisplay = new MutableLiveData<>();
         }
-        this.scaleDisplay.setValue(value);
+        this.scaleDisplay.postValue(value);
     }
 
     /**
@@ -251,7 +255,7 @@ public class SettingsViewModel extends ViewModel {
         if(exportResolution == null) {
             exportResolution = new MutableLiveData<>();
         }
-        this.exportResolution.setValue(value);
+        this.exportResolution.postValue(value);
     }
 
     /**
@@ -269,7 +273,7 @@ public class SettingsViewModel extends ViewModel {
         if(downloadFolder == null) {
             downloadFolder = new MutableLiveData<>();
         }
-        this.downloadFolder.setValue(value);
+        this.downloadFolder.postValue(value);
     }
 
     /**
@@ -287,7 +291,7 @@ public class SettingsViewModel extends ViewModel {
         if(autoRange == null) {
             autoRange = new MutableLiveData<>();
         }
-        this.autoRange.setValue(value);
+        this.autoRange.postValue(value);
     }
 
     /**
@@ -305,7 +309,7 @@ public class SettingsViewModel extends ViewModel {
         if(displaySpotmeter == null) {
             displaySpotmeter = new MutableLiveData<>();
         }
-        this.displaySpotmeter.setValue(value);
+        this.displaySpotmeter.postValue(value);
     }
 
     /**
@@ -323,7 +327,7 @@ public class SettingsViewModel extends ViewModel {
         if(exportMetaData == null) {
             exportMetaData = new MutableLiveData<>();
         }
-        this.exportMetaData.setValue(value);
+        this.exportMetaData.postValue(value);
     }
 
     /**
@@ -341,7 +345,7 @@ public class SettingsViewModel extends ViewModel {
         if(palette == null) {
             palette = new MutableLiveData<String>();
         }
-        this.palette.setValue(value);
+        this.palette.postValue(value);
     }
 
     /**
@@ -359,7 +363,7 @@ public class SettingsViewModel extends ViewModel {
         if (shutterSound == null) {
             shutterSound = new MutableLiveData<>();
         }
-        shutterSound.setValue(value);
+        shutterSound.postValue(value);
     }
 
     /**
@@ -377,7 +381,18 @@ public class SettingsViewModel extends ViewModel {
         if(streamDelay == null) {
             streamDelay = new MutableLiveData<>();
         }
-        this.streamDelay.setValue(value);
+        this.streamDelay.postValue(value);
+    }
+
+    //WiFi Settings
+
+@Bindable
+    public MutableLiveData<Boolean> getAccessPoint() {
+        return AccessPoint;
+    }
+
+    public void setAccessPoint(MutableLiveData<Boolean> accessPoint) {
+        AccessPoint = accessPoint;
     }
 
     /**
@@ -421,6 +436,16 @@ public class SettingsViewModel extends ViewModel {
     public void onCleared() {
         // Dispose All your Subscriptions to avoid memory leaks
         super.onCleared();
+    }
+
+    @Override
+    public void addOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+
+    }
+
+    @Override
+    public void removeOnPropertyChangedCallback(OnPropertyChangedCallback callback) {
+
     }
 
     //Misc

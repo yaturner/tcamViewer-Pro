@@ -50,6 +50,9 @@ public class SettingsListener extends BaseObservable {
                 Timber.d("AGC is %s checked", (isChecked ? "" : "not"));
                 settingsViewModel.setAGC(isChecked);
                 break;
+                //WiFi Settings
+            case R.id.swCameraIsAccessPoint:
+                break;
         }
     }
 
