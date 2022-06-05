@@ -63,9 +63,8 @@
                     <EditText
                         android:id="@+id/etEmissivity"
                         style="@style/SettingsEditTextEnd"
-                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
                         android:inputType="numberDecimal"
-                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
+                        android:text="@={settings.emissivity}"
                         android:textAlignment="textEnd" />
 
                     <ImageButton

@@ -1,15 +1,15 @@
 package com.darcangel.acam.model;
 
 import android.util.Pair;
+import android.widget.TextView;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.InverseBindingAdapter;
 import androidx.lifecycle.MutableLiveData;
 
 import com.darcangel.acam.BR;
-import com.darcangel.acam.ui.settings.SettingsViewModel;
-
-import java.nio.channels.NonReadableChannelException;
 
 public class Settings extends BaseObservable {
 
@@ -38,6 +38,20 @@ public class Settings extends BaseObservable {
 
     public Settings() {
         setAGC(true);
+    }
+
+    @BindingAdapter("android:text")
+    public static void setText(TextView view, Integer value) {
+        if (view.getText() != null
+                && ( !view.getText().toString().isEmpty() )
+                && Integer.parseInt(view.getText().toString()) != value) {
+            view.setText(Integer.toString(value));
+        }
+    }
+
+    @InverseBindingAdapter(attribute = "android:text")
+    public static int getText(TextView view) {
+        return Integer.parseInt(view.getText().toString());
     }
 
     //Getters and Setters
