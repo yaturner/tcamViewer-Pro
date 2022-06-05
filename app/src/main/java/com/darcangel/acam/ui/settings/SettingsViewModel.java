@@ -34,8 +34,7 @@ public class SettingsViewModel extends ViewModel implements Observable {
     private MutableLiveData<UNITS> Units;              // F or C
 
     //WiFi Settings
-    private MutableLiveData<Boolean> AccessPoint;
-
+    private MutableLiveData<Boolean> accessPoint;
     private MutableLiveData<Integer> gain;
     private MutableLiveData<Float> streamRate;
     private MutableLiveData<Boolean> updateCameraClock;       // update camera clock when connected
@@ -388,11 +387,16 @@ public class SettingsViewModel extends ViewModel implements Observable {
 
 @Bindable
     public MutableLiveData<Boolean> getAccessPoint() {
-        return AccessPoint;
+        if(accessPoint == null) {
+            accessPoint = new MutableLiveData<>();
+        }
+        return accessPoint;
     }
-
-    public void setAccessPoint(MutableLiveData<Boolean> accessPoint) {
-        AccessPoint = accessPoint;
+    public void setAccessPoint(Boolean value) {
+        if(accessPoint == null) {
+            accessPoint = new MutableLiveData<Boolean>();
+        }
+        accessPoint.setValue(value);
     }
 
     /**

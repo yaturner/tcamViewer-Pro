@@ -52,6 +52,7 @@ public class SettingsListener extends BaseObservable {
                 break;
                 //WiFi Settings
             case R.id.swCameraIsAccessPoint:
+                settingsViewModel.getAccessPoint().setValue(isChecked);
                 break;
         }
     }
