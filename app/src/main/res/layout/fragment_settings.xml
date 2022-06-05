@@ -8,6 +8,9 @@
         <variable
             name="listener"
             type="com.darcangel.acam.ui.settings.SettingsListener" />
+        <variable
+            name="settings"
+            type="com.darcangel.acam.model.Settings" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -47,7 +50,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
+                    android:checked="@={settings.AGC}"
                     android:text="@string/agc" />
 
                 <!--Emissivity-->

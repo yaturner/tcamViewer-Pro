@@ -128,78 +128,78 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private void observe() {
 
-        //Create the observer for the AGC Switch
-        settingsViewModel.getAGC().observe(this, s -> {
-            Timber.d("AGC Switch is " + s);
-            putSharedPreferences(Constants.KEY_AGC, s);
-        });
-
-        //Create the observer for emissivity
-        settingsViewModel.getEmissivity().observe(this, s -> {
-            Timber.d("Emissivity is " + s);
-            putSharedPreferences(Constants.KEY_EMISSIVITY, s);
-        });
-
-        //Create the observer for gain
-        settingsViewModel.getGain().observe(this, s -> {
-            Timber.d("Gain is now %s", s);
-            putSharedPreferences(Constants.KEY_GAIN, s);
-        });
-
-        //Observer for Camera IP Address
-        settingsViewModel.getCameraAddress().observe(this, s -> {
-            Timber.d("Camera Address is now %s", s);
-            putSharedPreferences(Constants.KEY_CAMERA_IP_ADDRESS, s);
-        });
-
-        //Observer for Export on Save
-        settingsViewModel.getExportOnSave().observe(this, s -> {
-            Timber.d("Export on Save is " + s);
-            putSharedPreferences(Constants.KEY_EXPORT_PICTURE_ON_SAVE, s);
-        });
-
-        //Observer for Export MetaData
-        settingsViewModel.getExportMetaData().observe(this, s -> {
-            Timber.d("Export MetaData is " + s);
-            putSharedPreferences(Constants.KEY_EXPORT_METADATA, s);
-        });
-
-        //Observer for Export Resolution
-        settingsViewModel.getExportResolution().observe(this, s -> {
-            Timber.d("Export Resolution is %d", s);
-            putSharedPreferences(Constants.KEY_EXPORT_RESOLUTION, s);
-        });
-
-        //Create the observer for the Manual Range
-        settingsViewModel.getManualRange().observe(this, s -> {
-            Timber.d("Manual Range Switch is " + s);
-            putSharedPreferences(Constants.KEY_MANUAL_RANGE_MAX, s.first);
-            putSharedPreferences(Constants.KEY_MANUAL_RANGE_MIN, s.second);
-        });
-
-        //Observer for Palette
-        settingsViewModel.getPalette().observe(this, s -> {
-            Timber.d("Palette is " + s);
-            putSharedPreferences(Constants.KEY_PALETTE, s);
-        });
-
-        //Observer for Shutter Sound
-        settingsViewModel.getShutterSound().observe(this, s -> {
-            Timber.d("Shutter Sound is " + s);
-            putSharedPreferences(Constants.KEY_SHUTTER_SOUND, s);
-        });
-
-        //Observer for display Spotmeter
-        settingsViewModel.getDisplaySpotmeter().observe(this, s -> {
-            Timber.d("Display Spotmeter is " + s);
-            putSharedPreferences(Constants.KEY_SPOTMETER, s);
-        });
-
-        //Observer for Units
-        settingsViewModel.getUnits().observe(this, s -> {
-            Timber.d("units are " + s);
-            putSharedPreferences(Constants.KEY_UNITS, s);
-        });
+//        //Create the observer for the AGC Switch
+//        settingsViewModel.getAGC().observe(this, s -> {
+//            Timber.d("AGC Switch is " + s);
+//            putSharedPreferences(Constants.KEY_AGC, s);
+//        });
+//
+//        //Create the observer for emissivity
+//        settingsViewModel.getEmissivity().observe(this, s -> {
+//            Timber.d("Emissivity is " + s);
+//            putSharedPreferences(Constants.KEY_EMISSIVITY, s);
+//        });
+//
+//        //Create the observer for gain
+//        settingsViewModel.getGain().observe(this, s -> {
+//            Timber.d("Gain is now %s", s);
+//            putSharedPreferences(Constants.KEY_GAIN, s);
+//        });
+//
+//        //Observer for Camera IP Address
+//        settingsViewModel.getCameraAddress().observe(this, s -> {
+//            Timber.d("Camera Address is now %s", s);
+//            putSharedPreferences(Constants.KEY_CAMERA_IP_ADDRESS, s);
+//        });
+//
+//        //Observer for Export on Save
+//        settingsViewModel.getExportOnSave().observe(this, s -> {
+//            Timber.d("Export on Save is " + s);
+//            putSharedPreferences(Constants.KEY_EXPORT_PICTURE_ON_SAVE, s);
+//        });
+//
+//        //Observer for Export MetaData
+//        settingsViewModel.getExportMetaData().observe(this, s -> {
+//            Timber.d("Export MetaData is " + s);
+//            putSharedPreferences(Constants.KEY_EXPORT_METADATA, s);
+//        });
+//
+//        //Observer for Export Resolution
+//        settingsViewModel.getExportResolution().observe(this, s -> {
+//            Timber.d("Export Resolution is %d", s);
+//            putSharedPreferences(Constants.KEY_EXPORT_RESOLUTION, s);
+//        });
+//
+//        //Create the observer for the Manual Range
+//        settingsViewModel.getManualRange().observe(this, s -> {
+//            Timber.d("Manual Range Switch is " + s);
+//            putSharedPreferences(Constants.KEY_MANUAL_RANGE_MAX, s.first);
+//            putSharedPreferences(Constants.KEY_MANUAL_RANGE_MIN, s.second);
+//        });
+//
+//        //Observer for Palette
+//        settingsViewModel.getPalette().observe(this, s -> {
+//            Timber.d("Palette is " + s);
+//            putSharedPreferences(Constants.KEY_PALETTE, s);
+//        });
+//
+//        //Observer for Shutter Sound
+//        settingsViewModel.getShutterSound().observe(this, s -> {
+//            Timber.d("Shutter Sound is " + s);
+//            putSharedPreferences(Constants.KEY_SHUTTER_SOUND, s);
+//        });
+//
+//        //Observer for display Spotmeter
+//        settingsViewModel.getDisplaySpotmeter().observe(this, s -> {
+//            Timber.d("Display Spotmeter is " + s);
+//            putSharedPreferences(Constants.KEY_SPOTMETER, s);
+//        });
+//
+//        //Observer for Units
+//        settingsViewModel.getUnits().observe(this, s -> {
+//            Timber.d("units are " + s);
+//            putSharedPreferences(Constants.KEY_UNITS, s);
+//        });
     }
 
     private void putSharedPreferences(final String key, final Object value) {

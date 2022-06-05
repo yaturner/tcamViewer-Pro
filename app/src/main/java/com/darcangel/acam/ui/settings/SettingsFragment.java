@@ -22,6 +22,7 @@ import timber.log.Timber;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
+import com.darcangel.acam.model.Settings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +48,7 @@ public class SettingsFragment extends Fragment {
         View root = binding.getRoot();
 
         binding.setListener(settingsViewModel.getSettingsListener());
+        binding.setSettings(new Settings());
 
         if(mainActivity == null) {
             mainActivity = MainActivity.getInstance();
