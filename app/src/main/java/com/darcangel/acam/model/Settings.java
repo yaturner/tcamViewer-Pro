@@ -1,8 +1,10 @@
 package com.darcangel.acam.model;
 
 import android.util.Pair;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import androidx.databinding.BindingAdapter;
@@ -20,11 +22,12 @@ public class Settings extends BaseObservable {
     private MutableLiveData<Boolean> exportOnSave;
     private MutableLiveData<Boolean> exportMetaData;
     private MutableLiveData<Integer> exportResolution;  // HxW for exporting image
-    private MutableLiveData<Pair<Integer, Integer>> manualRange;      //min, max range
+    private MutableLiveData<Integer> manualRangeMin;
+    private MutableLiveData<Integer> manualRangeMax;
     private MutableLiveData<String> palette;
     private MutableLiveData<Boolean> shutterSound;
     private MutableLiveData<Boolean> displaySpotmeter;
-    private MutableLiveData<String> units;              // F or C
+    private MutableLiveData<Integer> units;              // F or C
 
     //WiFi Settings
     private MutableLiveData<Boolean> accessPoint;
@@ -73,8 +76,8 @@ public class Settings extends BaseObservable {
         }
         if (value != AGC.getValue()) {
             AGC.setValue(value);
+            notifyPropertyChanged(BR.aGC);
         }
-        notifyPropertyChanged(BR.aGC);
     }
 
     /**
@@ -93,7 +96,7 @@ public class Settings extends BaseObservable {
             gain = new MutableLiveData<Integer>();
         }
         if (value != gain.getValue()) {
-            gain.postValue(value);
+            gain.setValue(value);
             notifyPropertyChanged(BR.gain);
         }
     }
@@ -114,7 +117,7 @@ public class Settings extends BaseObservable {
             cameraAddress = new MutableLiveData<>();
         }
         if (!address.equals(cameraAddress.getValue())) {
-            cameraAddress.postValue(address);
+            cameraAddress.setValue(address);
             notifyPropertyChanged(BR.cameraAddress);
         }
     }
@@ -135,7 +138,7 @@ public class Settings extends BaseObservable {
             emissivity = new MutableLiveData<>();
         }
         if (value != emissivity.getValue()) {
-            emissivity.postValue(value);
+            emissivity.setValue(value);
             notifyPropertyChanged(BR.emissivity);
         }
     }
@@ -156,40 +159,48 @@ public class Settings extends BaseObservable {
             exportOnSave = new MutableLiveData<>();
         }
         if (value != exportOnSave.getValue()) {
-            exportOnSave.postValue(value);
+            exportOnSave.setValue(value);
             notifyPropertyChanged(BR.exportOnSave);
         }
     }
 
     /**
      *
-     * manual range
+     * manual range min, max
      */
     @Bindable
-    public Pair<Integer, Integer> getManualRange() {
-        if(manualRange == null) {
-            manualRange = new MutableLiveData<>();
+    public Integer getManualRangeMin() {
+        if(manualRangeMin == null) {
+            manualRangeMin = new MutableLiveData<>();
         }
-        return manualRange.getValue();
+        return manualRangeMin.getValue();
     }
 
-    public void setManualRange(Integer min, Integer max) {
-        if(manualRange == null) {
-            manualRange = new MutableLiveData<>();
+    public void setManualRangeMin(Integer value) {
+        if(manualRangeMin == null) {
+            manualRangeMin = new MutableLiveData<>();
         }
-        if(min != manualRange.getValue().first || max != manualRange.getValue().second) {
-            manualRange.postValue(new Pair<Integer, Integer>(min, max));
-            notifyPropertyChanged(BR.manualRange);
+        if(value != manualRangeMin.getValue()) {
+            manualRangeMin.setValue(value);
+            notifyPropertyChanged(BR.manualRangeMin);
         }
     }
 
-    public void setManualRange(Pair<Integer, Integer> value) {
-        if (manualRange == null) {
-            manualRange = new MutableLiveData<>();
+    @Bindable
+    public Integer getManualRangeMax() {
+        if(manualRangeMax == null) {
+            manualRangeMax = new MutableLiveData<>();
         }
-        if (value.first != manualRange.getValue().first || value.second != manualRange.getValue().second) {
-            manualRange.postValue(value);
-            notifyPropertyChanged(BR.manualRange);
+        return manualRangeMax.getValue();
+    }
+
+    public void setManualRangeMax(Integer value) {
+        if(manualRangeMax == null) {
+            manualRangeMax = new MutableLiveData<>();
+        }
+        if(value != manualRangeMax.getValue()) {
+            manualRangeMax.setValue(value);
+            notifyPropertyChanged(BR.manualRangeMax);
         }
     }
 
@@ -198,19 +209,19 @@ public class Settings extends BaseObservable {
      * display units
      */
     @Bindable
-    public String getUnits() {
+    public Integer getUnits() {
         if(units == null) {
             units = new MutableLiveData<>();
         }
         return units.getValue();
     }
 
-    public void setUnits(String value) {
+    public void setUnits(Integer value) {
         if (units == null) {
             units = new MutableLiveData<>();
         }
         if (!value.equals(units.getValue())) {
-            units.postValue(value);
+            units.setValue(value);
             notifyPropertyChanged(BR.units);
         }
     }
@@ -232,7 +243,7 @@ public class Settings extends BaseObservable {
             streamRate = new MutableLiveData<>();
         }
         if (value != streamRate.getValue()) {
-            streamRate.postValue(value);
+            streamRate.setValue(value);
             notifyPropertyChanged(BR.streamRate);
         }
     }
@@ -254,7 +265,7 @@ public class Settings extends BaseObservable {
             updateCameraClock = new MutableLiveData<>();
         }
         if (value != updateCameraClock.getValue()) {
-            updateCameraClock.postValue(value);
+            updateCameraClock.setValue(value);
             notifyPropertyChanged(BR.updateCameraClock);
         }
     }
@@ -276,7 +287,7 @@ public class Settings extends BaseObservable {
             scaleDisplay = new MutableLiveData<>();
         }
         if (value != scaleDisplay.getValue()) {
-            scaleDisplay.postValue(value);
+            scaleDisplay.setValue(value);
             notifyPropertyChanged(BR.scaleDisplay);
         }
     }
@@ -298,7 +309,7 @@ public class Settings extends BaseObservable {
             exportResolution = new MutableLiveData<>();
         }
         if (value != exportResolution.getValue()) {
-            exportResolution.postValue(value);
+            exportResolution.setValue(value);
             notifyPropertyChanged(BR.exportOnSave);
         }
     }
@@ -320,7 +331,7 @@ public class Settings extends BaseObservable {
             downloadFolder = new MutableLiveData<>();
         }
         if (!value.equals(downloadFolder.getValue())) {
-            downloadFolder.postValue(value);
+            downloadFolder.setValue(value);
             notifyPropertyChanged(BR.downloadFolder);
         }
     }
@@ -342,7 +353,7 @@ public class Settings extends BaseObservable {
             autoRange = new MutableLiveData<>();
         }
         if (value != autoRange.getValue()) {
-            autoRange.postValue(value);
+            autoRange.setValue(value);
             notifyPropertyChanged(BR.autoRange);
         }
     }
@@ -364,7 +375,7 @@ public class Settings extends BaseObservable {
             displaySpotmeter = new MutableLiveData<>();
         }
         if (value != displaySpotmeter.getValue()) {
-            displaySpotmeter.postValue(value);
+            displaySpotmeter.setValue(value);
             notifyPropertyChanged(BR.displaySpotmeter);
         }
     }
@@ -386,7 +397,7 @@ public class Settings extends BaseObservable {
             exportMetaData = new MutableLiveData<>();
         }
         if(value != getExportMetaData().booleanValue()) {
-            exportMetaData.postValue(value);
+            exportMetaData.setValue(value);
             notifyPropertyChanged(BR.exportMetaData);
         }
     }
@@ -408,7 +419,7 @@ public class Settings extends BaseObservable {
             palette = new MutableLiveData<String>();
         }
         if (!value.equals(palette.getValue())) {
-            palette.postValue(value);
+            palette.setValue(value);
             notifyPropertyChanged(BR.palette);
         }
     }
@@ -430,7 +441,7 @@ public class Settings extends BaseObservable {
             shutterSound = new MutableLiveData<>();
         }
         if(value != shutterSound.getValue()) {
-            shutterSound.postValue(value);
+            shutterSound.setValue(value);
             notifyPropertyChanged(BR.shutterSound);
         }
     }
@@ -452,7 +463,7 @@ public class Settings extends BaseObservable {
             streamDelay = new MutableLiveData<>();
         }
         if (value != streamDelay.getValue()) {
-            streamDelay.postValue(value);
+            streamDelay.setValue(value);
             notifyPropertyChanged(BR.streamDelay);
         }
     }
