@@ -24,6 +24,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.darcangel.acam.Factory.PaletteFactory;
 import com.darcangel.acam.constants.Constants;
+import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.ActivityMainBinding;
 import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
@@ -45,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private SettingsViewModel settingsViewModel;
     private LibraryViewModel libraryViewModel;
     private CameraViewModel cameraViewModel;
+
+    private Settings settings;
 
     public static MainActivity getInstance() {
         return _instance;
@@ -324,6 +327,12 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return cameraUtils;
     }
 
+    public Settings getSettings() {
+        if(settings == null) {
+            settings = new Settings();
+        }
+        return settings;
+    }
 
     @Override
     protected void onDestroy() {

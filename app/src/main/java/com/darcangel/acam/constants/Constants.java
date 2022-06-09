@@ -14,17 +14,28 @@ public final class Constants {
     //Settings keys for SharedPrefs
     public final static String KEY_AGC = "agc";
     public final static String KEY_EMISSIVITY = "emissivity";
-    public final static String KEY_GAIN = "gain";
+    public final static String KEY_GAIN_AUTO = "gainAuto";
+    public final static String KEY_GAIN_HIGH = "gainHigh";
+    public final static String KEY_GAIN_LOW = "gainLow";
     public final static String KEY_CAMERA_IP_ADDRESS = "cam_address";
     public final static String KEY_EXPORT_PICTURE_ON_SAVE = "export_on_save";
     public final static String KEY_EXPORT_METADATA = "export_metadata";
     public final static String KEY_EXPORT_RESOLUTION = "export_resolution";
+    public final static String KEY_AUTORANGE = "autorange";
     public final static String KEY_MANUAL_RANGE_MAX = "manual_range_max";
     public final static String KEY_MANUAL_RANGE_MIN = "manual_range_min";
     public final static String KEY_PALETTE = "palette";
     public final static String KEY_SHUTTER_SOUND = "shutter_sound";
     public final static String KEY_SPOTMETER = "spotmeter";
-    public final static String KEY_UNITS = "units";
+    public final static String KEY_UNITS_F = "unitsF";
+    public final static String KEY_UNITS_C = "unitsC";
+
+    public final static String KEY_WIFI_ACCESSPOINT = "access_point";
+    public final static String KEY_WIFI_SSID = "ssid";
+    public final static String KEY_WIFI_PASSWORD = "password";
+    public final static String KEY_WIFI_STATICIP = "static_ip";
+    public final static String KEY_WIFI_STATICIPADDRESS = "static_ip_address";
+    public final static String KEY_WIFI_STATICNETMASK = "static_ip_netmask";
 
     //Bundle keys
     public final static String KEY_IS_CAMERA_CONNECTED = "cam_connected";

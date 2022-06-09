@@ -4,12 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-        <variable
-            name="listener"
-            type="com.darcangel.acam.ui.settings.SettingsListener" />
+
         <variable
             name="settings"
-            type="com.darcangel.acam.model.Settings" />
+            type="com.darcangel.acam.container.Settings" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -69,7 +67,6 @@
                     <ImageButton
                         android:id="@+id/btnEmissivityHint"
                         style="@style/SettingsBtnEnd"
-                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -88,44 +85,42 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:onCheckedChanged="@{(group, checkedId) -> listener.onRadioGroupChanged(group, checkedId)}"
                         android:orientation="horizontal">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainAuto"
                             style="@style/SettingsRadioButton"
-                            android:checked="true"
+                            android:checked="@={settings.gainAuto}"
                             android:text="@string/auto" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainHigh"
                             style="@style/SettingsRadioButton"
-                            android:checked="false"
+                            android:checked="@={settings.gainHigh}"
                             android:text="@string/high" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbGainLow"
                             style="@style/SettingsRadioButton"
-                            android:checked="false"
+                            android:checked="@={settings.gainLow}"
                             android:text="@string/low" />
                     </RadioGroup>
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Navigate to wifi settings-->
-            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
-                <TextView
-                    style="@style/SettingsTextStart"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/wifi_network" />
+                    <TextView
+                        style="@style/SettingsTextStart"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/wifi_network" />
 
-                <ImageButton
-                    style="@style/SettingsBtnEnd"
-                    android:id="@+id/btnNavWiFiSettings"
-                    android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}"
-                    android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                    <ImageButton
+                        android:id="@+id/btnNavWiFiSettings"
+                        style="@style/SettingsBtnEnd"
+                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Heading-->
                 <TextView
@@ -169,22 +164,23 @@
                     android:text="@string/export_metadata" />
 
                 <!--Export Resolution-->
-            <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
-                <TextView
-                    style="@style/SettingsTextStart"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/export_resolution" />
+                    <TextView
+                        style="@style/SettingsTextStart"
+                        android:layout_gravity="center_vertical"
+                        android:text="@string/export_resolution" />
 
-                <Spinner
-                    android:id="@+id/spExportResolution"
-                    style="@style/SettingsTextEnd"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:entries="@array/resolution_strings"
-                    android:onItemSelected="@{(parent, view, pos, id) -> listener.onItemSelected(parent, view, pos, id)}"
-                    android:onNothingSelected="@{(parent) -> listener.onNothingSelected(parent)}" />
-            </androidx.appcompat.widget.LinearLayoutCompat>
+                    <Spinner
+                        android:id="@+id/spExportResolution"
+                        style="@style/SettingsTextEnd"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:entries="@array/resolution_strings"
+                        android:selectedItemPosition="@={settings.exportResolution}">
+
+                    </Spinner>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Manual Range-->
                 <androidx.appcompat.widget.SwitchCompat
@@ -193,7 +189,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}"
+                    android:checked="@={settings.autoRange}"
                     android:text="@string/manual_range" />
 
                 <androidx.appcompat.widget.LinearLayoutCompat
@@ -211,8 +207,8 @@
 
                         <EditText
                             style="@style/SettingsEditTextEnd"
-                            android:text="@={settings.manualRangeMin}"
-                            android:inputType="number" />
+                            android:inputType="number"
+                            android:text="@={settings.manualRangeMin}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                     <!--Max-->
@@ -224,8 +220,8 @@
 
                         <EditText
                             style="@style/SettingsEditTextEnd"
-                            android:text="@={settings.manualRangeMax}"
-                            android:inputType="number" />
+                            android:inputType="number"
+                            android:text="@={settings.manualRangeMax}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -240,7 +236,6 @@
                         style="@style/SettingsBtnEnd"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:onClick="@{(buttonView) -> listener.onButtonClicked(buttonView)}"
                         android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -279,19 +274,18 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:checkedButton="@={settings.units}"
                         android:orientation="horizontal">
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbUnitsF"
                             style="@style/SettingsRadioButton"
-                            android:checked="false"
+                            android:checked="@={settings.unitsF}"
                             android:text="&#xb0;F" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbUnitsC"
                             style="@style/SettingsRadioButton"
-                            android:checked="false"
+                            android:checked="@={settings.unitsC}"
                             android:text="&#xb0;C" />
 
                     </RadioGroup>

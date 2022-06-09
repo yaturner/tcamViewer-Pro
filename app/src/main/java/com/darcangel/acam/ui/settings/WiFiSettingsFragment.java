@@ -40,11 +40,11 @@ import com.darcangel.acam.databinding.FragmentWifiSettingsBinding;
             binding = FragmentWifiSettingsBinding.inflate(inflater, container, false);
             View root = binding.getRoot();
 
-            binding.setListener(settingsViewModel.getSettingsListener());
-
             if(mainActivity == null) {
                 mainActivity = MainActivity.getInstance();
             }
+
+            binding.setSettings(mainActivity.getSettings());
 
             return root;
         }

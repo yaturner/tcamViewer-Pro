@@ -5,8 +5,8 @@
 
     <data>
         <variable
-            name="listener"
-            type="com.darcangel.acam.ui.settings.SettingsListener" />
+            name="settings"
+            type="com.darcangel.acam.container.Settings" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -39,7 +39,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
+                    android:checked="@={settings.accessPoint}"
                     android:text="@string/camera_is_access_point" />
 
                 <!--SSID-->
@@ -54,8 +54,7 @@
                         style="@style/SettingsEditTextEnd"
                         android:id="@+id/etSSID"
                         android:inputType="text"
-                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
-                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
+                        android:text="@={settings.SSID}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -71,8 +70,7 @@
                         style="@style/SettingsEditTextEnd"
                         android:id="@+id/etPassword"
                         android:inputType="textPassword"
-                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
-                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
+                        android:text="@={settings.password}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -83,7 +81,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:onCheckedChanged="@{(buttonView, isChecked) -> listener.onSwitchChanged(buttonView, isChecked)}"
+                    android:checked="@={settings.staticIP}"
                     android:text="@string/use_static_ip_when_client" />
 
                 <!--Client Static IP Address-->
@@ -98,8 +96,7 @@
                         style="@style/SettingsEditTextEnd"
                         android:id="@+id/etClientIP"
                         android:inputType="text"
-                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
-                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
+                        android:text="@={settings.staticIPAddress}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -115,8 +112,7 @@
                         style="@style/SettingsEditTextEnd"
                         android:id="@+id/etClientNetmask"
                         android:inputType="text"
-                        android:afterTextChanged="@{(text) -> listener.onEditTextChanged(text)}"
-                        android:onFocusChange="@{(v, hasFocus) -> listener.onFocusChange(v, hasFocus)}"
+                        android:text="@={settings.staticNetmask}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.appcompat.widget.LinearLayoutCompat>

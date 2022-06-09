@@ -1,0 +1,672 @@
+package com.darcangel.acam.container;
+
+import android.content.SharedPreferences;
+import android.widget.TextView;
+
+import androidx.databinding.BaseObservable;
+import androidx.databinding.Bindable;
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.InverseBindingAdapter;
+import androidx.lifecycle.MutableLiveData;
+
+import com.darcangel.acam.BR;
+import com.darcangel.acam.MainActivity;
+import com.darcangel.acam.constants.Constants;
+
+public class Settings extends BaseObservable {
+
+    //Settings Fragment
+    private MutableLiveData<Boolean> AGC;
+    private MutableLiveData<Integer> emissivity;
+    private MutableLiveData<Boolean> gainAuto;
+    private MutableLiveData<Boolean> gainHigh;
+    private MutableLiveData<Boolean> gainLow;
+    private MutableLiveData<String> cameraAddress;                //IP address of camera
+    private MutableLiveData<Boolean> exportOnSave;
+    private MutableLiveData<Boolean> exportMetaData;
+    private MutableLiveData<Integer> exportResolution;  // HxW for exporting image
+    private MutableLiveData<Boolean> autoRange;         //if the Manual Rangle btn is clicked this false
+    private MutableLiveData<Integer> manualRangeMin;
+    private MutableLiveData<Integer> manualRangeMax;
+    private MutableLiveData<String> palette;
+    private MutableLiveData<Boolean> shutterSound;
+    private MutableLiveData<Boolean> displaySpotmeter;
+    private MutableLiveData<Boolean> unitsF;
+    private MutableLiveData<Boolean> unitsC;
+
+    //WiFi Settings
+    private MutableLiveData<Boolean> accessPoint;
+    private MutableLiveData<String> SSID;
+    private MutableLiveData<String> password;
+    private MutableLiveData<Boolean> staticIP;
+    private MutableLiveData<String> staticIPAddress;
+    private MutableLiveData<String> staticNetmask;
+
+
+
+    private MutableLiveData<Integer> gain;
+    private MutableLiveData<Float> streamRate;
+    private MutableLiveData<Boolean> updateCameraClock;       // update camera clock when connected
+    private MutableLiveData<Boolean> scaleDisplay;
+    private MutableLiveData<String> downloadFolder;
+    private MutableLiveData<Integer> streamDelay;
+
+    public Settings() {
+        SharedPreferences sharedPreferences = MainActivity.getInstance().getSharedPreferences();
+        setAGC(sharedPreferences.getBoolean(Constants.KEY_AGC, false));
+        setEmissivity(sharedPreferences.getInt(Constants.KEY_EMISSIVITY, 45));
+        setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, true));
+        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "192.158.0.42"));
+        setExportOnSave(sharedPreferences.getBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, false));
+        setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
+        setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 3));
+        setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, true));
+        setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MAX, 100));
+        setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MIN, 0));
+        setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Fusion"));
+        setShutterSound(sharedPreferences.getBoolean(Constants.KEY_SHUTTER_SOUND, true));
+        setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_F, false));
+        setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_C, true));
+
+        //Wifi
+        setAccessPoint(sharedPreferences.getBoolean(Constants.KEY_WIFI_ACCESSPOINT, false));
+        setSSID(sharedPreferences.getString(Constants.KEY_WIFI_SSID, ""));
+        setPassword(sharedPreferences.getString(Constants.KEY_WIFI_PASSWORD, ""));
+        setStaticIP(sharedPreferences.getBoolean(Constants.KEY_WIFI_STATICIP,false));
+        setStaticIPAddress(sharedPreferences.getString(Constants.KEY_WIFI_STATICIPADDRESS, ""));
+        setStaticNetmask(sharedPreferences.getString(Constants.KEY_WIFI_STATICNETMASK, ""));
+
+
+    }
+
+    @BindingAdapter("android:text")
+    public static void setText(TextView view, Integer value) {
+        if (view.getText() != null && value != null) {
+            //If the editText is empty, just set the value
+            if (view.getText().toString().isEmpty()) {
+                view.setText(Integer.toString(value));
+                //See if the value changed to prevent infinite loop
+            } else if(Integer.parseInt(view.getText().toString()) != value) {
+                view.setText(Integer.toString(value));
+            }
+        }
+    }
+
+    @InverseBindingAdapter(attribute = "android:text")
+    public static int getText(TextView view) {
+        return Integer.parseInt(view.getText().toString());
+    }
+
+    //Getters and Setters
+
+    /**
+     * AGC
+     */
+    @Bindable
+    public Boolean getAGC() {
+        if (AGC == null) {
+            AGC = new MutableLiveData<>();
+        }
+        return AGC.getValue();
+    }
+
+    public void setAGC(Boolean value) {
+        if (AGC == null) {
+            AGC = new MutableLiveData<>();
+        }
+        if (value != AGC.getValue()) {
+            AGC.setValue(value);
+            notifyPropertyChanged(BR.aGC);
+        }
+    }
+
+    /**
+     * Gain Auto
+     */
+    @Bindable
+    public Boolean getGainAuto() {
+        if (gainAuto == null) {
+            gainAuto = new MutableLiveData<Boolean>();
+        }
+        return gainAuto.getValue();
+    }
+
+    public void setGainAuto(Boolean value) {
+        if (gainAuto == null) {
+            gainAuto = new MutableLiveData<Boolean>();
+        }
+        if (value != gainAuto.getValue()) {
+            gainAuto.setValue(value);
+            notifyPropertyChanged(BR.gainAuto);
+        }
+    }
+
+    /**
+     * Gain High
+     */
+    @Bindable
+    public Boolean getGainHigh() {
+        if (gainHigh == null) {
+            gainHigh = new MutableLiveData<Boolean>();
+        }
+        return gainHigh.getValue();
+    }
+
+    public void setGainHigh(Boolean value) {
+        if (gainHigh == null) {
+            gainHigh = new MutableLiveData<Boolean>();
+        }
+        if (value != gainHigh.getValue()) {
+            gainHigh.setValue(value);
+            notifyPropertyChanged(BR.gainHigh);
+        }
+    }
+
+    /**
+     * Gain Low
+     */
+    @Bindable
+    public Boolean getGainLow() {
+        if (gainLow == null) {
+            gainLow = new MutableLiveData<Boolean>();
+        }
+        return gainLow.getValue();
+    }
+
+    public void setGainLow(Boolean value) {
+        if (gainLow == null) {
+            gainLow = new MutableLiveData<Boolean>();
+        }
+        if (value != gainLow.getValue()) {
+            gainLow.setValue(value);
+            notifyPropertyChanged(BR.gainLow);
+        }
+    }
+
+    /**
+     * CameraAddress
+     */
+    @Bindable
+    public String getCameraAddress() {
+        if (cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
+        }
+        return cameraAddress.getValue();
+    }
+
+    public void setCameraAddress(String address) {
+        if (cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
+        }
+        if (!address.equals(cameraAddress.getValue())) {
+            cameraAddress.setValue(address);
+            notifyPropertyChanged(BR.cameraAddress);
+        }
+    }
+
+    /**
+     * emissivity
+     */
+    @Bindable
+    public Integer getEmissivity() {
+        if (emissivity == null) {
+            emissivity = new MutableLiveData<Integer>();
+        }
+        return emissivity.getValue();
+    }
+
+    public void setEmissivity(Integer value) {
+        if (emissivity == null) {
+            emissivity = new MutableLiveData<>();
+        }
+        if (value != emissivity.getValue()) {
+            emissivity.setValue(value);
+            notifyPropertyChanged(BR.emissivity);
+        }
+    }
+
+    /**
+     * exportOnSave
+     */
+    @Bindable
+    public Boolean getExportOnSave() {
+        if (exportOnSave == null) {
+            exportOnSave = new MutableLiveData<>();
+        }
+        return exportOnSave.getValue();
+    }
+
+    public void setExportOnSave(Boolean value) {
+        if (exportOnSave == null) {
+            exportOnSave = new MutableLiveData<>();
+        }
+        if (value != exportOnSave.getValue()) {
+            exportOnSave.setValue(value);
+            notifyPropertyChanged(BR.exportOnSave);
+        }
+    }
+
+    /**
+     * Auto Range, if manual range is selected, this is false
+     */
+    @Bindable
+    public Boolean getAutoRange() {
+        if (autoRange == null) {
+            autoRange = new MutableLiveData<>();
+        }
+        return autoRange.getValue();
+    }
+
+    public void setAutoRange(Boolean value) {
+        if (autoRange == null) {
+            autoRange = new MutableLiveData<>();
+        }
+        if (value != autoRange.getValue()) {
+            autoRange.setValue(value);
+            notifyPropertyChanged(BR.autoRange);
+        }
+    }
+
+    /**
+     * manual range min, max
+     */
+    @Bindable
+    public Integer getManualRangeMin() {
+        if (manualRangeMin == null) {
+            manualRangeMin = new MutableLiveData<>();
+        }
+        return manualRangeMin.getValue();
+    }
+
+    public void setManualRangeMin(Integer value) {
+        if (manualRangeMin == null) {
+            manualRangeMin = new MutableLiveData<>();
+        }
+        if (value != manualRangeMin.getValue()) {
+            manualRangeMin.setValue(value);
+            notifyPropertyChanged(BR.manualRangeMin);
+        }
+    }
+
+    @Bindable
+    public Integer getManualRangeMax() {
+        if (manualRangeMax == null) {
+            manualRangeMax = new MutableLiveData<>();
+        }
+        return manualRangeMax.getValue();
+    }
+
+    public void setManualRangeMax(Integer value) {
+        if (manualRangeMax == null) {
+            manualRangeMax = new MutableLiveData<>();
+        }
+        if (value != manualRangeMax.getValue()) {
+            manualRangeMax.setValue(value);
+            notifyPropertyChanged(BR.manualRangeMax);
+        }
+    }
+
+    /**
+     * display units in Fahrenheit
+     */
+    @Bindable
+    public Boolean getUnitsF() {
+        if (unitsF == null) {
+            unitsF = new MutableLiveData<>();
+        }
+        return unitsF.getValue();
+    }
+
+    public void setUnitsF(Boolean value) {
+        if (unitsF == null) {
+            unitsF = new MutableLiveData<>();
+        }
+        if (value != unitsF.getValue()) {
+            unitsF.setValue(value);
+            notifyPropertyChanged(BR.unitsF);
+        }
+    }
+
+    /**
+     * display units in Celsius
+     */
+    @Bindable
+    public Boolean getUnitsC() {
+        if (unitsC == null) {
+            unitsF = new MutableLiveData<>();
+        }
+        return unitsF.getValue();
+    }
+
+    public void setUnitsC(Boolean value) {
+        if (unitsC == null) {
+            unitsC = new MutableLiveData<>();
+        }
+        if (value != unitsC.getValue()) {
+            unitsC.setValue(value);
+            notifyPropertyChanged(BR.unitsC);
+        }
+    }
+
+    /**
+     * stream rate
+     */
+    @Bindable
+    public Float getStreamRate() {
+        if (streamRate == null) {
+            streamRate = new MutableLiveData<>();
+        }
+        return streamRate.getValue();
+    }
+
+    public void setStreamRate(Float value) {
+        if (streamRate == null) {
+            streamRate = new MutableLiveData<>();
+        }
+        if (value != streamRate.getValue()) {
+            streamRate.setValue(value);
+            notifyPropertyChanged(BR.streamRate);
+        }
+    }
+
+    /**
+     * update camera clock
+     */
+    @Bindable
+    public Boolean getUpdateCameraClock() {
+        if (updateCameraClock == null) {
+            updateCameraClock = new MutableLiveData<>();
+        }
+        return updateCameraClock.getValue();
+    }
+
+    public void setUpdateCameraClock(Boolean value) {
+        if (updateCameraClock == null) {
+            updateCameraClock = new MutableLiveData<>();
+        }
+        if (value != updateCameraClock.getValue()) {
+            updateCameraClock.setValue(value);
+            notifyPropertyChanged(BR.updateCameraClock);
+        }
+    }
+
+    /**
+     * scale display
+     */
+    @Bindable
+    public Boolean getScaleDisplay() {
+        if (scaleDisplay == null) {
+            scaleDisplay = new MutableLiveData<>();
+        }
+        return scaleDisplay.getValue();
+    }
+
+    public void setScaleDisplay(Boolean value) {
+        if (scaleDisplay == null) {
+            scaleDisplay = new MutableLiveData<>();
+        }
+        if (value != scaleDisplay.getValue()) {
+            scaleDisplay.setValue(value);
+            notifyPropertyChanged(BR.scaleDisplay);
+        }
+    }
+
+    /**
+     * export resolution
+     */
+    @Bindable
+    public Integer getExportResolution() {
+        if (exportResolution == null) {
+            exportResolution = new MutableLiveData<>();
+        }
+        return exportResolution.getValue();
+    }
+
+    public void setExportResolution(Integer value) {
+        if (exportResolution == null) {
+            exportResolution = new MutableLiveData<>();
+        }
+        if (value != exportResolution.getValue()) {
+            exportResolution.setValue(value);
+            notifyPropertyChanged(BR.exportOnSave);
+        }
+    }
+
+    /**
+     * download folder
+     */
+    @Bindable
+    public String getDownloadFolder() {
+        if (downloadFolder == null) {
+            downloadFolder = new MutableLiveData<>();
+        }
+        return downloadFolder.getValue();
+    }
+
+    public void setDownloadFolder(String value) {
+        if (downloadFolder == null) {
+            downloadFolder = new MutableLiveData<>();
+        }
+        if (!value.equals(downloadFolder.getValue())) {
+            downloadFolder.setValue(value);
+            notifyPropertyChanged(BR.downloadFolder);
+        }
+    }
+
+    /**
+     * display spot meter
+     */
+    @Bindable
+    public Boolean getDisplaySpotmeter() {
+        if (displaySpotmeter == null) {
+            displaySpotmeter = new MutableLiveData<>();
+        }
+        return displaySpotmeter.getValue();
+    }
+
+    public void setDisplaySpotmeter(Boolean value) {
+        if (displaySpotmeter == null) {
+            displaySpotmeter = new MutableLiveData<>();
+        }
+        if (value != displaySpotmeter.getValue()) {
+            displaySpotmeter.setValue(value);
+            notifyPropertyChanged(BR.displaySpotmeter);
+        }
+    }
+
+    /**
+     * export metadata
+     */
+    @Bindable
+    public Boolean getExportMetaData() {
+        if (exportMetaData == null) {
+            exportMetaData = new MutableLiveData<>();
+        }
+        return exportMetaData.getValue();
+    }
+
+    public void setExportMetaData(Boolean value) {
+        if (exportMetaData == null) {
+            exportMetaData = new MutableLiveData<>();
+        }
+        if (value != exportMetaData.getValue()) {
+            exportMetaData.setValue(value);
+            notifyPropertyChanged(BR.exportMetaData);
+        }
+    }
+
+    /**
+     * palette
+     */
+    @Bindable
+    public String getPalette() {
+        if (palette == null) {
+            palette = new MutableLiveData<>();
+        }
+        return palette.getValue();
+    }
+
+    public void setPalette(String value) {
+        if (palette == null) {
+            palette = new MutableLiveData<String>();
+        }
+        if (!value.equals(palette.getValue())) {
+            palette.setValue(value);
+            notifyPropertyChanged(BR.palette);
+        }
+    }
+
+    /**
+     * shutter sound
+     */
+    @Bindable
+    public Boolean getShutterSound() {
+        if (shutterSound == null) {
+            shutterSound = new MutableLiveData<>();
+        }
+        return shutterSound.getValue();
+    }
+
+    public void setShutterSound(Boolean value) {
+        if (shutterSound == null) {
+            shutterSound = new MutableLiveData<>();
+        }
+        if (value != shutterSound.getValue()) {
+            shutterSound.setValue(value);
+            notifyPropertyChanged(BR.shutterSound);
+        }
+    }
+
+    /**
+     * stream delay
+     */
+    @Bindable
+    public Integer getStreamDelay() {
+        if (streamDelay == null) {
+            streamDelay = new MutableLiveData<>();
+        }
+        return streamDelay.getValue();
+    }
+
+    public void setStreamDelay(Integer value) {
+        if (streamDelay == null) {
+            streamDelay = new MutableLiveData<>();
+        }
+        if (value != streamDelay.getValue()) {
+            streamDelay.setValue(value);
+            notifyPropertyChanged(BR.streamDelay);
+        }
+    }
+
+    /**
+     * WiFi Settings
+     */
+
+    @Bindable
+    public Boolean getAccessPoint() {
+        if(accessPoint == null) {
+            accessPoint = new MutableLiveData<>();
+        }
+        return accessPoint.getValue();
+    }
+
+    public void setAccessPoint(Boolean value) {
+        if (accessPoint == null) {
+            accessPoint = new MutableLiveData<>();
+        }
+        if (accessPoint.getValue() != value) {
+            accessPoint.setValue(value);
+            notifyPropertyChanged(BR.accessPoint);
+        }
+    }
+
+    @Bindable
+    public String getSSID() {
+        if(SSID == null) {
+            SSID = new MutableLiveData<>();
+        }
+        return SSID.getValue();
+    }
+
+    public void setSSID(String value) {
+        if (SSID == null) {
+            SSID = new MutableLiveData<>();
+        }
+        if (!SSID.getValue().equals(value)) {
+            SSID.setValue(value);
+            notifyPropertyChanged(BR.sSID);
+        }
+    }
+
+    @Bindable
+    public String getPassword() {
+        if(password == null) {
+            password = new MutableLiveData<>();
+        }
+        return password.getValue();
+    }
+
+    public void setPassword(String value) {
+        if (password == null) {
+            password = new MutableLiveData<>();
+        }
+        if (!password.getValue().equals(value)) {
+            password.setValue(value);
+            notifyPropertyChanged(BR.password);
+        }
+    }
+
+    @Bindable
+    public Boolean getStaticIP() {
+        if(staticIP == null) {
+            staticIP = new MutableLiveData<>();
+        }
+        return staticIP.getValue();
+    }
+
+    public void setStaticIP(Boolean value) {
+        if (staticIP == null) {
+            accessPoint = new MutableLiveData<>();
+        }
+        if (staticIP.getValue() != value) {
+            staticIP.setValue(value);
+            notifyPropertyChanged(BR.staticIP);
+        }
+    }
+
+    @Bindable
+    public String getStaticIPAddress() {
+        if(staticIPAddress == null) {
+            staticIPAddress = new MutableLiveData<>();
+        }
+        return staticIPAddress.getValue();
+    }
+
+    public void setStaticIPAddress(String value) {
+        if (staticIPAddress == null) {
+            staticIPAddress = new MutableLiveData<>();
+        }
+        if (!staticIPAddress.getValue().equals(value)) {
+            staticIPAddress.setValue(value);
+            notifyPropertyChanged(BR.staticIPAddress);
+        }
+    }
+
+    @Bindable
+    public String getStaticNetmask() {
+        if(staticNetmask == null) {
+            staticNetmask = new MutableLiveData<>();
+        }
+        return staticNetmask.getValue();
+    }
+
+    public void setStaticNetmask(String value) {
+        if (staticNetmask == null) {
+            staticNetmask = new MutableLiveData<>();
+        }
+        if (!staticNetmask.getValue().equals(value)) {
+            staticNetmask.setValue(value);
+            notifyPropertyChanged(BR.staticNetmask);
+        }
+    }
+}
