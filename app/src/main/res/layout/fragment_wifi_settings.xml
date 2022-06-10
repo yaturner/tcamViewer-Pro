@@ -106,7 +106,7 @@
                     <TextView
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
-                        android:text="@string/client_static_ip_address" />
+                        android:text="@string/client_static_ip_netmask" />
 
                     <EditText
                         style="@style/SettingsEditTextEnd"

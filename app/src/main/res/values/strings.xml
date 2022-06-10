@@ -47,4 +47,5 @@
     <string name="password">Password</string>
     <string name="use_static_ip_when_client">Use Static IP when Client</string>
     <string name="client_static_ip_address">Client Static IP Address</string>
+    <string name="client_static_ip_netmask">Client Static IP Netmask</string>
 </resources>

@@ -10,10 +10,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 import com.darcangel.acam.MainActivity;
+import com.darcangel.acam.R;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
 import com.darcangel.acam.container.Settings;
 
@@ -21,7 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @AndroidEntryPoint
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends Fragment implements View.OnClickListener {
 
     private FragmentSettingsBinding binding;
     private ViewGroup container;
@@ -56,8 +58,19 @@ public class SettingsFragment extends Fragment {
         //get the latest config from the camera
         if (mainActivity.getCameraService().isConnected()) {
             binding.btnNavWiFiSettings.setEnabled(true);
+            binding.btnNavWiFiSettings.setOnClickListener(this);
         } else {
             binding.btnNavWiFiSettings.setEnabled(false);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btnNavWiFiSettings:
+                NavDirections navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
+                mainActivity.getNavController().navigate(navDirections);
+                break;
         }
     }
 }

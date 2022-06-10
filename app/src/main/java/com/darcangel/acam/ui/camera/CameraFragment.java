@@ -193,6 +193,7 @@ public class CameraFragment extends Fragment {
 
     /**
      * connectToCamera
+     *   this is called when the camera is connected
      */
     private void connectToCamera() {
         MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
@@ -223,7 +224,7 @@ public class CameraFragment extends Fragment {
         try {
             ((MainActivity)mainActivity).getCameraService().connect(callback);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 

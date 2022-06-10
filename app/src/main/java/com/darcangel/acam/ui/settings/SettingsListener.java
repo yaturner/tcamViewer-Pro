@@ -46,14 +46,6 @@ public class SettingsListener extends BaseObservable {
 //        }
 //    }
 
-//    public void onButtonClicked(View buttonView) {
-//        switch (buttonView.getId()) {
-//            case R.id.btnNavWiFiSettings:
-//                NavDirections navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
-//                MainActivity.getInstance().getNavController().navigate(navDirections);
-//                break;
-//        }
-//    }
 
 //    public void onEditTextChanged(CharSequence text) {
 //        Timber.d("editText is " + text);
