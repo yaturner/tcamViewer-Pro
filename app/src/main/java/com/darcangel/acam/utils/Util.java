@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.regex.Pattern;
 
 
 public class Util {
@@ -40,6 +41,10 @@ public class Util {
     private int offsetA = 0;
     private int offsetB = 80;
     private int offsetC = 160;
+
+    private static final Pattern IP_PATTERN = Pattern.compile(
+            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+
 
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
@@ -146,4 +151,9 @@ public class Util {
         }
         return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
     }
+
+    public static Boolean isValidIPAddress(String address) {
+        return IP_PATTERN.matcher(address).matches();
+    }
+
 }

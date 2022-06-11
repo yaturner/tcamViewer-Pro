@@ -117,5 +117,6 @@
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.appcompat.widget.LinearLayoutCompat>
         </ScrollView>
+        <include layout="@layout/btn_cancel_save" android:id="@+id/btnCancelSave"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

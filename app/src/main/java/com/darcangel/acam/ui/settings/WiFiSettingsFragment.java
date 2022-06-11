@@ -4,14 +4,17 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
 
 import com.darcangel.acam.MainActivity;
+import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentWifiSettingsBinding;
@@ -24,13 +27,14 @@ import java.util.Map;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class WiFiSettingsFragment extends Fragment {
+public class WiFiSettingsFragment extends Fragment implements OnClickListener {
 
     private FragmentWifiSettingsBinding binding;
     private ViewGroup container;
     private SettingsViewModel settingsViewModel;
     private MainActivity mainActivity;
     private Settings settings;
+    private NavDirections navDirections;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -52,6 +56,10 @@ public class WiFiSettingsFragment extends Fragment {
             settings = mainActivity.getSettings();
         }
         binding.setSettings(settings);
+
+        binding.btnCancelSave.btnCancel.setOnClickListener(this);
+        binding.btnCancelSave.btnSave.setOnClickListener(this);
+
 
         return root;
     }
@@ -98,6 +106,21 @@ public class WiFiSettingsFragment extends Fragment {
             ((MainActivity) mainActivity).getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
 
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btnCancel:
+                navDirections = WiFiSettingsFragmentDirections.actionWiFiSettingsFragmentToNavigationSettings();
+                mainActivity.getNavController().navigate(navDirections);
+                break;
+            case R.id.btnSave:
+                //TODO send config settings to camera and persist SharedPreferences
+                navDirections = WiFiSettingsFragmentDirections.actionWiFiSettingsFragmentToNavigationSettings();
+                mainActivity.getNavController().navigate(navDirections);
+                break;
         }
     }
 }

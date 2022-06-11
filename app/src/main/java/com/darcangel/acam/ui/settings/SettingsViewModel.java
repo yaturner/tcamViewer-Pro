@@ -14,18 +14,13 @@ import com.darcangel.acam.R;
 
 public class SettingsViewModel extends ViewModel {
 
-    private SettingsListener settingsListener;
-
     //Hints
     private String[] emissivityString;
     private int[] emissivityValue;
 
-    //Settings Fragment
-
     public SettingsViewModel() {
         init();
     }
-
 
     private void init() {
         //set the default values

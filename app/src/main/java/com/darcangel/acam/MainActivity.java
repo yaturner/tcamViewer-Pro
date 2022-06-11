@@ -22,7 +22,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.darcangel.acam.Factory.PaletteFactory;
+import com.darcangel.acam.factory.PaletteFactory;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.ActivityMainBinding;

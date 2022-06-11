@@ -1,4 +1,4 @@
-package com.darcangel.acam.Factory;
+package com.darcangel.acam.factory;
 
 import com.darcangel.acam.pallete.Arctic;
 import com.darcangel.acam.pallete.Banded;

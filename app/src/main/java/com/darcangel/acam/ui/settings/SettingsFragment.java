@@ -30,6 +30,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private SettingsViewModel settingsViewModel;
     private MainActivity mainActivity;
     private Settings settings;
+    private NavDirections navDirections;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +49,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         }
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
+
+        binding.btnCancelSave.btnCancel.setOnClickListener(this);
+        binding.btnCancelSave.btnSave.setOnClickListener(this);
 
         return root;
     }
@@ -68,7 +72,16 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnNavWiFiSettings:
-                NavDirections navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
+                navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
+                mainActivity.getNavController().navigate(navDirections);
+                break;
+            case R.id.btnCancel:
+                navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
+                mainActivity.getNavController().navigate(navDirections);
+                break;
+            case R.id.btnSave:
+                //TODO send config settings to camera and persist SharedPreferences
+                navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
                 mainActivity.getNavController().navigate(navDirections);
                 break;
         }

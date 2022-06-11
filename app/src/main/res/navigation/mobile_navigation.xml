@@ -28,6 +28,9 @@
         <action
             android:id="@+id/action_navigation_settings_to_wiFiSettingsFragment"
             app:destination="@id/wiFiSettingsFragment" />
+        <action
+            android:id="@+id/action_navigation_settings_to_navigation_camera"
+            app:destination="@id/navigation_camera" />
     </fragment>
 
     <fragment
@@ -43,7 +46,7 @@
     <fragment
         android:id="@+id/wiFiSettingsFragment"
         android:name="com.darcangel.acam.ui.settings.WiFiSettingsFragment"
-        android:label="WiFiSettingsFragment"
+        android:label="WiFi/Network Settings"
         tools:layout="@layout/fragment_wifi_settings">
         <action
             android:id="@+id/action_wiFiSettingsFragment_to_navigation_settings"

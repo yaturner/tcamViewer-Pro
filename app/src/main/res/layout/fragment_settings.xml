@@ -18,13 +18,15 @@
         <include layout="@layout/guidelines" />
 
         <ScrollView
+            android:id="@+id/svSettings"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:orientation="vertical"
             android:scrollbarAlwaysDrawVerticalTrack="true"
             app:layout_constraintEnd_toEndOf="@+id/glEnd"
             app:layout_constraintStart_toStartOf="@+id/glStart"
-            app:layout_constraintTop_toBottomOf="@+id/glTop">
+            app:layout_constraintTop_toBottomOf="@+id/glTop"
+            app:layout_constraintBottom_toTopOf="@+id/llButtonBar">
 
             <!--Scrollview Container-->
             <androidx.appcompat.widget.LinearLayoutCompat
@@ -67,7 +69,7 @@
                     <ImageButton
                         android:id="@+id/btnEmissivityHint"
                         style="@style/SettingsBtnEnd"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                        app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -118,7 +120,7 @@
                     <ImageButton
                         android:id="@+id/btnNavWiFiSettings"
                         style="@style/SettingsBtnEnd"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                        app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -236,7 +238,7 @@
                         style="@style/SettingsBtnEnd"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                        app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -312,12 +314,15 @@
 
                     <ImageButton
                         style="@style/SettingsBtnEnd"
-                        android:src="@drawable/ic_baseline_keyboard_arrow_right_24" />
+                        app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
 
                 <!--End of scrollable context-->
             </androidx.appcompat.widget.LinearLayoutCompat>
         </ScrollView>
+
+        <include layout="@layout/btn_cancel_save" android:id="@+id/btnCancelSave"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

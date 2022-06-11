@@ -1,6 +1,5 @@
 package com.darcangel.acam.ui.camera;
 
-import android.app.appsearch.GetByDocumentIdRequest;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -15,24 +14,18 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 
-import androidx.activity.result.ActivityResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.darcangel.acam.AcamApplication;
-import com.darcangel.acam.Factory.PaletteFactory;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
-import com.darcangel.acam.pallete.Rainbow;
 import com.darcangel.acam.service.CameraService;
-import com.darcangel.acam.utils.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +34,6 @@ import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
