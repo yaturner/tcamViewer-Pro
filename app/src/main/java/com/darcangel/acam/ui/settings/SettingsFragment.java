@@ -80,7 +80,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 mainActivity.getNavController().navigate(navDirections);
                 break;
             case R.id.btnSave:
-                //TODO send config settings to camera and persist SharedPreferences
+                settings.persist();
                 navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
                 mainActivity.getNavController().navigate(navDirections);
                 break;

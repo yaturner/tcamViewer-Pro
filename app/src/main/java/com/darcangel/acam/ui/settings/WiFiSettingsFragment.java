@@ -109,6 +109,11 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         }
     }
 
+    private void sendWiFI() {
+        StringBuilder stringBuilder = new StringBuilder();
+        
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -118,6 +123,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
                 break;
             case R.id.btnSave:
                 //TODO send config settings to camera and persist SharedPreferences
+                sendWiFI();
                 navDirections = WiFiSettingsFragmentDirections.actionWiFiSettingsFragmentToNavigationSettings();
                 mainActivity.getNavController().navigate(navDirections);
                 break;

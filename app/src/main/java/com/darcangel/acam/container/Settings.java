@@ -14,6 +14,7 @@ import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 
 public class Settings extends BaseObservable {
+    private SharedPreferences sharedPreferences;
 
     //Settings Fragment
     private MutableLiveData<Boolean> AGC;
@@ -43,7 +44,6 @@ public class Settings extends BaseObservable {
     private MutableLiveData<String> staticNetmask;
 
 
-
     private MutableLiveData<Integer> gain;
     private MutableLiveData<Float> streamRate;
     private MutableLiveData<Boolean> updateCameraClock;       // update camera clock when connected
@@ -52,19 +52,26 @@ public class Settings extends BaseObservable {
     private MutableLiveData<Integer> streamDelay;
 
     public Settings() {
-        SharedPreferences sharedPreferences = MainActivity.getInstance().getSharedPreferences();
+        sharedPreferences = MainActivity.getInstance().getSharedPreferences();
+        init();
+    }
+
+    private void init() {
         setAGC(sharedPreferences.getBoolean(Constants.KEY_AGC, false));
         setEmissivity(sharedPreferences.getInt(Constants.KEY_EMISSIVITY, 45));
-        setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, true));
+        setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, false));
+        setGainHigh(sharedPreferences.getBoolean(Constants.KEY_GAIN_HIGH, false));
+        setGainLow(sharedPreferences.getBoolean(Constants.KEY_GAIN_LOW, true));
         setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "192.158.0.42"));
         setExportOnSave(sharedPreferences.getBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, false));
         setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
-        setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 3));
-        setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, true));
+        setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));
+        setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, false));
         setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MAX, 100));
         setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MIN, 0));
         setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Fusion"));
         setShutterSound(sharedPreferences.getBoolean(Constants.KEY_SHUTTER_SOUND, true));
+        setDisplaySpotmeter(sharedPreferences.getBoolean(Constants.KEY_SPOTMETER, true));
         setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_F, false));
         setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_C, true));
 
@@ -75,9 +82,30 @@ public class Settings extends BaseObservable {
 //        setStaticIP(sharedPreferences.getBoolean(Constants.KEY_WIFI_STATICIP,false));
 //        setStaticIPAddress(sharedPreferences.getString(Constants.KEY_WIFI_STATICIPADDRESS, ""));
 //        setStaticNetmask(sharedPreferences.getString(Constants.KEY_WIFI_STATICNETMASK, ""));
-
-
     }
+
+    public void persist() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(Constants.KEY_AGC, getAGC());
+        editor.putInt(Constants.KEY_EMISSIVITY, getEmissivity());
+        editor.putBoolean(Constants.KEY_GAIN_AUTO,getGainAuto());
+        editor.putBoolean(Constants.KEY_GAIN_HIGH,getGainHigh());
+        editor.putBoolean(Constants.KEY_GAIN_LOW,getGainLow());
+        editor.putString(Constants.KEY_CAMERA_IP_ADDRESS, getCameraAddress());
+        editor.putBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave());
+        editor.putBoolean(Constants.KEY_EXPORT_METADATA, getExportMetaData());
+        editor.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution());
+        editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange()));
+        editor.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax());
+        editor.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin());
+        editor.putString(Constants.KEY_PALETTE, getPalette());
+        editor.putBoolean(Constants.KEY_SHUTTER_SOUND, getShutterSound());
+        editor.putBoolean(Constants.KEY_SPOTMETER, getDisplaySpotmeter());
+        seditor.putBoolean(Constants.KEY_UNITS_F, getUnitsF());
+        seditor.putBoolean(Constants.KEY_UNITS_C, getUnitsC());
+        editor.commit();
+    }
+
 
     @BindingAdapter("android:text")
     public static void setText(TextView view, Integer value) {
@@ -86,7 +114,7 @@ public class Settings extends BaseObservable {
             if (view.getText().toString().isEmpty()) {
                 view.setText(Integer.toString(value));
                 //See if the value changed to prevent infinite loop
-            } else if(Integer.parseInt(view.getText().toString()) != value) {
+            } else if (Integer.parseInt(view.getText().toString()) != value) {
                 view.setText(Integer.toString(value));
             }
         }
@@ -564,7 +592,7 @@ public class Settings extends BaseObservable {
 
     @Bindable
     public Boolean getAccessPoint() {
-        if(accessPoint == null) {
+        if (accessPoint == null) {
             accessPoint = new MutableLiveData<>(false);
         }
         return accessPoint.getValue();
@@ -582,7 +610,7 @@ public class Settings extends BaseObservable {
 
     @Bindable
     public String getSSID() {
-        if(SSID == null) {
+        if (SSID == null) {
             SSID = new MutableLiveData<>("");
         }
         return SSID.getValue();
@@ -602,11 +630,12 @@ public class Settings extends BaseObservable {
      * password
      * the password is write only, it can be set from the fragment but is never persisted or read
      * password must be >=8 && <=32
+     *
      * @return
      */
     @Bindable
     public String getPassword() {
-        if(password == null) {
+        if (password == null) {
             password = new MutableLiveData<>("");
         }
         return password.getValue();
@@ -624,7 +653,7 @@ public class Settings extends BaseObservable {
 
     @Bindable
     public Boolean getStaticIP() {
-        if(staticIP == null) {
+        if (staticIP == null) {
             staticIP = new MutableLiveData<>(false);
         }
         return staticIP.getValue();
@@ -642,7 +671,7 @@ public class Settings extends BaseObservable {
 
     @Bindable
     public String getStaticIPAddress() {
-        if(staticIPAddress == null) {
+        if (staticIPAddress == null) {
             staticIPAddress = new MutableLiveData<>("");
         }
         return staticIPAddress.getValue();
@@ -660,7 +689,7 @@ public class Settings extends BaseObservable {
 
     @Bindable
     public String getStaticNetmask() {
-        if(staticNetmask == null) {
+        if (staticNetmask == null) {
             staticNetmask = new MutableLiveData<>("");
         }
         return staticNetmask.getValue();
