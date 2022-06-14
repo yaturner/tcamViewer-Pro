@@ -12,15 +12,17 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 
-import dagger.hilt.android.AndroidEntryPoint;
-
 import com.darcangel.acam.MainActivity;
+import com.darcangel.acam.MainActivity.CameraCallback;
 import com.darcangel.acam.R;
-import com.darcangel.acam.databinding.FragmentSettingsBinding;
+import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
+import com.darcangel.acam.databinding.FragmentSettingsBinding;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener {
@@ -81,9 +83,37 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 break;
             case R.id.btnSave:
                 settings.persist();
+                setConfig();
                 navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
                 mainActivity.getNavController().navigate(navDirections);
                 break;
+        }
+    }
+
+    private void setConfig() {
+        String args = String.format(Constants.ARGS_SET_CONFIG,
+                (settings.getAGC() ? 1 : 0),
+                settings.getEmissivity(),
+                (settings.getGainAuto() ? 2 : settings.getGainLow() ? 1 : 0));
+        String cmd = String.format(Constants.CMD_SET_CONFIG, args);
+        CameraCallback callback = new CameraCallback() {
+            @Override
+            public void callback(JSONObject response) {
+                try {
+                    if (response.has("result")) {
+                        if (!response.getString("result").equals("OK")) {
+                            //TODO handle error
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        try {
+            ((MainActivity)mainActivity).getCameraService().sendCmd(cmd, callback);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -68,12 +68,12 @@ public class Settings extends BaseObservable {
         setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));
         setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, false));
         setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MAX, 100));
-        setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MIN, 0));
+        setManualRangeMin(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MIN, 0));
         setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Fusion"));
         setShutterSound(sharedPreferences.getBoolean(Constants.KEY_SHUTTER_SOUND, true));
         setDisplaySpotmeter(sharedPreferences.getBoolean(Constants.KEY_SPOTMETER, true));
         setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_F, false));
-        setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_C, true));
+        setUnitsC(sharedPreferences.getBoolean(Constants.KEY_UNITS_C, true));
 
         //Wifi settings are always pulled from the camera
 //        setAccessPoint(sharedPreferences.getBoolean(Constants.KEY_WIFI_ACCESSPOINT, false));
@@ -95,15 +95,15 @@ public class Settings extends BaseObservable {
         editor.putBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave());
         editor.putBoolean(Constants.KEY_EXPORT_METADATA, getExportMetaData());
         editor.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution());
-        editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange()));
+        editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange());
         editor.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax());
         editor.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin());
         editor.putString(Constants.KEY_PALETTE, getPalette());
         editor.putBoolean(Constants.KEY_SHUTTER_SOUND, getShutterSound());
         editor.putBoolean(Constants.KEY_SPOTMETER, getDisplaySpotmeter());
-        seditor.putBoolean(Constants.KEY_UNITS_F, getUnitsF());
-        seditor.putBoolean(Constants.KEY_UNITS_C, getUnitsC());
-        editor.commit();
+        editor.putBoolean(Constants.KEY_UNITS_F, getUnitsF());
+        editor.putBoolean(Constants.KEY_UNITS_C, getUnitsC());
+        editor.apply();
     }
 
 
