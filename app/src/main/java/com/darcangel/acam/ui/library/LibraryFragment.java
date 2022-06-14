@@ -18,6 +18,7 @@ import com.darcangel.acam.network.CameraSocketIO;
 public class LibraryFragment extends Fragment {
 
     private FragmentLibraryBinding binding;
+    private MainActivity mainActivity = MainActivity.getInstance();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -27,8 +28,8 @@ public class LibraryFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        LibraryViewModel libraryViewModel =
-                new ViewModelProvider(this).get(LibraryViewModel.class);
+        LibraryViewModel libraryViewModel = mainActivity.getLibraryViewModel();
+
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         binding = FragmentLibraryBinding.inflate(inflater, container, false);

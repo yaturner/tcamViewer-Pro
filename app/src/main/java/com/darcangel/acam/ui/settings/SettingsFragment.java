@@ -40,15 +40,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        settingsViewModel =
-                new ViewModelProvider(this).get(SettingsViewModel.class);
+        if (mainActivity == null) {
+            mainActivity = MainActivity.getInstance();
+        }
+
+        settingsViewModel = mainActivity.getSettingsViewModel();
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        if (mainActivity == null) {
-            mainActivity = MainActivity.getInstance();
-        }
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
 
@@ -61,12 +61,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        //get the latest config from the camera
         if (mainActivity.getCameraService().isConnected()) {
             binding.btnNavWiFiSettings.setEnabled(true);
             binding.btnNavWiFiSettings.setOnClickListener(this);
+            binding.btnCancelSave.btnSave.setEnabled(true);
         } else {
             binding.btnNavWiFiSettings.setEnabled(false);
+            binding.btnCancelSave.btnSave.setEnabled(false);
         }
     }
 

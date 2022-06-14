@@ -75,6 +75,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         super.onCreate(savedInstanceState);
         _instance = this;
 
+        //order is important, do this before setting the view
+        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
+        libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
+        cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
+
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -94,10 +99,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private void init() {
-        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
-        libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
-        cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
-
         sharedPreferences = this.getSharedPreferences("tcam", MODE_PRIVATE);
 
         observe();
