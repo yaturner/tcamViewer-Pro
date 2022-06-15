@@ -113,12 +113,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            int[] viewCoords = new int[2];
-            v.getLocationOnScreen(viewCoords);
+            //scale the UI position to the bitmap
+            float w = v.getRight() - v.getLeft();
+            float h = v.getBottom() - v.getTop();
+            float scaleX = Constants.IMAGE_WIDTH/w;
+            float scaleY = Constants.IMAGE_HEIGHT/h;
             int touchX = (int) event.getX();
             int touchY = (int) event.getY();
-            int imageViewX = touchX - viewCoords[0]; // X touch coordinate on      imageView
-            int imageViewY = touchY - viewCoords[1]; // Y touch coordinate on imageView
+            int imageViewX = (int) (touchX * scaleX);
+            int imageViewY = (int) (touchY * scaleY);
             mainActivity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

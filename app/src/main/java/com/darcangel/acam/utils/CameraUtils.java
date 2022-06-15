@@ -173,9 +173,7 @@ public class CameraUtils {
         tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
 
         //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
-//        tempCanvas.drawRect(new Rect(x, y, x+20, y+20), paint);
-        tempCanvas.drawRect(new Rect(0, 0, 20, 20), paint);
-        tempCanvas.drawRect(new Rect(80-10, 60-10, 80+10, 60+10), paint);
+        tempCanvas.drawRect(new Rect(x-2, y-2, x+2, y+2), paint);
 
         //Attach the canvas to the ImageView
         imageView.setImageBitmap(tempBitmap);

@@ -16,8 +16,8 @@
         android:background="@android:color/background_dark"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/nav_view"
-        app:layout_constraintEnd_toStartOf="@+id/glCameraEnd"
-        app:layout_constraintStart_toStartOf="@+id/glCameraStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/action_bar">
 
         <ImageView
