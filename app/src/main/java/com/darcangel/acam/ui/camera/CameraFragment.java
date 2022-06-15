@@ -4,12 +4,14 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,14 +21,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
 import com.darcangel.acam.service.CameraService;
-import com.darcangel.acam.utils.Util;
+import com.darcangel.acam.utils.CameraUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,7 +41,7 @@ import java.util.Date;
 
 import timber.log.Timber;
 
-public class CameraFragment extends Fragment {
+public class CameraFragment extends Fragment implements View.OnTouchListener, View.OnClickListener {
 
     private FragmentCameraBinding binding;
     private Socket cameraSocket;
@@ -74,17 +75,20 @@ public class CameraFragment extends Fragment {
         mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
+        binding.ivCamera.setOnTouchListener(this);
+        binding.ivCamera.setOnClickListener(this);
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         mainActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Util util = mainActivity.getUtil();
+                    CameraUtils util = mainActivity.getCameraUtils();
                     binding.ivColorBar.setVisibility(View.VISIBLE);
                     binding.ivColorBar.setImageBitmap(util.createColorBar(
                             mainActivity.getPaletteFactory().getPaletteByName(
@@ -99,6 +103,38 @@ public class CameraFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            int[] viewCoords = new int[2];
+            v.getLocationOnScreen(viewCoords);
+            int touchX = (int) event.getX();
+            int touchY = (int) event.getY();
+            int imageViewX = touchX - viewCoords[0]; // X touch coordinate on      imageView
+            int imageViewY = touchY - viewCoords[1]; // Y touch coordinate on imageView
+            mainActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        CameraUtils util = mainActivity.getCameraUtils();
+                        util.DrawHotspot(binding.ivCamera, imageViewX, imageViewY);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -135,14 +171,15 @@ public class CameraFragment extends Fragment {
                             int[][] palette = mainActivity.getPaletteFactory()
                                     .getPaletteByName(cameraViewModel.getSelectedPalette());
                             if(palette != null) {
-                                binding.ivColorBar.setImageBitmap(mainActivity.getUtil().createColorBar(palette, Constants.COLORBAR_WIDTH));
+                                binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
-                                    binding.ivCamera.setImageBitmap(mainActivity.getUtil().remapCurrentImage(palette));
+                                    binding.ivCamera.setImageBitmap(mainActivity.getCameraUtils().remapCurrentImage(palette));
                                 }
                             }
                         }
                     });
                 }
+                binding.ivCamera.getRootView().setOnTouchListener(this);
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
@@ -305,12 +342,12 @@ public class CameraFragment extends Fragment {
                 @Override
                 public void callback(JSONObject response) {
                     try {
-                        Util util = mainActivity.getUtil();
+                        CameraUtils util = mainActivity.getCameraUtils();
                         mainActivity.dismissProgressDialog();
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
-                                cameraViewModel.setImage(mainActivity.getUtil().processImageResponse(responseObj,
+                                cameraViewModel.setImage(mainActivity.getCameraUtils().processImageResponse(responseObj,
                                         mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette())));
                                 //show the image on the UI thread
                                 mainActivity.runOnUiThread(new Runnable() {

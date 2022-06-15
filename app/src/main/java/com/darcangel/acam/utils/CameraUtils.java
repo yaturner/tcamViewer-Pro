@@ -2,10 +2,17 @@ package com.darcangel.acam.utils;
 
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 import android.util.Pair;
+import android.widget.ImageView;
 
+import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.pallete.Rainbow;
 
@@ -19,7 +26,7 @@ import java.util.Base64;
 import java.util.regex.Pattern;
 
 
-public class Util {
+public class CameraUtils {
     private boolean AGC;
     private boolean shutdown;
     private int emissivity;
@@ -61,7 +68,6 @@ public class Util {
         String radiometricString = response.getString("radiometric");
         String telemetryString = response.getString("telemetry");
         byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
-        Bitmap image = null;
 
         int imageLen = imageBytes.length;
         imageData = new int[imageLen / 2];
@@ -99,8 +105,7 @@ public class Util {
                 pixels[i] = rgbToPixel(palette[imageNorm[i]]);
             }
         }
-        image = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
-        return image;
+        return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
     }
 
 
@@ -131,8 +136,7 @@ public class Util {
                 pixels[row*width+col] = rgbToPixel(palette[255-row]);
             }
         }
-        Bitmap image = Bitmap.createBitmap(pixels, width, 256, Bitmap.Config.ARGB_8888);
-        return image;
+        return Bitmap.createBitmap(pixels, width, 256, Bitmap.Config.ARGB_8888);
     }
 
     public Bitmap remapCurrentImage(int[][] palette) {
@@ -154,6 +158,27 @@ public class Util {
 
     public static Boolean isValidIPAddress(String address) {
         return IP_PATTERN.matcher(address).matches();
+    }
+
+    public void DrawHotspot(ImageView imageView, int x, int y) {
+        Paint paint = new Paint();
+        paint.setColor(0xffff0000);
+
+        //Create a new image bitmap and attach a brand new canvas to it
+        Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+        Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.RGB_565);
+        Canvas tempCanvas = new Canvas(tempBitmap);
+
+        //Draw the image bitmap into the canvas
+        tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
+
+        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
+//        tempCanvas.drawRect(new Rect(x, y, x+20, y+20), paint);
+        tempCanvas.drawRect(new Rect(0, 0, 20, 20), paint);
+        tempCanvas.drawRect(new Rect(80-10, 60-10, 80+10, 60+10), paint);
+
+        //Attach the canvas to the ImageView
+        imageView.setImageBitmap(tempBitmap);
     }
 
     public int getMaxTemperature() {

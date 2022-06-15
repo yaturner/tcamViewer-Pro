@@ -24,17 +24,13 @@
             android:id="@+id/ivCamera"
             android:layout_width="320dp"
             android:layout_height="240dp"
-            android:scaleType="fitCenter"
-            app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
-            app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
-            app:layout_constraintStart_toEndOf="@+id/glCameraStart"
-            app:layout_constraintTop_toTopOf="@+id/glCameraTop"
+            android:scaleType="fitXY"
             tools:srcCompat="@drawable/main_camera" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/llColorBar"
             android:layout_width="60dp"
-            android:layout_height="match_parent"
+            android:layout_height="240dp"
             android:background="@android:color/background_dark"
             android:orientation="vertical"
             android:weightSum="20"

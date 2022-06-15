@@ -1,7 +1,7 @@
 package com.darcangel.acam.constants;
 
 public final class Constants {
-    public final static int COLORBAR_WIDTH = 48;
+    public final static int COLORBAR_WIDTH = 24;
 
     public final static String SUCCESS = "{\"result\":\"OK\"}";
     public final static String ERROR = "{\"result\":\"ERROR\"}";

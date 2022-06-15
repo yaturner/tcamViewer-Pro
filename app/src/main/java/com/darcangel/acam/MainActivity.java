@@ -30,7 +30,7 @@ import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
-import com.darcangel.acam.utils.Util;
+import com.darcangel.acam.utils.CameraUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
-    private Util util;
+    private CameraUtils util;
 
     private ProgressDialog progressDialog;
 
@@ -234,9 +234,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return cameraService;
     }
 
-    public Util getUtil() {
+    public CameraUtils getCameraUtils() {
         if(util == null) {
-            util = new Util();
+            util = new CameraUtils();
         }
         return util;
     }
