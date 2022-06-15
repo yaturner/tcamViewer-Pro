@@ -35,8 +35,8 @@ public class Util {
     private int[] imageData;
     private int[] imageNorm;
     private int diff;
-    int max = Integer.MIN_VALUE;
-    int min = Integer.MAX_VALUE;
+    int maxTemperature = Integer.MIN_VALUE;
+    int minTemperature = Integer.MAX_VALUE;
 
     private int offsetA = 0;
     private int offsetB = 80;
@@ -83,17 +83,17 @@ public class Util {
 
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
-            min = Math.min(imageData[j], min);
-            max = Math.max(imageData[j], max);
+            minTemperature = Math.min(imageData[j], minTemperature);
+            maxTemperature = Math.max(imageData[j], maxTemperature);
         }
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            diff = max - min;
+            diff = maxTemperature - minTemperature;
             for (int i = 0; i < imageNorm.length; i++) {
-                imageNorm[i] = Math.min(((imageData[i] - min) * 255) / diff, 255);
+                imageNorm[i] = Math.min(((imageData[i] - minTemperature) * 255) / diff, 255);
             }
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageNorm[i]]);
@@ -124,14 +124,14 @@ public class Util {
         return telemetryData;
     }
 
-    public Bitmap createColorBar(int[][] palette) {
-        int[] pixels = new int[24*256];
+    public Bitmap createColorBar(int[][] palette, int width) {
+        int[] pixels = new int[width*256];
         for(int row = 0; row < 256; row++) {
-            for(int col = 0; col < 24; col++) {
-                pixels[row*24+col] = rgbToPixel(palette[row]);
+            for(int col = 0; col < width; col++) {
+                pixels[row*width+col] = rgbToPixel(palette[255-row]);
             }
         }
-        Bitmap image = Bitmap.createBitmap(pixels, 24, 256, Bitmap.Config.ARGB_8888);
+        Bitmap image = Bitmap.createBitmap(pixels, width, 256, Bitmap.Config.ARGB_8888);
         return image;
     }
 
@@ -141,9 +141,9 @@ public class Util {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            diff = max - min;
+            diff = maxTemperature - minTemperature;
             for (int i = 0; i < imageNorm.length; i++) {
-                imageNorm[i] = Math.min(((imageData[i] - min) * 255) / diff, 255);
+                imageNorm[i] = Math.min(((imageData[i] - minTemperature) * 255) / diff, 255);
             }
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageNorm[i]]);
@@ -156,4 +156,11 @@ public class Util {
         return IP_PATTERN.matcher(address).matches();
     }
 
+    public int getMaxTemperature() {
+        return maxTemperature;
+    }
+
+    public int getMinTemperature() {
+        return minTemperature;
+    }
 }

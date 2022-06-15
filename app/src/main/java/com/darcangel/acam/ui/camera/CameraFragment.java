@@ -26,6 +26,7 @@ import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
 import com.darcangel.acam.service.CameraService;
+import com.darcangel.acam.utils.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -83,15 +84,15 @@ public class CameraFragment extends Fragment {
             @Override
             public void run() {
                 try {
+                    Util util = mainActivity.getUtil();
                     binding.ivColorBar.setVisibility(View.VISIBLE);
-                    binding.ivColorBar.setImageBitmap(mainActivity.getUtil().createColorBar(
-                            mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette())));
+                    binding.ivColorBar.setImageBitmap(util.createColorBar(
+                            mainActivity.getPaletteFactory().getPaletteByName(
+                                    cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         binding.ivCamera.setImageBitmap(cameraViewModel.getImage());
-                        binding.llButtonBar.setVisibility(View.VISIBLE);
-                    } else {
-                        //no image no buttons
-                        binding.llButtonBar.setVisibility(View.INVISIBLE);
+                        binding.tvMaxTemperature.setText(createTemperatureString(util.getMaxTemperature()));
+                        binding.tvMinTemperature.setText(createTemperatureString(util.getMinTemperature()));
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -134,7 +135,7 @@ public class CameraFragment extends Fragment {
                             int[][] palette = mainActivity.getPaletteFactory()
                                     .getPaletteByName(cameraViewModel.getSelectedPalette());
                             if(palette != null) {
-                                binding.ivColorBar.setImageBitmap(mainActivity.getUtil().createColorBar(palette));
+                                binding.ivColorBar.setImageBitmap(mainActivity.getUtil().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
                                     binding.ivCamera.setImageBitmap(mainActivity.getUtil().remapCurrentImage(palette));
                                 }
@@ -304,6 +305,7 @@ public class CameraFragment extends Fragment {
                 @Override
                 public void callback(JSONObject response) {
                     try {
+                        Util util = mainActivity.getUtil();
                         mainActivity.dismissProgressDialog();
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
@@ -317,11 +319,13 @@ public class CameraFragment extends Fragment {
                                         if (cameraViewModel.getImage() != null) {
                                             ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
                                             imageView.setImageBitmap(cameraViewModel.getImage());
-                                            binding.llButtonBar.setVisibility(View.VISIBLE);
                                         }
                                         binding.ivColorBar.setImageBitmap(
-                                                mainActivity.getUtil().createColorBar(mainActivity.getPaletteFactory()
-                                                        .getPaletteByName(cameraViewModel.getSelectedPalette())));
+                                                util.createColorBar(mainActivity.getPaletteFactory()
+                                                        .getPaletteByName(cameraViewModel.getSelectedPalette()),
+                                                                Constants.COLORBAR_WIDTH));
+                                        binding.tvMaxTemperature.setText(createTemperatureString(util.getMaxTemperature()));
+                                        binding.tvMinTemperature.setText(createTemperatureString(util.getMinTemperature()));
                                     }
                                 });
                             } else {
@@ -398,6 +402,20 @@ public class CameraFragment extends Fragment {
         }
     }
 
+    private String createTemperatureString(int temperature) {
+        float temp = temperature;
+        temp = temp/64.0F + 40.0F;
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(String.format("%.1f",temp));
+        stringBuilder.append("\u00B0");
+        if(mainActivity.getSettings().getUnitsC()) {
+            stringBuilder.append("C");
+        } else {
+            stringBuilder.append("F");
+        }
+        return stringBuilder.toString();
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -429,8 +447,6 @@ public class CameraFragment extends Fragment {
                 }
         }
     }
-
-
 
     @Override
     public void onDestroyView() {

@@ -30,7 +30,6 @@ import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
-import com.darcangel.acam.utils.CameraUtils;
 import com.darcangel.acam.utils.Util;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -56,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private static MainActivity _instance = null;
     private SharedPreferences sharedPreferences;
     private PaletteFactory paletteFactory;
-    private CameraUtils cameraUtils;
 
     private CameraService cameraService;
     private boolean isCameraServiceBound = false;
@@ -85,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         init();
         getPermissions();
+        getSettings();
     }
 
     public void onConfigurationChanged(Configuration newConfig) {
@@ -247,13 +246,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             paletteFactory = new PaletteFactory();
         }
         return paletteFactory;
-    }
-
-    public CameraUtils getCameraUtils() {
-        if(cameraUtils == null) {
-            cameraUtils = new CameraUtils();
-        }
-        return cameraUtils;
     }
 
     public Settings getSettings() {

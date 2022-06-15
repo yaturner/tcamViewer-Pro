@@ -8,64 +8,71 @@
 
     <include layout="@layout/guidelines" />
 
+
     <androidx.appcompat.widget.LinearLayoutCompat
-        android:id="@+id/llButtonBar"
+        android:id="@+id/llImage"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:weightSum="8"
-        android:orientation="vertical"
-        android:layout_marginEnd="12dp"
-        app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
-        app:layout_constraintEnd_toStartOf="@+id/ivCamera"
+        android:background="@android:color/background_dark"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/nav_view"
+        app:layout_constraintEnd_toStartOf="@+id/glCameraEnd"
         app:layout_constraintStart_toStartOf="@+id/glCameraStart"
-        app:layout_constraintTop_toTopOf="@+id/glCameraTop">
+        app:layout_constraintTop_toBottomOf="@+id/action_bar">
 
-        <Button
-            android:id="@+id/btnS"
-            style="@style/SmallBtn"
-            android:text="S   "/>
+        <ImageView
+            android:id="@+id/ivCamera"
+            android:layout_width="320dp"
+            android:layout_height="240dp"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
+            app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
+            app:layout_constraintStart_toEndOf="@+id/glCameraStart"
+            app:layout_constraintTop_toTopOf="@+id/glCameraTop"
+            tools:srcCompat="@drawable/main_camera" />
 
-        <Button
-            style="@style/SmallBtn"
-            android:text="M1 "/>
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/llColorBar"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:background="@android:color/background_dark"
+            android:orientation="vertical"
+            android:weightSum="20"
+            app:layout_constraintBottom_toBottomOf="@+id/ivCamera"
+            app:layout_constraintStart_toEndOf="@+id/ivCamera"
+            app:layout_constraintTop_toTopOf="@+id/ivCamera">
 
-        <Button
-            style="@style/SmallBtn"
-            android:text="M2 "/>
+            <TextView
+                android:id="@+id/tvMaxTemperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text=""
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:layout_weight="1"
+                android:textSize="12sp" />
 
-        <Button
-            style="@style/SmallBtn"
-            android:text="M3 "/>
+            <ImageView
+                android:id="@+id/ivColorBar"
+                android:layout_width="wrap_content"
+                android:layout_height="120dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_weight="18"
+                android:scaleType="fitXY" />
 
-        <Button
-            android:id="@+id/btnFFC"
-            style="@style/SmallBtn"
-            android:text="FFC"/>
+            <TextView
+                android:id="@+id/tvMinTemperature"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text=""
+                android:layout_weight="1"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="12sp" />
 
+        </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.appcompat.widget.LinearLayoutCompat>
-
-    <ImageView
-        android:id="@+id/ivCamera"
-        android:layout_width="320dp"
-        android:layout_height="240dp"
-        android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
-        app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
-        app:layout_constraintStart_toEndOf="@+id/llButtonBar"
-        app:layout_constraintTop_toTopOf="@+id/glCameraTop"
-        tools:srcCompat="@drawable/main_camera" />
-
-    <ImageView
-        android:id="@+id/ivColorBar"
-        android:layout_width="20sp"
-        android:layout_height="240dp"
-        android:scaleType="fitXY"
-        android:layout_marginStart="40dp"
-        app:layout_constraintBottom_toBottomOf="@+id/glCameraBottom"
-        app:layout_constraintEnd_toEndOf="@+id/glCameraEnd"
-        app:layout_constraintStart_toEndOf="@+id/ivCamera"
-        app:layout_constraintTop_toTopOf="@+id/glCameraTop" />
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

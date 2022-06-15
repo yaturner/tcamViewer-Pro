@@ -361,9 +361,9 @@ public class Settings extends BaseObservable {
     @Bindable
     public Boolean getUnitsC() {
         if (unitsC == null) {
-            unitsF = new MutableLiveData<>();
+            unitsC = new MutableLiveData<>();
         }
-        return unitsF.getValue();
+        return unitsC.getValue();
     }
 
     public void setUnitsC(Boolean value) {
