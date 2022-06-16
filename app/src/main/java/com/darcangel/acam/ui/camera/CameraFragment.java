@@ -25,6 +25,7 @@ import androidx.fragment.app.Fragment;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
+import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
 import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.utils.CameraUtils;
@@ -51,6 +52,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     private boolean isConnectingToCamera = false;
     private boolean isVisibleToUser = false;
     private String[] paletteNames = null;
+    private CameraUtils cameraUtils;
+    private Settings settings;
+
 
     private MainActivity mainActivity = null;
 
@@ -68,6 +72,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         mainActivity = MainActivity.getInstance();
         paletteNames = mainActivity.getResources().getStringArray(R.array.palette_names);
         cameraViewModel = mainActivity.getCameraViewModel();
+        cameraUtils = mainActivity.getCameraUtils();
+        settings = mainActivity.getSettings();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -88,15 +94,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
             @Override
             public void run() {
                 try {
-                    CameraUtils util = mainActivity.getCameraUtils();
                     binding.ivColorBar.setVisibility(View.VISIBLE);
-                    binding.ivColorBar.setImageBitmap(util.createColorBar(
+                    binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                             mainActivity.getPaletteFactory().getPaletteByName(
                                     cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         binding.ivCamera.setImageBitmap(cameraViewModel.getImage());
-                        binding.tvMaxTemperature.setText(createTemperatureString(util.getMaxTemperature()));
-                        binding.tvMinTemperature.setText(createTemperatureString(util.getMinTemperature()));
+                        binding.tvMaxTemperature.setText(createTemperatureString(
+                                cameraUtils.getMaxTemperature(settings.getUnitsC())));
+                        binding.tvMinTemperature.setText(createTemperatureString(
+                                cameraUtils.getMinTemperature(settings.getUnitsC())));
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -126,8 +133,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 @Override
                 public void run() {
                     try {
-                        CameraUtils util = mainActivity.getCameraUtils();
-                        util.DrawHotspot(binding.ivCamera, imageViewX, imageViewY);
+                        CameraUtils cameraUtils = mainActivity.getCameraUtils();
+                        cameraUtils.DrawHotspot(binding.ivCamera, imageViewX, imageViewY);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -345,7 +352,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 @Override
                 public void callback(JSONObject response) {
                     try {
-                        CameraUtils util = mainActivity.getCameraUtils();
+                        CameraUtils cameraUtils = mainActivity.getCameraUtils();
                         mainActivity.dismissProgressDialog();
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
@@ -361,11 +368,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                                             imageView.setImageBitmap(cameraViewModel.getImage());
                                         }
                                         binding.ivColorBar.setImageBitmap(
-                                                util.createColorBar(mainActivity.getPaletteFactory()
+                                                cameraUtils.createColorBar(mainActivity.getPaletteFactory()
                                                         .getPaletteByName(cameraViewModel.getSelectedPalette()),
                                                                 Constants.COLORBAR_WIDTH));
-                                        binding.tvMaxTemperature.setText(createTemperatureString(util.getMaxTemperature()));
-                                        binding.tvMinTemperature.setText(createTemperatureString(util.getMinTemperature()));
+                                        binding.tvMaxTemperature.setText(createTemperatureString(
+                                                cameraUtils.getMaxTemperature(settings.getUnitsC())));
+                                        binding.tvMinTemperature.setText(createTemperatureString(
+                                                cameraUtils.getMinTemperature(settings.getUnitsC())));
                                     }
                                 });
                             } else {
@@ -442,11 +451,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         }
     }
 
-    private String createTemperatureString(int temperature) {
-        float temp = temperature;
-        temp = temp/64.0F + 40.0F;
+    private String createTemperatureString(float temperature) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format("%.1f",temp));
+        stringBuilder.append(String.format("%.1f",temperature));
         stringBuilder.append("\u00B0");
         if(mainActivity.getSettings().getUnitsC()) {
             stringBuilder.append("C");

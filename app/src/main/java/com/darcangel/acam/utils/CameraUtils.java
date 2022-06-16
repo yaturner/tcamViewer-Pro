@@ -31,16 +31,17 @@ public class CameraUtils {
     private boolean shutdown;
     private int emissivity;
     private int TLinearEnabled;
-    private int TLinear;
+    private int TLinearResolution; // 0 = 0.1, 1 = 0.01
     private int spotmeterMean;
-    private Pair<Integer, Integer> spotLoc;
+    private Rect spotLoc;
     private boolean sutterLockout;
     private int FFCState;
     private int FFCDesired;
+    private int gainMode;
+    private int autoGainMode;
 
     private int[] pixels;
     private int[] imageData;
-    private int[] imageNorm;
     private int diff;
     int maxTemperature = Integer.MIN_VALUE;
     int minTemperature = Integer.MAX_VALUE;
@@ -61,17 +62,12 @@ public class CameraUtils {
         if(imageData != null) {
             imageData = null;
         }
-        if(imageNorm != null) {
-            imageNorm = null;
-        }
-
         String radiometricString = response.getString("radiometric");
         String telemetryString = response.getString("telemetry");
         byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
 
         int imageLen = imageBytes.length;
         imageData = new int[imageLen / 2];
-        imageNorm = new int[imageLen / 2];
         pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
         int[] telemetryData;
 
@@ -80,12 +76,16 @@ public class CameraUtils {
         AGC = ((status & Constants.TELEMETRY_MASK_AGC) == Constants.TELEMETRY_MASK_AGC);
         shutdown = ((status & Constants.TELEMETRY_MASK_SHUTDOWN) == Constants.TELEMETRY_MASK_SHUTDOWN);
         emissivity = telemetryData[offsetB + 19];
+        gainMode = telemetryData[offsetC + 5];
+        autoGainMode = telemetryData[offsetC + 6];
         TLinearEnabled = telemetryData[offsetC + 48];
-        TLinear = telemetryData[offsetC + 49];
+        TLinearResolution = telemetryData[offsetC + 49];
         spotmeterMean = telemetryData[offsetC + 50];
-        Integer x = (telemetryData[offsetC+25]&0xffff)|(telemetryData[23]&0xffff);
-        Integer y = (telemetryData[offsetC+24]&0xffff)|(telemetryData[22]&0xffff);
-        spotLoc = new Pair<>(x, y);
+        Integer x1 = telemetryData[offsetC+22]&0xffff;
+        Integer y1 = telemetryData[offsetC+23]&0xffff;
+        Integer x2 = telemetryData[offsetC+24]&0xffff;
+        Integer y2 = telemetryData[offsetC+25]&0xffff;
+        spotLoc = new Rect(x1, y1, x2, y2);
 
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
@@ -98,11 +98,8 @@ public class CameraUtils {
             }
         } else {
             diff = maxTemperature - minTemperature;
-            for (int i = 0; i < imageNorm.length; i++) {
-                imageNorm[i] = Math.min(((imageData[i] - minTemperature) * 255) / diff, 255);
-            }
-            for (int i = 0; i < pixels.length; i++) {
-                pixels[i] = rgbToPixel(palette[imageNorm[i]]);
+            for (int i = 0; i < imageData.length; i++) {
+                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255) / diff, 255)]);
             }
         }
         return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -146,11 +143,8 @@ public class CameraUtils {
             }
         } else {
             diff = maxTemperature - minTemperature;
-            for (int i = 0; i < imageNorm.length; i++) {
-                imageNorm[i] = Math.min(((imageData[i] - minTemperature) * 255) / diff, 255);
-            }
-            for (int i = 0; i < pixels.length; i++) {
-                pixels[i] = rgbToPixel(palette[imageNorm[i]]);
+            for (int i = 0; i < imageData.length; i++) {
+                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255) / diff, 255)]);
             }
         }
         return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -162,7 +156,7 @@ public class CameraUtils {
 
     public void DrawHotspot(ImageView imageView, int x, int y) {
         Paint paint = new Paint();
-        paint.setColor(0xffff0000);
+        paint.setColor(0xffffffff);
 
         //Create a new image bitmap and attach a brand new canvas to it
         Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -179,11 +173,20 @@ public class CameraUtils {
         imageView.setImageBitmap(tempBitmap);
     }
 
-    public int getMaxTemperature() {
-        return maxTemperature;
+    public float getMaxTemperature(boolean celsius) {
+        return scaleTemperature(celsius, maxTemperature);
     }
 
-    public int getMinTemperature() {
-        return minTemperature;
+    public float getMinTemperature(boolean celsius) {
+        return scaleTemperature(celsius, minTemperature);
+    }
+
+    private float scaleTemperature(boolean celsius, float value) {
+        float scale = TLinearResolution == 0 ? 0.1f : 0.01f;
+        if(celsius) {
+            return scale * value - 273.15f;
+        } else {
+            return (((scale * value - 273.15f)*9.0f)/5.0f) + 32.0f;
+        }
     }
 }

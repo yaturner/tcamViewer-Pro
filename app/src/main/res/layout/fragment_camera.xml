@@ -29,7 +29,7 @@
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/llColorBar"
-            android:layout_width="60dp"
+            android:layout_width="80dp"
             android:layout_height="240dp"
             android:background="@android:color/background_dark"
             android:orientation="vertical"
@@ -42,7 +42,7 @@
                 android:id="@+id/tvMaxTemperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
+                android:layout_gravity="center"
                 android:text=""
                 android:textAlignment="center"
                 android:textColor="@color/white"
@@ -52,7 +52,7 @@
             <ImageView
                 android:id="@+id/ivColorBar"
                 android:layout_width="wrap_content"
-                android:layout_height="120dp"
+                android:layout_height="0dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_weight="18"
                 android:scaleType="fitXY" />
@@ -61,7 +61,7 @@
                 android:id="@+id/tvMinTemperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
+                android:layout_gravity="center"
                 android:text=""
                 android:layout_weight="1"
                 android:textAlignment="center"

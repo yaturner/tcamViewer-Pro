@@ -98,8 +98,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private void init() {
-        sharedPreferences = this.getSharedPreferences("tcam", MODE_PRIVATE);
-
         observe();
         startCameraService();
 
@@ -212,6 +210,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public SharedPreferences getSharedPreferences() {
+        if(sharedPreferences == null) {
+            sharedPreferences = getSharedPreferences("tcam", MODE_PRIVATE);
+        }
         return sharedPreferences;
     }
 
