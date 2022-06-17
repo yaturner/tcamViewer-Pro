@@ -2,8 +2,11 @@ package com.darcangel.acam.utils;
 
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
@@ -81,10 +84,10 @@ public class CameraUtils {
         TLinearEnabled = telemetryData[offsetC + 48];
         TLinearResolution = telemetryData[offsetC + 49];
         spotmeterMean = telemetryData[offsetC + 50];
-        Integer x1 = telemetryData[offsetC+22]&0xffff;
-        Integer y1 = telemetryData[offsetC+23]&0xffff;
-        Integer x2 = telemetryData[offsetC+24]&0xffff;
-        Integer y2 = telemetryData[offsetC+25]&0xffff;
+        Integer x1 = telemetryData[offsetC+55]&0xffff;
+        Integer y1 = telemetryData[offsetC+54]&0xffff;
+        Integer x2 = telemetryData[offsetC+57]&0xffff;
+        Integer y2 = telemetryData[offsetC+56]&0xffff;
         spotLoc = new Rect(x1, y1, x2, y2);
 
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
@@ -127,14 +130,50 @@ public class CameraUtils {
     }
 
     public Bitmap createColorBar(int[][] palette, int width) {
-        int[] pixels = new int[width*256];
-        for(int row = 0; row < 256; row++) {
-            for(int col = 0; col < width; col++) {
-                pixels[row*width+col] = rgbToPixel(palette[255-row]);
+        int width2 = width*2;
+        int[] pixels = new int[width2 * 256];
+        for (int row = 0; row < 256; row++) {
+            for (int col = 0; col < width2; col++) {
+                if (col < width) {
+                    pixels[row * width2 + col] = 0;
+                } else {
+                    pixels[row * width2 + col] = rgbToPixel(palette[255 - row]);
+                }
             }
         }
-        return Bitmap.createBitmap(pixels, width, 256, Bitmap.Config.ARGB_8888);
+
+        Bitmap bitmap = Bitmap.createBitmap(pixels, width2, 256, Bitmap.Config.ARGB_8888);
+        return drawHotspotArrow(bitmap, 10.0f);
     }
+
+    public Bitmap drawHotspotArrow(Bitmap colorBar,  float temperature) {
+        // create and draw triangles
+        // use a Path object to store the 3 line segments
+        // use .offset to draw in many locations
+        // note: this triangle is not centered at 0,0
+        Paint paint = new Paint();
+        paint.setColor(0xffffffff);
+        paint.setStyle(Paint.Style.FILL);
+        paint.setStrokeWidth(1);
+        Path path = new Path();
+
+        //Create a new image bitmap and attach a brand new canvas to it
+        Bitmap tempBitmap = Bitmap.createBitmap(colorBar.getWidth(), colorBar.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(tempBitmap);
+
+        //Draw the image bitmap into the canvas
+        canvas.drawBitmap(colorBar, 0, 0, null);
+
+        path.moveTo(0, -10);
+        path.lineTo(10, 0);
+        path.lineTo(0, 10);
+        path.close();
+        path.offset(20, 10);
+        canvas.drawPath(path, paint);
+
+        return tempBitmap;
+    }
+
 
     public Bitmap remapCurrentImage(int[][] palette) {
         if(AGC) {
@@ -154,20 +193,21 @@ public class CameraUtils {
         return IP_PATTERN.matcher(address).matches();
     }
 
-    public void DrawHotspot(ImageView imageView, int x, int y) {
+    public void drawHotspot(ImageView imageView, int x, int y) {
         Paint paint = new Paint();
         paint.setColor(0xffffffff);
+        paint.setStyle(Paint.Style.STROKE);
 
         //Create a new image bitmap and attach a brand new canvas to it
         Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
-        Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.RGB_565);
+        Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas tempCanvas = new Canvas(tempBitmap);
 
         //Draw the image bitmap into the canvas
         tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
 
         //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
-        tempCanvas.drawRect(new Rect(x-2, y-2, x+2, y+2), paint);
+        tempCanvas.drawRect(new Rect(x-1, y-1, x+1, y+1), paint);
 
         //Attach the canvas to the ImageView
         imageView.setImageBitmap(tempBitmap);

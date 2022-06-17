@@ -134,7 +134,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 public void run() {
                     try {
                         CameraUtils cameraUtils = mainActivity.getCameraUtils();
-                        cameraUtils.DrawHotspot(binding.ivCamera, imageViewX, imageViewY);
+                        cameraUtils.drawHotspot(binding.ivCamera, imageViewX, imageViewY);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
