@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.databinding.FragmentLibraryBinding;
@@ -19,6 +20,7 @@ public class LibraryFragment extends Fragment {
 
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity = MainActivity.getInstance();
+    private GridLayoutManager gridLayoutManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -33,10 +35,12 @@ public class LibraryFragment extends Fragment {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         binding = FragmentLibraryBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(),2);
+        binding.rvLibrary.setLayoutManager(gridLayoutManager);
 
-        final TextView textView = binding.textLibrary;
-        libraryViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
+
+        View root = binding.getRoot();
         return root;
     }
 
