@@ -193,7 +193,7 @@ public class CameraUtils {
         return IP_PATTERN.matcher(address).matches();
     }
 
-    public void drawHotspot(ImageView imageView, int x, int y) {
+    public Bitmap drawHotspot(int x, int y) {
         Paint paint = new Paint();
         paint.setColor(0xffffffff);
         paint.setStyle(Paint.Style.STROKE);
@@ -210,7 +210,7 @@ public class CameraUtils {
         tempCanvas.drawRect(new Rect(x-1, y-1, x+1, y+1), paint);
 
         //Attach the canvas to the ImageView
-        imageView.setImageBitmap(tempBitmap);
+        return tempBitmap;
     }
 
     public float getMaxTemperature(boolean celsius) {

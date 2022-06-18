@@ -90,28 +90,28 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mainActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    binding.ivColorBar.setVisibility(View.VISIBLE);
-                    binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
-                            mainActivity.getPaletteFactory().getPaletteByName(
-                                    cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
-                    if (cameraViewModel.getImage() != null) {
-                        binding.ivCamera.setImageBitmap(cameraViewModel.getImage());
-                        binding.tvMaxTemperature.setText(createTemperatureString(
-                                cameraUtils.getMaxTemperature(settings.getUnitsC())));
-                        binding.tvMinTemperature.setText(createTemperatureString(
-                                cameraUtils.getMinTemperature(settings.getUnitsC())));
-                    }
-                } catch(Exception e) {
-                    e.printStackTrace();
+       drawScreen();
+    }
+
+    private void drawScreen() {
+        mainActivity.runOnUiThread(() -> {
+            try {
+                binding.ivColorBar.setVisibility(View.VISIBLE);
+                binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
+                        mainActivity.getPaletteFactory().getPaletteByName(
+                                cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
+                if (cameraViewModel.getImage() != null) {
+                    binding.ivCamera.setImageBitmap(cameraViewModel.getImage());
+                    binding.tvMaxTemperature.setText(createTemperatureString(
+                            cameraUtils.getMaxTemperature(settings.getUnitsC())));
+                    binding.tvMinTemperature.setText(createTemperatureString(
+                            cameraUtils.getMinTemperature(settings.getUnitsC())));
                 }
+            } catch(Exception e) {
+                e.printStackTrace();
             }
         });
     }
-
     @Override
     public void onClick(View v) {
 
@@ -129,15 +129,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
             int touchY = (int) event.getY();
             int imageViewX = (int) (touchX * scaleX);
             int imageViewY = (int) (touchY * scaleY);
-            mainActivity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        CameraUtils cameraUtils = mainActivity.getCameraUtils();
-                        cameraUtils.drawHotspot(binding.ivCamera, imageViewX, imageViewY);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+            mainActivity.runOnUiThread(() -> {
+                try {
+                    CameraUtils cameraUtils = mainActivity.getCameraUtils();
+                    binding.ivCamera.setImageBitmap(cameraUtils.drawHotspot(imageViewX, imageViewY));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             });
 
@@ -360,23 +357,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                                 cameraViewModel.setImage(mainActivity.getCameraUtils().processImageResponse(responseObj,
                                         mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette())));
                                 //show the image on the UI thread
-                                mainActivity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        if (cameraViewModel.getImage() != null) {
-                                            ImageView imageView = (ImageView) root.findViewById(R.id.ivCamera);
-                                            imageView.setImageBitmap(cameraViewModel.getImage());
-                                        }
-                                        binding.ivColorBar.setImageBitmap(
-                                                cameraUtils.createColorBar(mainActivity.getPaletteFactory()
-                                                        .getPaletteByName(cameraViewModel.getSelectedPalette()),
-                                                                Constants.COLORBAR_WIDTH));
-                                        binding.tvMaxTemperature.setText(createTemperatureString(
-                                                cameraUtils.getMaxTemperature(settings.getUnitsC())));
-                                        binding.tvMinTemperature.setText(createTemperatureString(
-                                                cameraUtils.getMinTemperature(settings.getUnitsC())));
-                                    }
-                                });
+                                drawScreen();
                             } else {
                                 //TODO handle error
                             }
