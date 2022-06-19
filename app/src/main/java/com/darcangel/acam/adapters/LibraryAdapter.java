@@ -16,6 +16,7 @@ import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.utils.CameraUtils;
+import com.darcangel.acam.viewholders.LibraryItemViewHolder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,7 +27,7 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHolder> {
+public class LibraryAdapter extends RecyclerView.Adapter<LibraryItemViewHolder> {
     private int itemCount = 0;
     private CameraUtils cameraUtils;
     private AssetManager assetManager;
@@ -54,14 +55,14 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     }
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public LibraryItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.library_item_view,parent, false);
-        return new ViewHolder(view);
+        return new LibraryItemViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull LibraryItemViewHolder holder, int position) {
         String json = new String();
         String line;
         Pattern pattern = Pattern.compile("^img_([0-9_]*)\\.tjsn$");
@@ -104,31 +105,5 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryAdapter.ViewHold
     @Override
     public int getItemCount() {
         return itemCount;
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView imageView;
-        private final TextView titleView;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imageView = (ImageView) itemView.findViewById(R.id.ivLibraryItem);
-            titleView = (TextView) itemView.findViewById(R.id.tvLibraryFolderName);
-
-            itemView.setOnClickListener((v) -> {
-                MainActivity.getInstance().runOnUiThread(() -> {
-                    String msg = String.format("image %s clicked", titleView.getText());
-                    Toast.makeText(MainActivity.getInstance(), msg, Toast.LENGTH_LONG).show();
-                });
-            });
-        }
-
-        public ImageView getImageView() {
-            return imageView;
-        }
-
-        public TextView getTitleView() {
-            return titleView;
-        }
     }
 }

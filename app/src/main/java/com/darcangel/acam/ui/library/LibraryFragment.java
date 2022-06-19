@@ -17,8 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.adapters.LibraryAdapter;
 import com.darcangel.acam.adapters.LibraryHeaderAdapter;
+import com.darcangel.acam.adapters.LibrarySection;
 import com.darcangel.acam.databinding.FragmentLibraryBinding;
 import com.darcangel.acam.network.CameraSocketIO;
+
+import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 public class LibraryFragment extends Fragment {
 
@@ -42,12 +45,19 @@ public class LibraryFragment extends Fragment {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         binding = FragmentLibraryBinding.inflate(inflater, container, false);
-        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(),2);
+        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(),1);
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
         libraryAdapter = new LibraryAdapter();
         libraryHeaderAdapter = new LibraryHeaderAdapter(null);
-        ConcatAdapter concatAdapter = new ConcatAdapter(libraryHeaderAdapter, libraryAdapter);
-        binding.rvLibrary.setAdapter(concatAdapter);
+        // Create an instance of SectionedRecyclerViewAdapter
+        SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
+
+        // Add your Sections
+        sectionAdapter.addSection(new LibrarySection());
+
+        // Set up your RecyclerView with the SectionedRecyclerViewAdapter
+        binding.rvLibrary.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        binding.rvLibrary.setAdapter(sectionAdapter);
 
         View root = binding.getRoot();
         return root;

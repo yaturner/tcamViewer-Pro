@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.acam.R;
+import com.darcangel.acam.viewholders.LibraryHeaderViewHolder;
 
 import java.io.StringBufferInputStream;
 
@@ -26,12 +27,12 @@ public class LibraryHeaderAdapter extends RecyclerView.Adapter<RecyclerView.View
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.library_item_header,parent, false);
-        return new LibraryHeaderAdapter.HeaderViewHolder(view);
+        return new LibraryHeaderViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        LibraryHeaderAdapter.HeaderViewHolder headerViewHolder = (LibraryHeaderAdapter.HeaderViewHolder) holder;
+        LibraryHeaderViewHolder headerViewHolder = (LibraryHeaderViewHolder) holder;
         headerViewHolder.getTitleView().setText("This is a header");
         headerViewHolder.getCountView().setText("this is a count");
     }
@@ -39,24 +40,5 @@ public class LibraryHeaderAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public int getItemCount() {
         return 1;
-    }
-
-    class HeaderViewHolder extends RecyclerView.ViewHolder {
-        private final TextView titleView;
-        private final TextView countView;
-
-        public HeaderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            titleView = (TextView) itemView.findViewById(R.id.tvLibraryFolderName);
-            countView = (TextView) itemView.findViewById(R.id.tvNumberImages);
-        }
-
-        public TextView getTitleView() {
-            return titleView;
-        }
-
-        public TextView getCountView() {
-            return countView;
-        }
     }
 }
