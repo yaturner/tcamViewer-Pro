@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,10 +23,10 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.darcangel.acam.factory.PaletteFactory;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.ActivityMainBinding;
+import com.darcangel.acam.factory.PaletteFactory;
 import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
@@ -34,6 +35,8 @@ import com.darcangel.acam.utils.CameraUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;

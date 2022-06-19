@@ -58,6 +58,7 @@ dependencies {
     annotationProcessor 'com.google.dagger:hilt-compiler:2.42'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.4.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation ('io.socket:socket.io-client:2.0.0') {
             exclude group: 'org.json', module: 'json'
         }

@@ -102,7 +102,7 @@ public class CameraUtils {
         } else {
             diff = maxTemperature - minTemperature;
             for (int i = 0; i < imageData.length; i++) {
-                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255) / diff, 255)]);
+                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255 / diff), 255)]);
             }
         }
         return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
