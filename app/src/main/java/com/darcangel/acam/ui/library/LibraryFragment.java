@@ -1,27 +1,20 @@
 package com.darcangel.acam.ui.library;
 
-import android.app.appsearch.StorageInfo;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.ConcatAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.acam.MainActivity;
-import com.darcangel.acam.adapters.LibraryAdapter;
-import com.darcangel.acam.adapters.LibraryHeaderAdapter;
 import com.darcangel.acam.adapters.LibrarySection;
 import com.darcangel.acam.databinding.FragmentLibraryBinding;
-import com.darcangel.acam.network.CameraSocketIO;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,11 +30,7 @@ public class LibraryFragment extends Fragment {
     private AssetManager assetManager;
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
-    private LibraryAdapter libraryAdapter;
-    private LibraryHeaderAdapter libraryHeaderAdapter;
-
     private ArrayList<String> imageFolder;
-    private ArrayList<String> imageFile;
     private int nFolders = 0;
 
     Pattern PATTERN = Pattern.compile("^img_([0-9_]*)\\.tjsn$");
@@ -67,17 +56,8 @@ public class LibraryFragment extends Fragment {
         binding = FragmentLibraryBinding.inflate(inflater, container, false);
 
         try {
-            imageFile = new ArrayList<String>();
             imageFolder = new ArrayList<String>();
-            int itemCount = 0;
             imageFolder.addAll(Arrays.asList(assetManager.list("test_images")));
-            for(String folder : imageFolder) {
-                String[] files = assetManager.list("test_images/" + folder);
-                for (int iFile = 0; iFile < files.length; iFile++) {
-                    imageFile.add("test_images/" + folder + "/" + files[iFile]);
-                    itemCount++;
-                }
-            }
         } catch(IOException e) {
             //TODO handle error
             e.printStackTrace();
@@ -85,8 +65,8 @@ public class LibraryFragment extends Fragment {
 
         gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(),1);
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
-        libraryAdapter = new LibraryAdapter(imageFile);
-        libraryHeaderAdapter = new LibraryHeaderAdapter(null);
+
+
         // Create an instance of SectionedRecyclerViewAdapter
         SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
 
@@ -97,7 +77,17 @@ public class LibraryFragment extends Fragment {
         }
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
-        binding.rvLibrary.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(final int position) {
+                if (sectionAdapter.getSectionItemViewType(position) == SectionedRecyclerViewAdapter.VIEW_TYPE_HEADER) {
+                    return 2;
+                }
+                return 1;
+            }
+        });
+        binding.rvLibrary.setLayoutManager(gridLayoutManager);
         binding.rvLibrary.setAdapter(sectionAdapter);
 
         View root = binding.getRoot();

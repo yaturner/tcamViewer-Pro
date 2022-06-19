@@ -24,6 +24,7 @@
                 android:id="@+id/rvLibrary"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:paddingBottom="?attr/actionBarSize"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never">
 
