@@ -24,35 +24,28 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryItemViewHolder> {
     private int itemCount = 0;
     private CameraUtils cameraUtils;
-    private AssetManager assetManager;
     private MainActivity mainActivity;
     private Settings settings;
-    private String[] imageFolder;
-    private String[] imageFile;
-    private int nFolders = 0;
+    private ArrayList<String> imageFile;
+    private AssetManager assetManager;
+    private Pattern PATTERN = Pattern.compile("^img_([0-9_]*)\\.tjsn$");
 
-    public LibraryAdapter() {
+
+    public LibraryAdapter(ArrayList<String> imageFile) {
+        this.imageFile = imageFile;
         mainActivity = MainActivity.getInstance();
         cameraUtils = mainActivity.getCameraUtils();
-        assetManager = mainActivity.getAssets();
         settings = mainActivity.getSettings();
-
-        try {
-            imageFolder = assetManager.list("test_images");
-            nFolders = imageFolder.length;
-            imageFile = assetManager.list("test_images/"+imageFolder[2]);
-            itemCount = imageFile.length;
-        } catch(IOException e) {
-            //TODO handle error
-            e.printStackTrace();
-        }
+        assetManager = mainActivity.getAssets();
     }
+
     @NonNull
     @Override
     public LibraryItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -65,11 +58,10 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryItemViewHolder> 
     public void onBindViewHolder(@NonNull LibraryItemViewHolder holder, int position) {
         String json = new String();
         String line;
-        Pattern pattern = Pattern.compile("^img_([0-9_]*)\\.tjsn$");
 
         try {
             BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(assetManager.open("test_images/"+imageFolder[2] + "/" + imageFile[position])));
+                    new InputStreamReader(assetManager.open(imageFile.get(position))));
             do {
                 line = bufferedReader.readLine();
                 if (line != null) {
@@ -89,7 +81,7 @@ public class LibraryAdapter extends RecyclerView.Adapter<LibraryItemViewHolder> 
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName("Rainbow"));
                 holder.getImageView().setImageBitmap(image);
-                Matcher matcher = pattern.matcher(imageFile[position]);
+                Matcher matcher = PATTERN.matcher(imageFile.get(position));
                 if(matcher.find()) {
                     holder.getTitleView().setText(matcher.group(1));
                 } else {

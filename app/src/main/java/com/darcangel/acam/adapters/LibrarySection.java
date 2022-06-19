@@ -1,5 +1,6 @@
 package com.darcangel.acam.adapters;
 
+import android.graphics.Bitmap;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -7,22 +8,30 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.darcangel.acam.R;
 import com.darcangel.acam.viewholders.LibraryItemViewHolder;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.Section;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 import io.github.luizgrp.sectionedrecyclerviewadapter.utils.EmptyViewHolder;
 
 public class LibrarySection extends Section {
-    List<String> itemList = Arrays.asList("Item1", "Item2", "Item3");
+    ArrayList<String> itemList;
 
-    public LibrarySection() {
+    public LibrarySection(ArrayList<String> itemList) {
         // call constructor with layout resources for this Section header and items
         super(SectionParameters.builder()
                 .itemResourceId(R.layout.library_item_view)
                 .headerResourceId(R.layout.library_item_header)
                 .build());
+        this.itemList = itemList;
     }
 
     @Override
@@ -41,7 +50,42 @@ public class LibrarySection extends Section {
         LibraryItemViewHolder itemHolder = (LibraryItemViewHolder) holder;
 
         // bind your view here
-        //itemHolder.tvItem.setText(itemList.get(position));
+        String json = new String();
+        String line;
+
+        try {
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(assetManager.open(imageFile.get(position))));
+            do {
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    json = json + line;
+                }
+            } while (line != null);
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            json = "";
+        }
+        if (!json.isEmpty()) {
+            try {
+                JSONObject jsonObject = new JSONObject(json);
+                Bitmap image = cameraUtils.processImageResponse(jsonObject,
+                        mainActivity.getPaletteFactory().getPaletteByName("Rainbow"));
+                holder.getImageView().setImageBitmap(image);
+                Matcher matcher = PATTERN.matcher(imageFile.get(position));
+                if (matcher.find()) {
+                    holder.getTitleView().setText(matcher.group(1));
+                } else {
+                    holder.getTitleView().setText("");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                //TODO handle error
+            }
+        }
     }
 
     @Override
