@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LibraryAdapter extends RecyclerView.Adapter<LibraryItemViewHolder> {
-    private int itemCount = 0;
+    private int itemCount;
     private CameraUtils cameraUtils;
     private MainActivity mainActivity;
     private Settings settings;

@@ -55,7 +55,6 @@ public class LibrarySection extends Section {
                 imageFile.add("test_images/" + imageFolder + "/" + files[iFile]);
                 itemCount++;
             }
-
         } catch (IOException e) {
             //TODO handle error
             e.printStackTrace();
@@ -64,7 +63,7 @@ public class LibrarySection extends Section {
 
     @Override
     public int getContentItemsTotal() {
-        return itemCount; // number of items of this section
+        return itemCount;
     }
 
     @Override
@@ -77,7 +76,6 @@ public class LibrarySection extends Section {
     public void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position) {
         LibraryItemViewHolder itemHolder = (LibraryItemViewHolder) holder;
 
-        // bind your view here
         String json = new String();
         String line;
 
@@ -126,7 +124,6 @@ public class LibrarySection extends Section {
 
     @Override
     public RecyclerView.ViewHolder getHeaderViewHolder(View view) {
-        // return an empty instance of ViewHolder for the headers of this section
         return new LibraryHeaderViewHolder(view);
     }
 }
