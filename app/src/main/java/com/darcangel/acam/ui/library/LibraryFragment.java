@@ -3,6 +3,7 @@ package com.darcangel.acam.ui.library;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.adapters.LibrarySection;
 import com.darcangel.acam.databinding.FragmentLibraryBinding;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +32,7 @@ public class LibraryFragment extends Fragment {
     private AssetManager assetManager;
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
-    private ArrayList<String> imageFolder;
+    private ArrayList<File> imageFolder;
     private int nFolders = 0;
 
     Pattern PATTERN = Pattern.compile("^img_([0-9_]*)\\.tjsn$");
@@ -39,31 +41,26 @@ public class LibraryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(false);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
         }
-        if(assetManager == null) {
+        if (assetManager == null) {
             assetManager = mainActivity.getAssets();
         }
+        LibraryViewModel libraryViewModel = mainActivity.getLibraryViewModel();
+
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        LibraryViewModel libraryViewModel = mainActivity.getLibraryViewModel();
+        imageFolder = new ArrayList<File>();
+        File dir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File list[] = dir.listFiles();
+        imageFolder.addAll(Arrays.asList(list));
 
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
+        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(), 1);
         binding = FragmentLibraryBinding.inflate(inflater, container, false);
-
-        try {
-            imageFolder = new ArrayList<String>();
-            imageFolder.addAll(Arrays.asList(assetManager.list("test_images")));
-        } catch(IOException e) {
-            //TODO handle error
-            e.printStackTrace();
-        }
-
-        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(),1);
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
 
 
@@ -71,9 +68,17 @@ public class LibraryFragment extends Fragment {
         SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
 
 
-        // Add your Sections
-        for(int i = 0; i < imageFolder.size(); i++) {
-            sectionAdapter.addSection(new LibrarySection(imageFolder.get(i)));
+        // Add your Sections only if the directory is not empty
+        //  or in the free version only movie files
+        try {
+            for (int i = 0; i < imageFolder.size(); i++) {
+                if (hasImages(imageFolder.get(i).toString())) {
+                    sectionAdapter.addSection(new LibrarySection(imageFolder.get(i).toString()));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            //TODO handle error
         }
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
@@ -93,6 +98,24 @@ public class LibraryFragment extends Fragment {
         View root = binding.getRoot();
         return root;
     }
+
+    private Boolean hasImages(String imageFolder) {
+        File folder = new File(imageFolder);
+        String files[] = folder.list();
+        //For free version, filter out movies
+        String file;
+        int count = 0;
+        for (int i = 0; i < files.length; i++) {
+            file = files[i];
+            if (file.substring(file.lastIndexOf(".")).equals(".tjsn")) {
+                count++;
+            }
+        }
+        return count > 0;
+    }
+
+
+
 
     @Override
     public void onDestroyView() {

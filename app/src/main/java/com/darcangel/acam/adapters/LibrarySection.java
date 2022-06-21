@@ -2,6 +2,7 @@ package com.darcangel.acam.adapters;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.os.Environment;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,15 +17,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.Section;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
-import io.github.luizgrp.sectionedrecyclerviewadapter.utils.EmptyViewHolder;
 
 public class LibrarySection extends Section {
     ArrayList<String> imageFile;
@@ -33,7 +37,7 @@ public class LibrarySection extends Section {
     MainActivity mainActivity;
     CameraUtils cameraUtils;
     int itemCount;
-    Pattern PATTERN = Pattern.compile("^img_([0-9_]*)\\.tjsn$");
+    Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
 
     public LibrarySection(String imageFolder) {
@@ -48,14 +52,18 @@ public class LibrarySection extends Section {
         cameraUtils = mainActivity.getCameraUtils();
         assetManager = mainActivity.getAssets();
         try {
-            imageFile = new ArrayList<String>();
-            itemCount = 0;
-            String[] files = assetManager.list("test_images/" + imageFolder);
-            for (int iFile = 0; iFile < files.length; iFile++) {
-                imageFile.add("test_images/" + imageFolder + "/" + files[iFile]);
-                itemCount++;
+            imageFile = new ArrayList<>();
+            File folder = new File(imageFolder);
+            String files[] = folder.list();
+            //For free version, filter out movies
+            String file;
+            for(int i = 0; i < files.length; i++) {
+                file = files[i];
+                if(file.substring(file.lastIndexOf(".")).equals(".tjsn")) {
+                    imageFile.add(folder + "/" + file);
+                }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             //TODO handle error
             e.printStackTrace();
         }
@@ -63,7 +71,7 @@ public class LibrarySection extends Section {
 
     @Override
     public int getContentItemsTotal() {
-        return itemCount;
+        return imageFile.size();
     }
 
     @Override
@@ -78,10 +86,13 @@ public class LibrarySection extends Section {
 
         String json = new String();
         String line;
+        String  imageName;
+        String path = imageFile.get(position);
 
+        imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
         try {
             BufferedReader bufferedReader = new BufferedReader(
-                    new InputStreamReader(assetManager.open(imageFile.get(position))));
+                    new FileReader(new File(path)));
             do {
                 line = bufferedReader.readLine();
                 if (line != null) {
@@ -101,9 +112,8 @@ public class LibrarySection extends Section {
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName("Rainbow"));
                 itemHolder.getImageView().setImageBitmap(image);
-                Matcher matcher = PATTERN.matcher(imageFile.get(position));
-                if (matcher.find()) {
-                    itemHolder.getTitleView().setText(matcher.group(1));
+                if (imageName != null && !imageName.isEmpty()) {
+                    itemHolder.getTitleView().setText(imageName);
                 } else {
                     itemHolder.getTitleView().setText("");
                 }
@@ -114,12 +124,24 @@ public class LibrarySection extends Section {
         }
     }
 
+    private void writeImage(String name, Bitmap image) {
+        String path = Environment.getExternalStorageDirectory().toString();
+        File file = new File(path + "/snapshots/", "img_" + name + ".png");
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            image.compress(Bitmap.CompressFormat.PNG, 100, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     public void onBindHeaderViewHolder(final RecyclerView.ViewHolder holder) {
         final LibraryHeaderViewHolder headerHolder = (LibraryHeaderViewHolder) holder;
-        String dateString = imageFolder.replace("tcam_", "");
+        String dateString = imageFolder.substring(imageFolder.lastIndexOf(File.separatorChar)+1).replace("tcam_", "");
         headerHolder.getTitleView().setText(dateString);
-        headerHolder.getCountView().setText(""+itemCount+" image(s)");
+        headerHolder.getCountView().setText("" + imageFile.size() + " image(s)");
     }
 
     @Override
