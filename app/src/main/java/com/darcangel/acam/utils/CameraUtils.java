@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 
 import com.darcangel.acam.MainActivity;
@@ -40,18 +41,18 @@ public class CameraUtils {
     private int[] pixels;
     private int[] imageData;
     private int diff;
-    int maxTemperature = Integer.MIN_VALUE;
-    int minTemperature = Integer.MAX_VALUE;
+    int maxTemperature;
+    int minTemperature;
     private JSONObject response;
 
     private int offsetA = 0;
     private int offsetB = 80;
     private int offsetC = 160;
 
-    private static final Pattern IP_PATTERN = Pattern.compile(
+    private final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-    private SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
-    private SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
+    private final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
+    private final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
@@ -63,6 +64,9 @@ public class CameraUtils {
         if(imageData != null) {
             imageData = null;
         }
+        maxTemperature = Integer.MIN_VALUE;
+        minTemperature = Integer.MAX_VALUE;
+
         String radiometricString = response.getString("radiometric");
         String telemetryString = response.getString("telemetry");
         byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
@@ -103,7 +107,8 @@ public class CameraUtils {
                 pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255 / diff), 255)]);
             }
         }
-        return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+        Bitmap result = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+        return result;
     }
 
 

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
+import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.utils.CameraUtils;
 import com.darcangel.acam.viewholders.LibraryHeaderViewHolder;
 import com.darcangel.acam.viewholders.LibraryItemViewHolder;
@@ -36,6 +37,7 @@ public class LibrarySection extends Section {
     AssetManager assetManager;
     MainActivity mainActivity;
     CameraUtils cameraUtils;
+    Settings settings;
     int itemCount;
     Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
@@ -51,6 +53,8 @@ public class LibrarySection extends Section {
         mainActivity = MainActivity.getInstance();
         cameraUtils = mainActivity.getCameraUtils();
         assetManager = mainActivity.getAssets();
+        settings = mainActivity.getSettings();
+
         try {
             imageFile = new ArrayList<>();
             File folder = new File(imageFolder);
@@ -110,7 +114,7 @@ public class LibrarySection extends Section {
             try {
                 JSONObject jsonObject = new JSONObject(json);
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
-                        mainActivity.getPaletteFactory().getPaletteByName("Rainbow"));
+                        mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
                 itemHolder.getImageView().setImageBitmap(image);
                 if (imageName != null && !imageName.isEmpty()) {
                     itemHolder.getTitleView().setText(imageName);
