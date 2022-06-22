@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -199,6 +197,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 break;
             case R.id.action_file_export:
                 exportImage(cameraViewModel.getImage());
+                break;
+            case R.id.action_file_save:
+                try {
+                    cameraUtils.saveTjsn();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    //TODO handle error
+                }
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }

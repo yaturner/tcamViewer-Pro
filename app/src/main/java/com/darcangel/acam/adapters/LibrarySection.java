@@ -124,18 +124,6 @@ public class LibrarySection extends Section {
         }
     }
 
-    private void writeImage(String name, Bitmap image) {
-        String path = Environment.getExternalStorageDirectory().toString();
-        File file = new File(path + "/snapshots/", "img_" + name + ".png");
-        try {
-            FileOutputStream out = new FileOutputStream(file);
-            image.compress(Bitmap.CompressFormat.PNG, 100, out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
     @Override
     public void onBindHeaderViewHolder(final RecyclerView.ViewHolder holder) {
         final LibraryHeaderViewHolder headerHolder = (LibraryHeaderViewHolder) holder;

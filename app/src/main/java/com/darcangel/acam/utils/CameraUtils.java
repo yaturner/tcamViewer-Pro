@@ -1,31 +1,25 @@
 package com.darcangel.acam.utils;
 
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.MediaMetadataRetriever;
 import android.os.Environment;
-import android.util.Pair;
-import android.widget.ImageView;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
-import com.darcangel.acam.pallete.Rainbow;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 
@@ -48,6 +42,7 @@ public class CameraUtils {
     private int diff;
     int maxTemperature = Integer.MIN_VALUE;
     int minTemperature = Integer.MAX_VALUE;
+    private JSONObject response;
 
     private int offsetA = 0;
     private int offsetB = 80;
@@ -55,10 +50,13 @@ public class CameraUtils {
 
     private static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-
+    private SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
+    private SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
+        this.response = response;
+
         if(pixels != null) {
             pixels = null;
         }
@@ -228,5 +226,28 @@ public class CameraUtils {
         } else {
             return (((scale * value - 273.15f)*9.0f)/5.0f) + 32.0f;
         }
+    }
+
+    public Boolean saveTjsn() throws IOException{
+
+        File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        Date now = new Date();
+        String folder = simpleDateFormatFolder.format(now);
+        String file = "img_" + simpleDateFormatFile.format(now) + ".tjsn";
+        File path = new File(rootDir + "/" + folder);
+        if(!path.exists()) {
+            path.mkdir();
+        }
+        File tjsn = new File(path, file);
+        FileOutputStream fileOutputStream = new FileOutputStream(tjsn);
+        if(!tjsn.exists()) {
+            tjsn.createNewFile();
+        }
+        fileOutputStream.write(response.toString().getBytes(StandardCharsets.UTF_8));
+        fileOutputStream.flush();
+        fileOutputStream.close();
+
+
+        return true;
     }
 }
