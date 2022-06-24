@@ -4,16 +4,30 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import javax.inject.Inject;
+
+import dagger.hilt.android.lifecycle.HiltViewModel;
+
 public class LibraryViewModel extends ViewModel {
+    private MutableLiveData<String> selectedImage;
 
-    private final MutableLiveData<String> mText;
-
+    @Inject
     public LibraryViewModel() {
-        mText = new MutableLiveData<>();
-        mText.setValue("This is library fragment");
     }
 
-    public LiveData<String> getText() {
-        return mText;
+    public String getSelectedImage() {
+        if(selectedImage == null) {
+            selectedImage = new MutableLiveData<>("");
+        }
+        return selectedImage.getValue();
+    }
+
+    public void setSelectedImage(String value) {
+        if(selectedImage == null) {
+            selectedImage = new MutableLiveData<String>("");
+        }
+        if(!selectedImage.getValue().equals(value)) {
+            selectedImage.setValue(value);
+        }
     }
 }

@@ -1,5 +1,9 @@
 package com.darcangel.acam.ui.camera;
 
+import android.app.Activity;
+import android.content.ContentProvider;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -14,10 +18,17 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.darcangel.acam.MainActivity;
@@ -31,6 +42,7 @@ import com.darcangel.acam.utils.CameraUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,6 +50,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import io.socket.client.IO;
 import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, View.OnClickListener {
@@ -48,11 +61,35 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     private CameraViewModel cameraViewModel;
     private View root = null;
     private boolean isConnectingToCamera = false;
-    private boolean isVisibleToUser = false;
+    private final boolean isVisibleToUser = false;
     private String[] paletteNames = null;
     private CameraUtils cameraUtils;
     private Settings settings;
 
+    // GetContent creates an ActivityResultLauncher<String> to allow you to pass
+    // in the mime type you'd like to allow the user to select
+    private ActivityResultLauncher<String> exportActivityResultLauncher =
+            registerForActivityResult(new ActivityResultContracts.CreateDocument(),
+            new ActivityResultCallback<Uri>() {
+                @Override
+                public void onActivityResult(Uri uri) {
+                    Timber.d("Result = %s", uri.toString());
+                    OutputStream outputStream = null;
+                    Bitmap bitmap = cameraViewModel.getImage();
+                    try {
+                        ContentResolver contentResolver = mainActivity.getContentResolver();
+                        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+                        String type = mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+                        outputStream = contentResolver.openOutputStream(uri);
+                        if (outputStream != null && bitmap != null) {
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                            outputStream.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
 
     private MainActivity mainActivity = null;
 
@@ -88,7 +125,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-       drawScreen();
+        drawScreen();
     }
 
     private void drawScreen() {
@@ -105,11 +142,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                     binding.tvMinTemperature.setText(createTemperatureString(
                             cameraUtils.getMinTemperature(settings.getUnitsC())));
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
+
     @Override
     public void onClick(View v) {
 
@@ -121,8 +159,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
             //scale the UI position to the bitmap
             float w = v.getRight() - v.getLeft();
             float h = v.getBottom() - v.getTop();
-            float scaleX = Constants.IMAGE_WIDTH/w;
-            float scaleY = Constants.IMAGE_HEIGHT/h;
+            float scaleX = Constants.IMAGE_WIDTH / w;
+            float scaleY = Constants.IMAGE_HEIGHT / h;
             int touchX = (int) event.getX();
             int touchY = (int) event.getY();
             int imageViewX = (int) (touchX * scaleX);
@@ -148,12 +186,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         setMenuItems(menu);
     }
 
-    //TODO use LiveData
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // command switch
         switch (item.getItemId()) {
-            case R.id.action_connect:  {
+            case R.id.action_connect: {
                 isConnectingToCamera = true;
                 connectToCamera();
                 break;
@@ -166,8 +203,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 break;
             }
             case R.id.action_palette: {
-                String title = ((MenuItemImpl)item).getTitle().toString();
-                if(!title.equalsIgnoreCase("Palette") &&
+                String title = ((MenuItemImpl) item).getTitle().toString();
+                if (!title.equalsIgnoreCase("Palette") &&
                         !title.equalsIgnoreCase(cameraViewModel.getSelectedPalette())) {
                     cameraViewModel.setSelectedPalette(title);
                     mainActivity.runOnUiThread(new Runnable() {
@@ -175,7 +212,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                         public void run() {
                             int[][] palette = mainActivity.getPaletteFactory()
                                     .getPaletteByName(cameraViewModel.getSelectedPalette());
-                            if(palette != null) {
+                            if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
                                     binding.ivCamera.setImageBitmap(mainActivity.getCameraUtils().remapCurrentImage(palette));
@@ -215,7 +252,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
 
     /**
      * connectToCamera
-     *   this is called when the camera is connected
+     * this is called when the camera is connected
      */
     private void connectToCamera() {
         MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
@@ -226,7 +263,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                         if (response.getString("result").equals("OK")) {
                             cameraViewModel.setIsCameraConnected(true);
                             mainActivity.invalidateOptionsMenu();
-                            if(isConnectingToCamera) {
+                            if (isConnectingToCamera) {
                                 setTime();
                             }
                         } else {
@@ -244,7 +281,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
             }
         };
         try {
-            ((MainActivity)mainActivity).getCameraService().connect(callback);
+            ((MainActivity) mainActivity).getCameraService().connect(callback);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -297,7 +334,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                     try {
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
-                                if(isConnectingToCamera) {
+                                if (isConnectingToCamera) {
                                     setConfig();
                                 }
                             } else {
@@ -330,7 +367,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 public void callback(JSONObject response) {
                     try {
                         if (response.has("result")) {
-                            if(response.getString("result").equals("OK")) {
+                            if (response.getString("result").equals("OK")) {
 
                             } else {
                                 //TODO handle error
@@ -389,14 +426,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
 
     /**
      * exportImage
+     *
      * @param image
      */
     private void exportImage(@NonNull final Bitmap image) {
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("image/png,image/jpg"); //not needed, but maybe usefull
-        intent.putExtra(Intent.EXTRA_TITLE, "image"); //not needed, but maybe usefull
-        startActivityForResult(intent, Constants.RESULT_CODE_CREATE_DOCUMENT);
+        exportActivityResultLauncher.launch(CameraUtils.generateNewFilename() + ".png");
     }
 
     @Override
@@ -416,15 +450,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         MenuItem itemStream = menu.findItem(R.id.action_stream);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
 
-        if(cameraViewModel.getSelectedPalette() != null && !cameraViewModel.getSelectedPalette().isEmpty()) {
+        if (cameraViewModel.getSelectedPalette() != null && !cameraViewModel.getSelectedPalette().isEmpty()) {
             itemPalette.setTitle(cameraViewModel.getSelectedPalette());
         }
         //since this fragment can be recreated, prevent multiple items
         paletteSubMenu.clear();
-        for(int i=0; i<paletteNames.length; i++) {
-            paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE,paletteNames[i]);
+        for (int i = 0; i < paletteNames.length; i++) {
+            paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE, paletteNames[i]);
         }
-        if(!cameraViewModel.getIsCameraConnected()) {
+        if (!cameraViewModel.getIsCameraConnected()) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemGet.setEnabled(false);
@@ -441,9 +475,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
 
     private String createTemperatureString(float temperature) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format("%.1f",temperature));
+        stringBuilder.append(String.format("%.1f", temperature));
         stringBuilder.append("\u00B0");
-        if(mainActivity.getSettings().getUnitsC()) {
+        if (mainActivity.getSettings().getUnitsC()) {
             stringBuilder.append("C");
         } else {
             stringBuilder.append("F");
@@ -453,32 +487,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case Constants.REQUEST_WRITE_PERMISSION:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0 &&
                         grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                }
-        };
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
-            case Constants.RESULT_CODE_CREATE_DOCUMENT:
-                if(resultCode == -1) {
-                    Uri uri = data.getData();
-                    Timber.d("uri = %s", uri.toString());
-                    try {
-                        OutputStream outputStream = mainActivity.getContentResolver().openOutputStream(uri);
-                        //FileOutputStream fileOutputStream = new FileOutputStream(outputStream);
-                        cameraViewModel.getImage().compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                    } catch(IOException e) {
-                        e.printStackTrace();
-                    }
                 }
         }
     }

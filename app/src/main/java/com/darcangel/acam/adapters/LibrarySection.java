@@ -2,7 +2,6 @@ package com.darcangel.acam.adapters;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.os.Environment;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,12 +18,9 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -116,8 +112,14 @@ public class LibrarySection extends Section {
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
                 itemHolder.getImageView().setImageBitmap(image);
+                itemHolder.setImagePath(path);
                 if (imageName != null && !imageName.isEmpty()) {
-                    itemHolder.getTitleView().setText(imageName);
+                    Matcher matcher = PATTERN.matcher(imageName);
+                    if(matcher.find()) {
+                        itemHolder.getTitleView().setText(matcher.group(1));
+                    } else {
+                        itemHolder.getTitleView().setText("");
+                    }
                 } else {
                     itemHolder.getTitleView().setText("");
                 }

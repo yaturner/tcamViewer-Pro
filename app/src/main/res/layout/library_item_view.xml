@@ -9,6 +9,9 @@
         android:id="@+id/ivLibraryItem"
         android:layout_width="160dp"
         android:layout_height="120dp"
+        android:padding="1dp"
+        android:cropToPadding="true"
+        android:background="@color/black"
         android:scaleType="fitXY">
 
     </ImageView>
@@ -19,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:textColor="@color/black"
+        android:textColor="@color/white"
         android:textSize="12sp">
 
     </TextView>

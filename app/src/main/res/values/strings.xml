@@ -49,4 +49,6 @@
     <string name="client_static_ip_address">Client Static IP Address</string>
     <string name="client_static_ip_netmask">Client Static IP Netmask</string>
     <string name="cancel">Cancel</string>
+    <string name="delete">delete</string>
+    <string name="share">share</string>
 </resources>

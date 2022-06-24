@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.media.MediaMetadataRetriever;
 import android.os.Environment;
 
 import com.darcangel.acam.MainActivity;
@@ -14,8 +13,10 @@ import com.darcangel.acam.constants.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -49,10 +50,10 @@ public class CameraUtils {
     private int offsetB = 80;
     private int offsetC = 160;
 
-    private final Pattern IP_PATTERN = Pattern.compile(
+    private static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-    private final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
-    private final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
+    private static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
+    private static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
@@ -236,10 +237,8 @@ public class CameraUtils {
     public Boolean saveTjsn() throws IOException{
 
         File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        Date now = new Date();
-        String folder = simpleDateFormatFolder.format(now);
-        String file = "img_" + simpleDateFormatFile.format(now) + ".tjsn";
-        File path = new File(rootDir + "/" + folder);
+        String file = generateNewFilename() + ".tjsn";
+        File path = new File(rootDir + "/" + generateNewPath());
         if(!path.exists()) {
             path.mkdir();
         }
@@ -254,5 +253,45 @@ public class CameraUtils {
 
 
         return true;
+    }
+
+    public static String generateNewFilename() {
+        Date now = new Date();
+        return new String("img_" + simpleDateFormatFile.format(now));
+    }
+
+    public static String generateNewPath() {
+        Date now = new Date();
+        return simpleDateFormatFolder.format(now);
+    }
+
+    public void saveBitmapToFile(Bitmap bitmap, File file) throws IOException {
+        FileOutputStream outputStream = new FileOutputStream(file);
+        if (outputStream != null && bitmap != null) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            outputStream.close();
+        }
+    }
+
+    public String readTjsnFile(String path) {
+        String json = new String();
+        String line;
+        try {
+            BufferedReader bufferedReader = new BufferedReader(
+                    new FileReader(new File(path)));
+            do {
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    json = json + line;
+                }
+            } while (line != null);
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            json = "";
+        }
+        return json;
     }
 }

@@ -3,7 +3,7 @@ package com.darcangel.acam.constants;
 public final class Constants {
     public final static int COLORBAR_WIDTH = 36;
 
-
+    public final static String SHARED_IMAGE_FILENAME = "sharedImage.png";
 
 
     public final static String SUCCESS = "{\"result\":\"OK\"}";
