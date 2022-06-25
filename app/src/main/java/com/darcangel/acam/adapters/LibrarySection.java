@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.acam.MainActivity;
@@ -28,23 +29,32 @@ import io.github.luizgrp.sectionedrecyclerviewadapter.Section;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 
 public class LibrarySection extends Section {
-    ArrayList<String> imageFile;
-    String imageFolder;
-    AssetManager assetManager;
-    MainActivity mainActivity;
-    CameraUtils cameraUtils;
-    Settings settings;
-    int itemCount;
-    Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
+    public interface ClickListener {
+//        void onHeaderMoreButtonClicked(@NonNull final LibrarySection section, int itemAdapterPosition);
+        void onItemRootViewClicked(@NonNull final LibrarySection section, final LibraryItemViewHolder holder);
+    }
+    private ArrayList<String> imageFile;
+    private String imageFolder;
+    private ClickListener clickListener;
+
+    private AssetManager assetManager;
+    private MainActivity mainActivity;
+    private CameraUtils cameraUtils;
+    private Settings settings;
+    private int itemCount;
+    private int selectedPos = RecyclerView.NO_POSITION;
+
+    private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
 
-    public LibrarySection(String imageFolder) {
+    public LibrarySection(String imageFolder, ClickListener clickListener) {
         // call constructor with layout resources for this Section header and items
         super(SectionParameters.builder()
                 .itemResourceId(R.layout.library_item_view)
                 .headerResourceId(R.layout.library_item_header)
                 .build());
         this.imageFolder = imageFolder;
+        this.clickListener = clickListener;
 
         mainActivity = MainActivity.getInstance();
         cameraUtils = mainActivity.getCameraUtils();
@@ -112,6 +122,8 @@ public class LibrarySection extends Section {
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
                 itemHolder.getImageView().setImageBitmap(image);
+                itemHolder.getImageView().setBackground(mainActivity.getResources().
+                        getDrawable(R.drawable.library_item_highlight_selector));
                 itemHolder.setImagePath(path);
                 if (imageName != null && !imageName.isEmpty()) {
                     Matcher matcher = PATTERN.matcher(imageName);
@@ -127,7 +139,16 @@ public class LibrarySection extends Section {
                 e.printStackTrace();
                 //TODO handle error
             }
+            itemHolder.getRootView().setSelected(selectedPos == position);
+
         }
+
+        itemHolder.getRootView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickListener.onItemRootViewClicked(LibrarySection.this, (LibraryItemViewHolder) holder);
+            }
+        });
     }
 
     @Override
@@ -138,8 +159,24 @@ public class LibrarySection extends Section {
         headerHolder.getCountView().setText("" + imageFile.size() + " image(s)");
     }
 
+    public void deleteItem(final int pos) {
+        imageFile.remove(pos);
+    }
+
     @Override
     public RecyclerView.ViewHolder getHeaderViewHolder(View view) {
         return new LibraryHeaderViewHolder(view);
+    }
+
+    public ArrayList<String> getImageFile() {
+        return imageFile;
+    }
+
+    public String getImageFolder() {
+        return imageFolder;
+    }
+
+    public void setSelectedPos(int selectedPos) {
+        this.selectedPos = selectedPos;
     }
 }

@@ -1,12 +1,10 @@
 package com.darcangel.acam.ui.library;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,28 +29,34 @@ import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.adapters.LibrarySection;
 import com.darcangel.acam.constants.Constants;
+import com.darcangel.acam.container.SelectedItem;
 import com.darcangel.acam.databinding.FragmentLibraryBinding;
-import com.darcangel.acam.factory.PaletteFactory;
+import com.darcangel.acam.info.SectionInfo;
+import com.darcangel.acam.info.SectionInfoFactory;
+import com.darcangel.acam.info.SectionItemInfo;
+import com.darcangel.acam.info.SectionItemInfoFactory;
 import com.darcangel.acam.utils.CameraUtils;
+import com.darcangel.acam.viewholders.LibraryItemViewHolder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
+import timber.log.Timber;
 
-public class LibraryFragment extends Fragment {
+public class LibraryFragment extends Fragment implements LibrarySection.ClickListener {
 
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
     private CameraUtils cameraUtils;
+    private SectionedRecyclerViewAdapter sectionAdapter;
+    private ArrayList<LibrarySection> librarySections;
 
     private AssetManager assetManager;
     private GridLayoutManager gridLayoutManager;
@@ -88,6 +92,7 @@ public class LibraryFragment extends Fragment {
         }
         libraryViewModel = mainActivity.getLibraryViewModel();
         cameraUtils = mainActivity.getCameraUtils();
+        librarySections = new ArrayList<>();
 
     }
 
@@ -104,7 +109,7 @@ public class LibraryFragment extends Fragment {
 
 
         // Create an instance of SectionedRecyclerViewAdapter
-        SectionedRecyclerViewAdapter sectionAdapter = new SectionedRecyclerViewAdapter();
+        sectionAdapter = new SectionedRecyclerViewAdapter();
 
 
         // Add your Sections only if the directory is not empty
@@ -112,7 +117,9 @@ public class LibraryFragment extends Fragment {
         try {
             for (int i = 0; i < imageFolder.size(); i++) {
                 if (hasImages(imageFolder.get(i).toString())) {
-                    sectionAdapter.addSection(new LibrarySection(imageFolder.get(i).toString()));
+                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(), this);
+                    librarySections.add(section);
+                    sectionAdapter.addSection(section);
                 }
             }
         } catch (Exception e) {
@@ -151,6 +158,9 @@ public class LibraryFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_item_share:
                 shareImage(libraryViewModel.getSelectedImage());
+            case R.id.action_item_delete:
+                deleteImage(libraryViewModel.getSelectedImage());
+                break;
         }
         return true;
     }
@@ -184,8 +194,10 @@ public class LibraryFragment extends Fragment {
     }
 
 
-    private void shareImage(final String filename) {
+    private void shareImage(final SelectedItem selectedItem) {
         try {
+            LibrarySection section = librarySections.get(selectedItem.getSectionIndex());
+            String filename = selectedItem.getPath();
             Intent shareIntent = new Intent();
             String tjsnString = cameraUtils.readTjsnFile(filename);
             JSONObject jsonObject = new JSONObject(tjsnString);
@@ -210,7 +222,6 @@ public class LibraryFragment extends Fragment {
                                 Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareActivityResultLauncher.launch(shareIntent);
             }
-            //startActivity(Intent.createChooser(shareIntent, null));
         } catch (IOException e) {
             e.printStackTrace();
             //TODO handle error
@@ -220,11 +231,53 @@ public class LibraryFragment extends Fragment {
         }
     }
 
+    private void deleteImage(SelectedItem selectedItem) {
+        LibrarySection section = librarySections.get(selectedItem.getSectionIndex());
+        String filename = selectedItem.getPath();
 
+        File file = new File(filename);
+        if(file.exists()) {
+            file.delete();
+        }
+        int pos = selectedItem.getPosInSection();
+        section.deleteItem(pos);
+        sectionAdapter.notifyItemRemoved(pos);
+        sectionAdapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onDestroyView() {
+        libraryViewModel.clearSelectedItems();
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void onItemRootViewClicked(@NonNull LibrarySection section, LibraryItemViewHolder holder) {
+        SelectedItem selectedItem;
+        LibrarySection librarySection;
+
+        int itemAdapterPosition = holder.getAbsoluteAdapterPosition();
+        SectionItemInfo sectionItemInfo = SectionItemInfoFactory.create(itemAdapterPosition, sectionAdapter);
+        SectionInfo sectionInfo = SectionInfoFactory.create(section, sectionAdapter.getAdapterForSection(section));
+        Timber.d("Clicked: AdapterPosition = %d, positionInSection = %s", sectionItemInfo.getAdapterPosition(),
+                sectionItemInfo.getPositionInSection());
+        Timber.d("Clicked: sectionPosition = %d, headerPosition = %d", sectionInfo.getSectionPosition(),
+                sectionInfo.getSectionHeaderPosition());
+        int sectionIndex = sectionInfo.getSectionPosition()/2;
+        int posInSection = Integer.parseInt(sectionItemInfo.getPositionInSection());
+        int posInAdapter = sectionItemInfo.getAdapterPosition();
+        librarySection = librarySections.get(sectionIndex);
+        String path = librarySection.getImageFile().get(posInSection);
+        //highlight the selected item and clear the previous if necessary
+        if(libraryViewModel.getSelectedImage() != null) {
+            SelectedItem selectedImage = libraryViewModel.getSelectedImage();
+            librarySection.setSelectedPos(selectedImage.getPosInSection());
+            sectionAdapter.notifyItemChanged(selectedImage.getPosInAdapter());
+        }
+        librarySection.setSelectedPos(posInSection);
+        sectionAdapter.notifyItemChanged(posInAdapter);
+        selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
+////        libraryViewModel.setSelectedImage(selectedItem);
     }
 }

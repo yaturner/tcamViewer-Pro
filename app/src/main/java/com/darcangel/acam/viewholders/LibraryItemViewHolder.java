@@ -20,6 +20,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView imageView;
     private final TextView titleView;
+    private final View rootView;
+
     private String imagePath;
     private boolean selected = false;
     private MainActivity mainActivity;
@@ -29,23 +31,7 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
         mainActivity = MainActivity.getInstance();
         imageView = (ImageView) itemView.findViewById(R.id.ivLibraryItem);
         titleView = (TextView) itemView.findViewById(R.id.tvLibraryFolderName);
-
-        itemView.setOnClickListener((v) -> {
-            mainActivity.runOnUiThread(() -> {
-                if(!selected) {
-                    selected = true;
-                    imageView.setBackground(MainActivity.getInstance().getResources().
-                            getDrawable(R.drawable.image_border, null));
-                    mainActivity.getLibraryViewModel().setSelectedImage(imagePath);
-                } else {
-                    selected = false;
-                    imageView.setBackground(null);
-                    mainActivity.getLibraryViewModel().setSelectedImage("");
-                }
-                String msg = String.format("image %s clicked", titleView.getText());
-                Toast.makeText(MainActivity.getInstance(), msg, Toast.LENGTH_LONG).show();
-            });
-        });
+        rootView = itemView;
     }
 
     public ImageView getImageView() {
@@ -62,5 +48,9 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public View getRootView() {
+        return rootView;
     }
 }
