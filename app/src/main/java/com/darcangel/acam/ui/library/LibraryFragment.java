@@ -271,13 +271,14 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
         String path = librarySection.getImageFile().get(posInSection);
         //highlight the selected item and clear the previous if necessary
         if(libraryViewModel.getSelectedImage() != null) {
-            SelectedItem selectedImage = libraryViewModel.getSelectedImage();
-            librarySection.setSelectedPos(selectedImage.getPosInSection());
-            sectionAdapter.notifyItemChanged(selectedImage.getPosInAdapter());
+            SelectedItem oldSelectedImage = libraryViewModel.getSelectedImage();
+            LibrarySection oldLibrarySelection = librarySections.get(oldSelectedImage.getSectionIndex());
+            oldLibrarySelection.setSelectedPos(RecyclerView.NO_POSITION);
+            sectionAdapter.notifyItemChanged(oldSelectedImage.getPosInAdapter());
         }
         librarySection.setSelectedPos(posInSection);
         sectionAdapter.notifyItemChanged(posInAdapter);
         selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
-////        libraryViewModel.setSelectedImage(selectedItem);
+        libraryViewModel.setSelectedImage(selectedItem);
     }
 }
