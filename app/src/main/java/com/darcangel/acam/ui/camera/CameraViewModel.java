@@ -2,6 +2,7 @@ package com.darcangel.acam.ui.camera;
 
 import android.graphics.Bitmap;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -9,7 +10,7 @@ public class CameraViewModel extends ViewModel {
 
     private MutableLiveData<Boolean> isCameraConnected;
     private MutableLiveData<String> selectedPalette;
-    private Bitmap image;
+    private MutableLiveData<Bitmap> image;
 
     public CameraViewModel() {
         setIsCameraConnected(false);
@@ -31,11 +32,21 @@ public class CameraViewModel extends ViewModel {
     }
 
     public Bitmap getImage() {
+        if(image == null) {
+            
+        }
+        return image.getValue();
+    }
+
+    public MutableLiveData<Bitmap> getImageLiveData() {
+        if(image == null) {
+            image = new MutableLiveData<Bitmap>(null);
+        }
         return image;
     }
 
     public void setImage(Bitmap image) {
-        this.image = image;
+        this.image.setValue(image);
     }
 
     public String getSelectedPalette() {

@@ -1,9 +1,7 @@
 package com.darcangel.acam.ui.camera;
 
 import android.app.Activity;
-import android.content.ContentProvider;
 import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -27,9 +25,8 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.core.app.ActivityOptionsCompat;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
@@ -42,15 +39,17 @@ import com.darcangel.acam.utils.CameraUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import io.socket.client.IO;
 import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, View.OnClickListener {
@@ -70,23 +69,82 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     // in the mime type you'd like to allow the user to select
     private ActivityResultLauncher<String> exportActivityResultLauncher =
             registerForActivityResult(new ActivityResultContracts.CreateDocument(),
-            new ActivityResultCallback<Uri>() {
+                    new ActivityResultCallback<Uri>() {
+                        @Override
+                        public void onActivityResult(Uri uri) {
+                            Timber.d("Result = %s", uri.toString());
+                            OutputStream outputStream = null;
+                            Bitmap bitmap = cameraViewModel.getImage();
+                            try {
+                                ContentResolver contentResolver = mainActivity.getContentResolver();
+                                MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
+                                String type = mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
+                                outputStream = contentResolver.openOutputStream(uri);
+                                if (outputStream != null && bitmap != null) {
+                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                                    outputStream.close();
+                                }
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+    private ActivityResultLauncher<Intent> openActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
                 @Override
-                public void onActivityResult(Uri uri) {
-                    Timber.d("Result = %s", uri.toString());
-                    OutputStream outputStream = null;
-                    Bitmap bitmap = cameraViewModel.getImage();
-                    try {
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        Intent data = result.getData();
+                        Uri uri = data.getData();
                         ContentResolver contentResolver = mainActivity.getContentResolver();
                         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-                        String type = mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
-                        outputStream = contentResolver.openOutputStream(uri);
-                        if (outputStream != null && bitmap != null) {
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                            outputStream.close();
+                        String type = contentResolver.getType(uri);
+                        //do what we can can to assure that this is a tjsn file
+                        if(!type.equalsIgnoreCase("application/octet-stream")) {
+                            return;
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        String path = uri.getPath().toString();
+                        String ext = path.substring(path.lastIndexOf(".") + 1);
+                        if(!ext.isEmpty() && !ext.equalsIgnoreCase("tjsn")) {
+                            return;
+                        }
+                        InputStream inputStream;
+                        try {
+                            inputStream = contentResolver.openInputStream(uri);
+
+                            String tjsn = new String();
+                                String line;
+                                // if file the available for reading
+                                if (inputStream != null) {
+
+                                    // prepare the file for reading
+                                    InputStreamReader chapterReader = new InputStreamReader(inputStream);
+                                    BufferedReader bufferedReader = new BufferedReader(chapterReader);
+
+                                    while ((line = bufferedReader.readLine()) != null) {
+                                        tjsn = tjsn + line;
+                                    }
+                                    JSONObject jsonObject = new JSONObject(tjsn);
+                                    Bitmap bitmap = cameraUtils.processImageResponse(jsonObject,
+                                            mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                    if (bitmap != null) {
+                                        cameraViewModel.setImage(bitmap);
+                                    }
+
+                                } else {
+                                    //TODO handle error here
+                                }
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            //TODO handle error
+                        }
+                        catch (JSONException e1) {
+                            e1.printStackTrace();
+                            //TODO handle error
+                        }
                     }
                 }
             });
@@ -95,8 +153,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
 
     public interface FileSelectionEntryPoint {
         Fragment fileSelectionOwner = null;
+
         void onFileCreated(FileDescriptor fileDescriptor);
+
         void onFileSelected(FileDescriptor fileDescriptor);
+
     }
 
     @Override
@@ -109,6 +170,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         cameraViewModel = mainActivity.getCameraViewModel();
         cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
+        final Observer<Bitmap> imageObserver = new Observer<Bitmap>() {
+            @Override
+            public void onChanged(@Nullable final Bitmap bitmap) {
+                drawScreen();
+            }
+        };
+        cameraViewModel.getImageLiveData().observe(this, imageObserver);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -242,6 +310,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                     e.printStackTrace();
                     //TODO handle error
                 }
+                break;
+            case R.id.action_file_open:
+                openImage();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -398,10 +469,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                         if (response.has("result")) {
                             if (response.getString("result").equals("OK")) {
                                 JSONObject responseObj = response.getJSONObject("response");
-                                cameraViewModel.setImage(mainActivity.getCameraUtils().processImageResponse(responseObj,
-                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette())));
-                                //show the image on the UI thread
-                                drawScreen();
+                                Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(responseObj,
+                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                cameraViewModel.getImageLiveData().postValue(bitmap);
                             } else {
                                 //TODO handle error
                             }
@@ -431,6 +501,20 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
      */
     private void exportImage(@NonNull final Bitmap image) {
         exportActivityResultLauncher.launch(CameraUtils.generateNewFilename() + ".png");
+    }
+
+    /**
+     * openImage
+     */
+    private void openImage() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent = Intent.createChooser(intent, "Select an image file");
+        intent.addFlags(
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        openActivityResultLauncher.launch(intent);
     }
 
     @Override

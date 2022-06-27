@@ -101,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private void init() {
-        observe();
         startCameraService();
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
@@ -128,10 +127,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
                     Constants.REQUEST_WRITE_PERMISSION);
         }
-    }
-
-    private void observe() {
-
     }
 
     private void putSharedPreferences(final String key, final Object value) {
