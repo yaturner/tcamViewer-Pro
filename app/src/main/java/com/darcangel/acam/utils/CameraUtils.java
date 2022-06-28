@@ -146,8 +146,8 @@ public class CameraUtils {
             }
         }
 
-        Bitmap bitmap = Bitmap.createBitmap(pixels, width2, 256, Bitmap.Config.ARGB_8888);
-        return drawHotspotArrow(bitmap, 10.0f);
+        Bitmap bitmap = Bitmap.createBitmap(pixels, width2, Constants.COLORBAR_HEIGHT, Bitmap.Config.ARGB_8888);
+        return drawHotspotArrow(bitmap, spotmeterMean);
     }
 
     public Bitmap drawHotspotArrow(Bitmap colorBar,  float temperature) {
@@ -155,6 +155,16 @@ public class CameraUtils {
         // use a Path object to store the 3 line segments
         // use .offset to draw in many locations
         // note: this triangle is not centered at 0,0
+
+        float mean = spotmeterMean;
+        float min = minTemperature;
+        float d = diff;
+        float offset = (((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT;
+        //if there is no image, no arrow
+        if(Float.isNaN(offset)) {
+            return colorBar;
+        }
+
         Paint paint = new Paint();
         paint.setColor(0xffffffff);
         paint.setStyle(Paint.Style.FILL);
@@ -172,7 +182,8 @@ public class CameraUtils {
         path.lineTo(10, 0);
         path.lineTo(0, 10);
         path.close();
-        path.offset(20, 10);
+//        path.offset(20, 10);
+        path.offset(20f, offset);
         canvas.drawPath(path, paint);
 
         return tempBitmap;
