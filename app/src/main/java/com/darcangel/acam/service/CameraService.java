@@ -4,7 +4,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.widget.Toast;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
@@ -19,9 +18,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.security.Provider;
 
-import timber.log.Timber;
+import io.reactivex.rxjava3.core.Flowable;
 
 public class CameraService extends Service {
 
@@ -32,6 +30,8 @@ public class CameraService extends Service {
     private String command;
     private final IBinder cameraBinder = new LocalBinder();
     private BufferedInputStream bufferedInputStream;
+    private Flowable<JSONObject> jsonObjectFlowable;
+    private String ipAddress;
 
     @Override
     public void onCreate() {
@@ -60,6 +60,14 @@ public class CameraService extends Service {
     }
 
     /***************User APi methods***************/
+    /**
+     * Must be called before any other methods
+     * @param address
+     */
+    public void setIpAddress(final String address) {
+        ipAddress = address;
+    }
+
     /**
      * connect
      * @param callback
@@ -116,7 +124,7 @@ public class CameraService extends Service {
 
         @Override
         public void run() {
-            SocketAddress socketAddress = new InetSocketAddress("192.168.0.42", 5001);
+            SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
             try {
                 cameraSocket.connect(socketAddress);
             } catch (IOException e) {
@@ -172,6 +180,9 @@ public class CameraService extends Service {
             response = "";
 
             try {
+//                Flowable<JSONObject> objectFlowable = Flowable.create(FlowableOnSubscribe<JSONObject> response,
+//                        BackpressureStrategy.BUFFER);
+
                 bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
                 while(!eof) {

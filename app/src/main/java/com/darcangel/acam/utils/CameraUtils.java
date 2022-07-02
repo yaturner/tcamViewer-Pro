@@ -156,14 +156,11 @@ public class CameraUtils {
         // use .offset to draw in many locations
         // note: this triangle is not centered at 0,0
 
-        float mean = spotmeterMean;
-        float min = minTemperature;
-        float d = diff;
-        float offset = (((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT;
-        //if there is no image, no arrow
-        if(Float.isNaN(offset)) {
+        //if there is no camera image, no arrow
+        if(minTemperature == 0 && maxTemperature == 0) {
             return colorBar;
         }
+        float offset = (((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT;
 
         Paint paint = new Paint();
         paint.setColor(0xffffffff);

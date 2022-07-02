@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
         libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
         cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
+        settings = new Settings();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -174,6 +175,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
             cameraService = binder.getService();
+            cameraService.setIpAddress(settings.getCameraAddress());
             isCameraServiceBound = true;
 
         }
