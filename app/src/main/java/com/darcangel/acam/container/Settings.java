@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.darcangel.acam.BR;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
+import com.darcangel.acam.utils.CameraUtils;
 
 public class Settings extends BaseObservable {
     private SharedPreferences sharedPreferences;
@@ -228,6 +229,11 @@ public class Settings extends BaseObservable {
         }
         if (!address.equals(cameraAddress.getValue())) {
             cameraAddress.postValue(address);
+            if(CameraUtils.isValidIPAddress(address)) {
+                if (MainActivity.getInstance().getCameraService() != null) {
+                    MainActivity.getInstance().getCameraService().setIpAddress(address);
+                }
+            }
             notifyPropertyChanged(BR.cameraAddress);
         }
     }

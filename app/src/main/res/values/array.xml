@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="emissivity_strings">
-        <item>Aluminum, polished</item>
-        <item>Aluminum, oxidized</item>
-        <item>Brass, tarnished</item>
-        <item>Brass, polished</item>
-        <item>Brick, common</item>
-        <item>Brick, plastered</item>
-        <item>Carbon</item>
-        <item>Chipboard, untreated</item>
-        <item>Clay, fired</item>
-        <item>Concrete</item>
-        <item>Elec Tape, Black</item>
-        <item>Enamel</item>
-        <item>Formica</item>
-        <item>Soil</item>
-        <item>Glass Pane</item>
-        <item>Granite</item>
-        <item>Iron, hot rolled</item>
-        <item>Iron sheet, galvanized</item>
-        <item>Lacquer, black</item>
-        <item>Lacquer, white</item>
-        <item>Lead, oxidized</item>
-        <item>Leather, tanned</item>
-        <item>Oil, thick</item>
-        <item>Paint, oil, avg</item>
-        <item>Paper, white</item>
-        <item>Plasterboard</item>
-        <item>Plastic, PCB</item>
-        <item>Plastic, PVC</item>
-        <item>Porcelain, glazed</item>
-        <item>Rubber</item>
-        <item>Snow</item>
-        <item>Steel, rolled</item>
-        <item>Tar Paper</item>
-        <item>Varnish, oak floor</item>
-        <item>Water</item>
-        <item>Wood, plywood</item>
+        <item>Aluminum, polished........5</item>
+        <item>Aluminum, oxidized........25</item>
+        <item>Brass, tarnished..........22</item>
+        <item>Brass, polished...........3</item>
+        <item>Brick, common.............85</item>
+        <item>Brick, plastered..........94</item>
+        <item>Carbon....................96</item>
+        <item>Chipboard, untreated......90</item>
+        <item>Clay, fired...............91</item>
+        <item>Concrete..................95</item>
+        <item>Elec Tape, Black..........96</item>
+        <item>Enamel....................90</item>
+        <item>Formica.................. 93</item>
+        <item>Soil......................93</item>
+        <item>Glass Pane................97</item>
+        <item>Granite.................. 86</item>
+        <item>Iron, hot rolled..........77</item>
+        <item>Iron sheet, galvanized....28</item>
+        <item>Lacquer, black............97</item>
+        <item>Lacquer, white............87</item>
+        <item>Lead, oxidized............63</item>
+        <item>Leather, tanned...........77</item>
+        <item>Oil, thick................82</item>
+        <item>Paint, oil, avg.......... 94</item>
+        <item>Paper, white..............90</item>
+        <item>Plasterboard..............90</item>
+        <item>Plastic, PCB..............91</item>
+        <item>Plastic, PVC..............93</item>
+        <item>Porcelain, glazed.........92</item>
+        <item>Rubber....................94</item>
+        <item>Snow......................80</item>
+        <item>Steel, rolled............ 50</item>
+        <item>Tar Paper................ 92</item>
+        <item>Varnish, oak floor........92</item>
+        <item>Water.....................98</item>
+        <item>Wood, plywood.............82</item>
     </string-array>
 
     <integer-array name="emissivity_values">

@@ -1,20 +1,24 @@
 package com.darcangel.acam.ui.settings;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.MainActivity.CameraCallback;
 import com.darcangel.acam.R;
+import com.darcangel.acam.adapters.EmissivityDialogListAdapter;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
@@ -33,6 +37,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private MainActivity mainActivity;
     private Settings settings;
     private NavDirections navDirections;
+    private int[] emValues;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -55,6 +60,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);
 
+        emValues = mainActivity.getResources().getIntArray(R.array.emissivity_values);
+
+
         return root;
     }
 
@@ -69,6 +77,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             binding.btnNavWiFiSettings.setEnabled(false);
             binding.btnCancelSave.btnSave.setEnabled(false);
         }
+        binding.btnEmissivityHint.setOnClickListener(this);
     }
 
     @Override
@@ -87,6 +96,22 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 setConfig();
                 navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
                 mainActivity.getNavController().navigate(navDirections);
+                break;
+            case R.id.btnEmissivityHint:
+                int selectedItem;
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Select Emissivity")
+                        .setAdapter(new EmissivityDialogListAdapter(getActivity()),
+                                (dialog, which) -> {
+                                    settings.setEmissivity(emValues[which]);
+                                })
+                        .setCancelable(true)
+                        .setNegativeButton(getString(R.string.cancel), null)
+                        .setPositiveButton(getString(R.string.ok), null);
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
                 break;
         }
     }
@@ -112,7 +137,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             }
         };
         try {
-            ((MainActivity)mainActivity).getCameraService().sendCmd(cmd, callback);
+            ((MainActivity) mainActivity).getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
             e.printStackTrace();
         }
