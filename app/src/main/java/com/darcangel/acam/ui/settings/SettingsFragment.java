@@ -70,14 +70,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (mainActivity.getCameraService().isConnected()) {
-            binding.btnNavWiFiSettings.setEnabled(true);
-            binding.btnNavWiFiSettings.setOnClickListener(this);
             binding.btnCancelSave.btnSave.setEnabled(true);
         } else {
-            binding.btnNavWiFiSettings.setEnabled(false);
             binding.btnCancelSave.btnSave.setEnabled(false);
         }
         binding.btnEmissivityHint.setOnClickListener(this);
+        binding.btnNavWiFiSettings.setEnabled(true);
+        binding.btnNavWiFiSettings.setOnClickListener(this);
     }
 
     @Override
@@ -108,10 +107,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                         .setCancelable(true)
                         .setNegativeButton(getString(R.string.cancel), null)
                         .setPositiveButton(getString(R.string.ok), null);
-
                 AlertDialog dialog = builder.create();
                 dialog.show();
-
                 break;
         }
     }
