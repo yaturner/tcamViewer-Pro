@@ -228,14 +228,17 @@ public class Settings extends BaseObservable {
             cameraAddress = new MutableLiveData<>();
         }
         if (!address.equals(cameraAddress.getValue())) {
-            cameraAddress.postValue(address);
-            if(CameraUtils.isValidIPAddress(address)) {
-                if (MainActivity.getInstance().getCameraService() != null) {
-                    MainActivity.getInstance().getCameraService().setIpAddress(address);
-                }
-            }
+            ////mainActivity.getCameraService().setIpAddress(address);
+            cameraAddress.setValue(address);
             notifyPropertyChanged(BR.cameraAddress);
         }
+    }
+
+    public MutableLiveData<String> getLiveDataCameraAddress() {
+        if (cameraAddress == null) {
+            cameraAddress = new MutableLiveData<>();
+        }
+        return cameraAddress;
     }
 
     /**

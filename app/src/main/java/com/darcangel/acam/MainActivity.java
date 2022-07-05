@@ -12,13 +12,18 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.View;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -114,6 +119,13 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+        navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
+            @Override
+            public void onDestinationChanged(@NonNull NavController navController, @NonNull NavDestination navDestination,
+                                             @Nullable Bundle bundle) {
+                Timber.d("New Destination is %s", navDestination.toString());
+            }
+        });
     }
 
     private void getPermissions() {
@@ -254,6 +266,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             settings = new Settings();
         }
         return settings;
+    }
+
+    public View getNavView() {
+        return binding.navView;
     }
 
     @Override

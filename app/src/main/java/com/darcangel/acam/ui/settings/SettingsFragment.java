@@ -1,15 +1,16 @@
 package com.darcangel.acam.ui.settings;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.app.Dialog;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -22,6 +23,7 @@ import com.darcangel.acam.adapters.EmissivityDialogListAdapter;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
+import com.darcangel.acam.utils.CameraUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -38,6 +40,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private Settings settings;
     private NavDirections navDirections;
     private int[] emValues;
+    private boolean hadFocus = false;
+    private OnBackPressedDispatcher onBackPressedDispatcher;
+    private OnBackPressedCallback onBackPressedCallback;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -52,18 +57,64 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         settingsViewModel = mainActivity.getSettingsViewModel();
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        View view = binding.getRoot();
 
+        /*
+         * handle the back button, show save dialog first
+         */
+        onBackPressedDispatcher = requireActivity().getOnBackPressedDispatcher();
+        onBackPressedCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                //createSaveDialog().show();
+            }
+        };
+
+        onBackPressedDispatcher.addCallback(onBackPressedCallback);
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
 
-        binding.btnCancelSave.btnCancel.setOnClickListener(this);
-        binding.btnCancelSave.btnSave.setOnClickListener(this);
+        String address = settings.getCameraAddress();
+        if( address != null && !address.isEmpty()) {
+            binding.cameraIPAddress.setText(address, TextView.BufferType.EDITABLE);
+        }
 
-        emValues = mainActivity.getResources().getIntArray(R.array.emissivity_values);
+        /*
+         * only update the camera address in the settings, service when the focus changes
+         *   otherwise we get called after each char is typed
+         */
+        binding.cameraIPAddress.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hadFocus && !hasFocus) {
+                String etAddress = binding.cameraIPAddress.getText().toString();
+                if (CameraUtils.isValidIPAddress(etAddress)) {
+                    if (mainActivity.getCameraService() != null) {
+                        settings.setCameraAddress(etAddress);
+                        hadFocus = false;
+                    }
+                }
+            } else {
+                hadFocus = true;
+            }
+        });
+        return view;
+    }
 
-
-        return root;
+    private Dialog createSaveDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        builder.setTitle(R.string.title_settings)
+                .setMessage("Do you wish to save your settings")
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    settings.persist();
+                    dialog.dismiss();
+                    onBackPressedCallback.remove();
+                    mainActivity.onBackPressed();
+                })
+                .setNegativeButton(R.string.no, (dialog, which) -> {
+                    dialog.dismiss();
+                    onBackPressedCallback.remove();
+                    mainActivity.onBackPressed();
+                });
+        return builder.create();
     }
 
     @Override
@@ -71,29 +122,22 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         super.onViewCreated(view, savedInstanceState);
         if (mainActivity.getCameraService().isConnected()) {
             binding.btnCancelSave.btnSave.setEnabled(true);
+            binding.btnNavWiFiSettings.setEnabled(true);
+            binding.btnNavWiFiSettings.setOnClickListener(this);
         } else {
             binding.btnCancelSave.btnSave.setEnabled(false);
+            binding.btnNavWiFiSettings.setEnabled(false);
+            binding.btnNavWiFiSettings.setOnClickListener(null);
         }
         binding.btnEmissivityHint.setOnClickListener(this);
-        binding.btnNavWiFiSettings.setEnabled(true);
-        binding.btnNavWiFiSettings.setOnClickListener(this);
     }
+
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnNavWiFiSettings:
                 navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
-                mainActivity.getNavController().navigate(navDirections);
-                break;
-            case R.id.btnCancel:
-                navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
-                mainActivity.getNavController().navigate(navDirections);
-                break;
-            case R.id.btnSave:
-                settings.persist();
-                setConfig();
-                navDirections = SettingsFragmentDirections.actionNavigationSettingsToNavigationCamera();
                 mainActivity.getNavController().navigate(navDirections);
                 break;
             case R.id.btnEmissivityHint:
@@ -138,5 +182,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        settings.persist();
     }
 }

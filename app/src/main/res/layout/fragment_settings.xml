@@ -5,9 +5,6 @@
 
     <data>
         <variable
-            name="settings_fragment"
-            type="com.darcangel.acam.ui.settings.SettingsFragment" />
-        <variable
             name="settings"
             type="com.darcangel.acam.container.Settings" />
     </data>
@@ -145,7 +142,6 @@
                         android:id="@+id/cameraIPAddress"
                         style="@style/SettingsEditTextEnd"
                         android:inputType="textUri"
-                        android:text="@={settings.cameraAddress}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 

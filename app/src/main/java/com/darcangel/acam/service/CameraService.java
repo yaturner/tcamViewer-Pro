@@ -5,6 +5,10 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 
+import androidx.lifecycle.LifecycleService;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
+
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 
@@ -19,9 +23,15 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.internal.observers.BlockingObserver;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 
-public class CameraService extends Service {
+public class CameraService extends LifecycleService {
 
     private Socket cameraSocket;
     private PrintStream printStream;
@@ -30,17 +40,26 @@ public class CameraService extends Service {
     private String command;
     private final IBinder cameraBinder = new LocalBinder();
     private BufferedInputStream bufferedInputStream;
-    private Flowable<JSONObject> jsonObjectFlowable;
     private String ipAddress;
 
     @Override
     public void onCreate() {
         super.onCreate();
         cameraSocket = new Socket();
+        //Listen for changes in ipAddress
+        MutableLiveData<String> camera = MainActivity.getInstance().getSettings().getLiveDataCameraAddress();
+        camera.observe(MainActivity.getInstance(), s -> setIpAddress(s));
+        //For streaming images from the camera
+    }
+
+    class StreamImages implements Runnable {
+        @Override
+        public void run() {
+
+        }
     }
 
     /**
-     *
      * @param arg0
      * @return the binder
      */
@@ -62,14 +81,21 @@ public class CameraService extends Service {
     /***************User APi methods***************/
     /**
      * Must be called before any other methods
+     *
      * @param address
      */
     public void setIpAddress(final String address) {
+
+        if (isConnected()) {
+            disconnect(null);
+            connect(null);
+        }
         ipAddress = address;
     }
 
     /**
      * connect
+     *
      * @param callback
      */
     public void connect(MainActivity.CameraCallback callback) {
@@ -79,6 +105,7 @@ public class CameraService extends Service {
 
     /**
      * disconnect
+     *
      * @param callback
      */
     public void disconnect(MainActivity.CameraCallback callback) {
@@ -88,6 +115,7 @@ public class CameraService extends Service {
 
     /**
      * sendCmd
+     *
      * @param cmd
      * @param callback
      * @throws IOException
@@ -100,10 +128,11 @@ public class CameraService extends Service {
 
     /**
      * isConnected
+     *
      * @return
      */
     public boolean isConnected() {
-        if(cameraSocket != null) {
+        if (cameraSocket != null) {
             return cameraSocket.isConnected();
         } else {
             return false;
@@ -133,7 +162,9 @@ public class CameraService extends Service {
                 return;
             }
 
-            callback.callback(parseResponse(Constants.SUCCESS, null));
+            if (callback != null) {
+                callback.callback(parseResponse(Constants.SUCCESS, null));
+            }
         }
     }
 
@@ -158,7 +189,9 @@ public class CameraService extends Service {
                 callback.callback(parseResponse(Constants.ERROR, null));
                 return;
             }
-            callback.callback(parseResponse(Constants.SUCCESS, null));
+            if (callback != null) {
+                callback.callback(parseResponse(Constants.SUCCESS, null));
+            }
         }
     }
 
@@ -180,15 +213,12 @@ public class CameraService extends Service {
             response = "";
 
             try {
-//                Flowable<JSONObject> objectFlowable = Flowable.create(FlowableOnSubscribe<JSONObject> response,
-//                        BackpressureStrategy.BUFFER);
-
                 bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
-                while(!eof) {
+                while (!eof) {
                     bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
                     response = response += new String(buffer, 0, bytesRead);
-                    if (response.substring(response.length() -1).equals("\3")) {
+                    if (response.substring(response.length() - 1).equals("\3")) {
                         eof = true;
                     }
                 }
@@ -196,13 +226,13 @@ public class CameraService extends Service {
                 e.printStackTrace();
                 callback.callback(parseResponse(Constants.ERROR, null));
             }
-
             callback.callback(parseResponse(Constants.SUCCESS, response));
         }
     }
 
     /**
      * parseResponse
+     *
      * @param resultCode
      * @param response
      * @return
@@ -212,7 +242,7 @@ public class CameraService extends Service {
             JSONObject object = new JSONObject(resultCode);
             if (response != null) {
                 //strip out start/stop bytes
-                response = response.substring(1, response.length() -1);
+                response = response.substring(1, response.length() - 1);
                 JSONObject responseObj = new JSONObject(response);
                 object.put("response", responseObj);
             }

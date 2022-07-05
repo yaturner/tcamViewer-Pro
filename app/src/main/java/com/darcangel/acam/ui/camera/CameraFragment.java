@@ -50,6 +50,7 @@ import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, View.OnClickListener {
@@ -64,6 +65,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     private String[] paletteNames = null;
     private CameraUtils cameraUtils;
     private Settings settings;
+    private Disposable disposable;
+
 
     // GetContent creates an ActivityResultLauncher<String> to allow you to pass
     // in the mime type you'd like to allow the user to select
@@ -169,6 +172,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         paletteNames = mainActivity.getResources().getStringArray(R.array.palette_names);
         cameraViewModel = mainActivity.getCameraViewModel();
         cameraUtils = mainActivity.getCameraUtils();
+        cameraService = mainActivity.getCameraService();
         settings = mainActivity.getSettings();
         final Observer<Bitmap> imageObserver = new Observer<Bitmap>() {
             @Override

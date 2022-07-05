@@ -55,11 +55,11 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         if(settings == null) {
             settings = mainActivity.getSettings();
         }
+
         binding.setSettings(settings);
 
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);
-
 
         return root;
     }
@@ -103,9 +103,9 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
             }
         };
         try {
-            ((MainActivity) mainActivity).getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd, callback);
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 

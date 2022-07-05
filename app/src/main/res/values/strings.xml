@@ -50,6 +50,8 @@
     <string name="client_static_ip_netmask">Client Static IP Netmask</string>
     <string name="cancel">Cancel</string>
     <string name="ok">Ok</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
     <string name="delete">delete</string>
     <string name="share">share</string>
 <!--    DEBUGGING-->
