@@ -2,16 +2,10 @@ package com.darcangel.acam;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -19,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
@@ -32,7 +25,7 @@ import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.ActivityMainBinding;
 import com.darcangel.acam.factory.PaletteFactory;
-import com.darcangel.acam.service.CameraService;
+import com.darcangel.acam.ui.camera.CameraService;
 import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
@@ -40,8 +33,6 @@ import com.darcangel.acam.utils.CameraUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
-
-import java.io.IOException;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
@@ -65,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private PaletteFactory paletteFactory;
 
     private CameraService cameraService;
-    private boolean isCameraServiceBound = false;
+//    private boolean isCameraServiceBound = false;
     private CameraUtils util;
 
     private ProgressDialog progressDialog;
@@ -107,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private void init() {
-        startCameraService();
+//        startCameraService();
 
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
@@ -179,39 +170,42 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection connection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
-            cameraService = binder.getService();
-            cameraService.setIpAddress(settings.getCameraAddress());
-            isCameraServiceBound = true;
-
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            isCameraServiceBound = false;
-        }
-    };
-
-    private void startCameraService() {
-        Intent intent = new Intent(this, CameraService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        isCameraServiceBound = true;
-    }
-
-
-    private void destroyCameraService() {
-        if (isCameraServiceBound) {
-            // Detach our existing connection.
-            unbindService(connection);
-            isCameraServiceBound = false;
-        }
-    }
+//    private ServiceConnection connection = new ServiceConnection() {
+//
+//        @Override
+//        public void onServiceConnected(ComponentName className,
+//                                       IBinder service) {
+//            // We've bound to LocalService, cast the IBinder and get LocalService instance
+////            CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
+////            cameraService = binder.getService();
+//            if(cameraService == null) {
+//                cameraService = new CameraService();
+//            }
+//            cameraService.setIpAddress(settings.getCameraAddress());
+////            isCameraServiceBound = true;
+//
+//        }
+//
+//        @Override
+//        public void onServiceDisconnected(ComponentName arg0) {
+//            isCameraServiceBound = false;
+//        }
+//    };
+//
+//    private void startCameraService() {
+//        Intent intent = new Intent(this, CameraService.class);
+//        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+//        isCameraServiceBound = true;
+//    }
+//
+//
+//    private void destroyCameraService() {
+//        if (isCameraServiceBound) {
+//            // Detach our existing connection.
+//            unbindService(connection);
+//            isCameraServiceBound = false;
+//        }
+//    }
 
     public NavController getNavController() {
         return navController;
@@ -275,6 +269,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        destroyCameraService();
+//        destroyCameraService();
     }
 }

@@ -1,4 +1,4 @@
-package com.darcangel.acam.service;
+package com.darcangel.acam.ui.camera;
 
 import android.app.Service;
 import android.content.Intent;
@@ -31,20 +31,18 @@ import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.internal.observers.BlockingObserver;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
-public class CameraService extends LifecycleService {
+public class CameraService {
 
     private Socket cameraSocket;
     private PrintStream printStream;
     private byte[] buffer = new byte[4096];
     private String response;
     private String command;
-    private final IBinder cameraBinder = new LocalBinder();
     private BufferedInputStream bufferedInputStream;
     private String ipAddress;
+    private final PublishSubject<String> imageChannel = PublishSubject.create();
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
+    public CameraService() {
         cameraSocket = new Socket();
         //Listen for changes in ipAddress
         MutableLiveData<String> camera = MainActivity.getInstance().getSettings().getLiveDataCameraAddress();
@@ -56,25 +54,6 @@ public class CameraService extends LifecycleService {
         @Override
         public void run() {
 
-        }
-    }
-
-    /**
-     * @param arg0
-     * @return the binder
-     */
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO Auto-generated method stub
-        return cameraBinder;
-    }
-
-    /**
-     * Binder class
-     */
-    public class LocalBinder extends Binder {
-        public CameraService getService() {
-            return CameraService.this;
         }
     }
 
@@ -224,8 +203,10 @@ public class CameraService extends LifecycleService {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                imageChannel.onError(e);
                 callback.callback(parseResponse(Constants.ERROR, null));
             }
+            imageChannel.onNext(response);
             callback.callback(parseResponse(Constants.SUCCESS, response));
         }
     }
@@ -256,9 +237,7 @@ public class CameraService extends LifecycleService {
     /**
      * onDestroy
      */
-    @Override
     public void onDestroy() {
-        super.onDestroy();
         try {
             cameraSocket.close();
         } catch (IOException e) {
@@ -266,5 +245,9 @@ public class CameraService extends LifecycleService {
             e.printStackTrace();
         }
         cameraSocket = null;
+    }
+
+    public PublishSubject<String> getImageChannel() {
+        return imageChannel;
     }
 }

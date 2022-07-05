@@ -33,7 +33,6 @@ import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
-import com.darcangel.acam.service.CameraService;
 import com.darcangel.acam.utils.CameraUtils;
 
 import org.json.JSONException;
@@ -41,7 +40,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileDescriptor;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -181,6 +179,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
             }
         };
         cameraViewModel.getImageLiveData().observe(this, imageObserver);
+        disposable = cameraService.getImageChannel().
+                subscribe(t -> {
+                            Timber.d("String is %s", t);
+                        },
+                        e -> {});
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
