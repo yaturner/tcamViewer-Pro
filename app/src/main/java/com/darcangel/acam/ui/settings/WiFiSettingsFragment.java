@@ -18,13 +18,18 @@ import com.darcangel.acam.R;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentWifiSettingsBinding;
+import com.darcangel.acam.ui.camera.CameraService;
 import com.google.gson.Gson;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.disposables.Disposable;
+import timber.log.Timber;
 
 @AndroidEntryPoint
 public class WiFiSettingsFragment extends Fragment implements OnClickListener {
@@ -35,11 +40,12 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
     private MainActivity mainActivity;
     private Settings settings;
     private NavDirections navDirections;
+    private CameraService cameraService;
+    private Disposable disposable;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         this.container = container;
-
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         settingsViewModel =
@@ -55,11 +61,16 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         if(settings == null) {
             settings = mainActivity.getSettings();
         }
-
+        cameraService = mainActivity.getCameraService();
         binding.setSettings(settings);
-
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);
+
+        disposable = cameraService.getImageChannel().
+                subscribe(t -> {
+                            Timber.d("String is %s", t);
+                        },
+                        e -> {});
 
         return root;
     }
@@ -68,42 +79,8 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         //get the wifi settings
         String cmd = new String(Constants.CMD_GET_WIFI);
-        Gson gson = new Gson();
-        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-            @Override
-            public void callback(JSONObject jsonObject) {
-                try {
-                    if(jsonObject.has("result") && (jsonObject.getString("result").equals("OK"))
-                    && jsonObject.has("response") && jsonObject.getJSONObject("response").has("wifi")) {
-                        JSONObject wifi = jsonObject.getJSONObject("response").getJSONObject("wifi");
-                        Map<String, Object> map = gson.fromJson(wifi.toString(), Map.class);
-                        for(Map.Entry<String, Object> entry : map.entrySet()) {
-                            if(entry.getKey().equals("flags")) {
-                                int value = ((Double) entry.getValue()).intValue();
-                                //process flags
-                                settings.setAccessPoint((value & 0x80) != 0x80);
-                                settings.setStaticIP((value & 0x01) == 0x01);
-                            } else {
-                                String value = (String) entry.getValue();
-                                if(entry.getKey().equals("sta_ssid")) {
-                                    settings.setSSID(value);
-                                }
-                                if(entry.getKey().equals("sta_ip_addr")) {
-                                    settings.setStaticIPAddress(value);
-                                }
-                                if(entry.getKey().equals("sta_netmask")) {
-                                    settings.setStaticNetmask(value);
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            }
-        };
         try {
-            mainActivity.getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -112,6 +89,35 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
     private void sendWiFI() {
         StringBuilder stringBuilder = new StringBuilder();
         
+    }
+
+    private void handleGetWifiResponse(JSONObject response) {
+        try {
+            JSONObject wifi = response.getJSONObject("wifi");
+//            Iterator<String> keys = wifi.keys();
+//            while (keys.hasNext()) {
+//                String key = keys.next();
+//                if (wifi.get(key).equals("flags")) {
+//                    int value = ((Double) wifi.get(key)).intValue();
+//                    //process flags
+//                    settings.setAccessPoint((value & 0x80) != 0x80);
+//                    settings.setStaticIP((value & 0x01) == 0x01);
+//                } else {
+//                    String value = (String) wifi.getKey(key).getValue();
+//                    if (entry.get().equals("sta_ssid")) {
+//                        settings.setSSID(value);
+//                    }
+//                    if (wifi.get(key).equals("sta_ip_addr")) {
+//                        settings.setStaticIPAddress(value);
+//                    }
+//                    if (entry.get(key).equals("sta_netmask")) {
+//                        settings.setStaticNetmask(value);
+//                    }
+//                }
+//            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

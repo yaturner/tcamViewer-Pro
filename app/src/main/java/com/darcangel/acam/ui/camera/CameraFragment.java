@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 
 import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
@@ -103,12 +104,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                         MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
                         String type = contentResolver.getType(uri);
                         //do what we can can to assure that this is a tjsn file
-                        if(!type.equalsIgnoreCase("application/octet-stream")) {
+                        if (!type.equalsIgnoreCase("application/octet-stream")) {
                             return;
                         }
                         String path = uri.getPath().toString();
                         String ext = path.substring(path.lastIndexOf(".") + 1);
-                        if(!ext.isEmpty() && !ext.equalsIgnoreCase("tjsn")) {
+                        if (!ext.isEmpty() && !ext.equalsIgnoreCase("tjsn")) {
                             return;
                         }
                         InputStream inputStream;
@@ -116,33 +117,32 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                             inputStream = contentResolver.openInputStream(uri);
 
                             String tjsn = new String();
-                                String line;
-                                // if file the available for reading
-                                if (inputStream != null) {
+                            String line;
+                            // if file the available for reading
+                            if (inputStream != null) {
 
-                                    // prepare the file for reading
-                                    InputStreamReader chapterReader = new InputStreamReader(inputStream);
-                                    BufferedReader bufferedReader = new BufferedReader(chapterReader);
+                                // prepare the file for reading
+                                InputStreamReader chapterReader = new InputStreamReader(inputStream);
+                                BufferedReader bufferedReader = new BufferedReader(chapterReader);
 
-                                    while ((line = bufferedReader.readLine()) != null) {
-                                        tjsn = tjsn + line;
-                                    }
-                                    JSONObject jsonObject = new JSONObject(tjsn);
-                                    Bitmap bitmap = cameraUtils.processImageResponse(jsonObject,
-                                            mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
-                                    if (bitmap != null) {
-                                        cameraViewModel.setImage(bitmap);
-                                    }
-
-                                } else {
-                                    //TODO handle error here
+                                while ((line = bufferedReader.readLine()) != null) {
+                                    tjsn = tjsn + line;
                                 }
+                                JSONObject jsonObject = new JSONObject(tjsn);
+                                Bitmap bitmap = cameraUtils.processImageResponse(jsonObject,
+                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                if (bitmap != null) {
+                                    cameraViewModel.setImage(bitmap);
+                                }
+
+                            } else {
+                                //TODO handle error here
+                            }
 
                         } catch (IOException e) {
                             e.printStackTrace();
                             //TODO handle error
-                        }
-                        catch (JSONException e1) {
+                        } catch (JSONException e1) {
                             e1.printStackTrace();
                             //TODO handle error
                         }
@@ -158,7 +158,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         void onFileCreated(FileDescriptor fileDescriptor);
 
         void onFileSelected(FileDescriptor fileDescriptor);
-
     }
 
     @Override
@@ -180,11 +179,44 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         };
         cameraViewModel.getImageLiveData().observe(this, imageObserver);
         disposable = cameraService.getImageChannel().
-                subscribe(t -> {
-                            Timber.d("String is %s", t);
+                subscribe(obj -> {
+                            Timber.d("OnNext String is %s", obj);
+                            Iterator<String>  it = obj.keys();
+                            String response = it.next();
+                            if (response.equalsIgnoreCase("connected")) {
+                                String value = obj.getString("connected");
+                                if (value.equalsIgnoreCase("true")) {
+                                    cameraViewModel.setIsCameraConnected(true);
+                                    mainActivity.invalidateOptionsMenu();
+                                    if (isConnectingToCamera) {
+                                        setTime();
+                                    }
+                                }
+                            } else if(response.equalsIgnoreCase("cam_info")) {
+                                //multiple response have "cam_info"
+                                JSONObject info = obj.getJSONObject("cam_info");
+                                if(info.has("info_string")) {
+                                    String infoType = info.getString("info_string");
+                                    if(infoType.equalsIgnoreCase("set_time success")) {
+                                        if (isConnectingToCamera) {
+                                            setConfig();
+                                        }
+                                    } else if(infoType.equalsIgnoreCase("set_config success")) {
+                                        //nothing to do here
+                                    }
+                                }
+                            } else if(response.equalsIgnoreCase("metadata")) {
+                                Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
+                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                cameraViewModel.getImageLiveData().postValue(bitmap);
+                                mainActivity.dismissProgressDialog();
+                            }
                         },
-                        e -> {});
+                        e -> {
+
+                        });
     }
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -333,33 +365,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
      * this is called when the camera is connected
      */
     private void connectToCamera() {
-        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-            @Override
-            public void callback(JSONObject response) {
-                try {
-                    if (response.has("result")) {
-                        if (response.getString("result").equals("OK")) {
-                            cameraViewModel.setIsCameraConnected(true);
-                            mainActivity.invalidateOptionsMenu();
-                            if (isConnectingToCamera) {
-                                setTime();
-                            }
-                        } else {
-                            //TODO handle error
-                            cameraViewModel.setIsCameraConnected(false);
-                        }
-                    } else {
-                        //TODO handle error
-                        cameraViewModel.setIsCameraConnected(false);
-                    }
-                } catch (JSONException e1) {
-                    //TODO handle error
-                    cameraViewModel.setIsCameraConnected(false);
-                }
-            }
-        };
         try {
-            ((MainActivity) mainActivity).getCameraService().connect(callback);
+            ((MainActivity) mainActivity).getCameraService().connect();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -369,30 +376,30 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
      * disconnectFromCamera
      */
     private void disconnectFromCamera() {
-        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-            @Override
-            public void callback(JSONObject response) {
-                try {
-                    if (response.has("result")) {
-                        if (response.getString("result").equals("OK")) {
-                            cameraViewModel.setIsCameraConnected(false);
-                            mainActivity.invalidateOptionsMenu();
-                        } else {
-                            //TODO handle error
-                            cameraViewModel.setIsCameraConnected(true);
-                        }
-                    } else {
-                        //TODO handle error
-                        cameraViewModel.setIsCameraConnected(true);
-                    }
-                } catch (JSONException e1) {
-                    //TODO handle error
-                    cameraViewModel.setIsCameraConnected(true);
-                }
-            }
-        };
+//        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
+//            @Override
+//            public void callback(JSONObject response) {
+//                try {
+//                    if (response.has("result")) {
+//                        if (response.getString("result").equals("OK")) {
+//                            cameraViewModel.setIsCameraConnected(false);
+//                            mainActivity.invalidateOptionsMenu();
+//                        } else {
+//                            //TODO handle error
+//                            cameraViewModel.setIsCameraConnected(true);
+//                        }
+//                    } else {
+//                        //TODO handle error
+//                        cameraViewModel.setIsCameraConnected(true);
+//                    }
+//                } catch (JSONException e1) {
+//                    //TODO handle error
+//                    cameraViewModel.setIsCameraConnected(true);
+//                }
+//            }
+//        };
         try {
-            mainActivity.getCameraService().disconnect(callback);
+            mainActivity.getCameraService().disconnect();
         } catch (Exception e) {
 
         }
@@ -406,27 +413,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         String args = simpleDateFormat.format(new Date());
         String cmd = String.format(Constants.CMD_SET_TIME, args);
         try {
-            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-                @Override
-                public void callback(JSONObject response) {
-                    try {
-                        if (response.has("result")) {
-                            if (response.getString("result").equals("OK")) {
-                                if (isConnectingToCamera) {
-                                    setConfig();
-                                }
-                            } else {
-                                //TODO handle error
-                            }
-                        } else {
-                            //TODO handle error
-                        }
-                    } catch (JSONException e1) {
-                        //TODO handle error
-                    }
-                }
-            };
-            mainActivity.getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -440,23 +427,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         String cmd = String.format(Constants.CMD_SET_CONFIG, args);
         isConnectingToCamera = false;
         try {
-            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-                @Override
-                public void callback(JSONObject response) {
-                    try {
-                        if (response.has("result")) {
-                            if (response.getString("result").equals("OK")) {
-
-                            } else {
-                                //TODO handle error
-                            }
-                        }
-                    } catch (JSONException e1) {
-                        //TODO handle error
-                    }
-                }
-            };
-            mainActivity.getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -467,37 +438,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
      */
     private void getImage() {
         try {
-            MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-                @Override
-                public void callback(JSONObject response) {
-                    try {
-                        CameraUtils cameraUtils = mainActivity.getCameraUtils();
-                        mainActivity.dismissProgressDialog();
-                        if (response.has("result")) {
-                            if (response.getString("result").equals("OK")) {
-                                JSONObject responseObj = response.getJSONObject("response");
-                                Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(responseObj,
-                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
-                                cameraViewModel.getImageLiveData().postValue(bitmap);
-                            } else {
-                                //TODO handle error
-                            }
-                        } else {
-                            //TODO handle error
-                        }
-                    } catch (JSONException e1) {
-                        //TODO handle error
-                    }
-                }
-            };
-            try {
-                mainActivity.showProgressDialog(getString(R.string.get_image), getString(R.string.acquiring));
-                mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE, callback);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } catch (Exception e2) {
-            //TODO handle error
+            mainActivity.showProgressDialog(getString(R.string.get_image), getString(R.string.acquiring));
+            mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

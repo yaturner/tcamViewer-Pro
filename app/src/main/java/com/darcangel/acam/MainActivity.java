@@ -56,16 +56,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private PaletteFactory paletteFactory;
 
     private CameraService cameraService;
-//    private boolean isCameraServiceBound = false;
     private CameraUtils util;
 
     private ProgressDialog progressDialog;
 
     private NavController navController;
-
-    public interface CameraCallback {
-        void callback(JSONObject response);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,8 +93,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     private void init() {
-//        startCameraService();
-
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

@@ -17,18 +17,17 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 
 import com.darcangel.acam.MainActivity;
-import com.darcangel.acam.MainActivity.CameraCallback;
 import com.darcangel.acam.R;
 import com.darcangel.acam.adapters.EmissivityDialogListAdapter;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
+import com.darcangel.acam.ui.camera.CameraService;
 import com.darcangel.acam.utils.CameraUtils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.disposables.Disposable;
+import timber.log.Timber;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener {
@@ -43,21 +42,32 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private boolean hadFocus = false;
     private OnBackPressedDispatcher onBackPressedDispatcher;
     private OnBackPressedCallback onBackPressedCallback;
+    private CameraService cameraService;
+    private Disposable disposable;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         this.container = container;
-
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
         }
-
+        cameraService = mainActivity.getCameraService();
         settingsViewModel = mainActivity.getSettingsViewModel();
-
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
+        disposable = cameraService.getImageChannel().
+                subscribe(t -> {
+                            if (t != null) {
+                                Timber.d("Result String is %s", t);
+                            }
+                        },
+                        e -> {
+                            if (e != null) {
+                                Timber.d("Error String is %s", e);
+                            }
+                        });
 
         /*
          * handle the back button, show save dialog first
@@ -75,7 +85,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         binding.setSettings(settings);
 
         String address = settings.getCameraAddress();
-        if( address != null && !address.isEmpty()) {
+        if (address != null && !address.isEmpty()) {
             binding.cameraIPAddress.setText(address, TextView.BufferType.EDITABLE);
         }
 
@@ -163,22 +173,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 settings.getEmissivity(),
                 (settings.getGainAuto() ? 2 : settings.getGainLow() ? 1 : 0));
         String cmd = String.format(Constants.CMD_SET_CONFIG, args);
-        CameraCallback callback = new CameraCallback() {
-            @Override
-            public void callback(JSONObject response) {
-                try {
-                    if (response.has("result")) {
-                        if (!response.getString("result").equals("OK")) {
-                            //TODO handle error
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        };
         try {
-            ((MainActivity) mainActivity).getCameraService().sendCmd(cmd, callback);
+            mainActivity.getCameraService().sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }

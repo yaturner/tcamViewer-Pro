@@ -2,19 +2,25 @@ package com.darcangel.acam.ui.camera;
 
 import android.graphics.Bitmap;
 
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+
+import com.darcangel.acam.MainActivity;
+
+import io.reactivex.rxjava3.disposables.Disposable;
+import timber.log.Timber;
 
 public class CameraViewModel extends ViewModel {
 
     private MutableLiveData<Boolean> isCameraConnected;
     private MutableLiveData<String> selectedPalette;
     private MutableLiveData<Bitmap> image;
+    private CameraService cameraService;
 
     public CameraViewModel() {
         setIsCameraConnected(false);
         setSelectedPalette("Fusion"); //TODO get from SharedPrefs
+        cameraService = MainActivity.getInstance().getCameraService();
     }
 
     public Boolean getIsCameraConnected() {

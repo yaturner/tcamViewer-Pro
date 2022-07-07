@@ -1,16 +1,8 @@
 package com.darcangel.acam.ui.camera;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.Binder;
-import android.os.IBinder;
-
-import androidx.lifecycle.LifecycleService;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 
 import com.darcangel.acam.MainActivity;
-import com.darcangel.acam.constants.Constants;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,12 +15,6 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
-import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableEmitter;
-import io.reactivex.rxjava3.core.ObservableOnSubscribe;
-import io.reactivex.rxjava3.internal.observers.BlockingObserver;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class CameraService {
@@ -40,14 +26,15 @@ public class CameraService {
     private String command;
     private BufferedInputStream bufferedInputStream;
     private String ipAddress;
-    private final PublishSubject<String> imageChannel = PublishSubject.create();
+    private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
+    private MainActivity mainActivity;
 
     public CameraService() {
         cameraSocket = new Socket();
+        mainActivity = MainActivity.getInstance();
         //Listen for changes in ipAddress
-        MutableLiveData<String> camera = MainActivity.getInstance().getSettings().getLiveDataCameraAddress();
-        camera.observe(MainActivity.getInstance(), s -> setIpAddress(s));
-        //For streaming images from the camera
+        MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
+        camera.observe(mainActivity, s -> setIpAddress(s));
     }
 
     class StreamImages implements Runnable {
@@ -66,8 +53,8 @@ public class CameraService {
     public void setIpAddress(final String address) {
 
         if (isConnected()) {
-            disconnect(null);
-            connect(null);
+            disconnect();
+            connect();
         }
         ipAddress = address;
     }
@@ -75,20 +62,18 @@ public class CameraService {
     /**
      * connect
      *
-     * @param callback
      */
-    public void connect(MainActivity.CameraCallback callback) {
-        Runnable connect = new ConnectSocket(callback);
+    public void connect() {
+        Runnable connect = new ConnectSocket();
         new Thread(connect).start();
     }
 
     /**
      * disconnect
      *
-     * @param callback
      */
-    public void disconnect(MainActivity.CameraCallback callback) {
-        Runnable disconnect = new DisconnectSocket(callback);
+    public void disconnect() {
+        Runnable disconnect = new DisconnectSocket();
         new Thread(disconnect).start();
     }
 
@@ -96,12 +81,11 @@ public class CameraService {
      * sendCmd
      *
      * @param cmd
-     * @param callback
      * @throws IOException
      */
-    public void sendCmd(final String cmd, MainActivity.CameraCallback callback) throws IOException {
+    public void sendCmd(final String cmd) throws IOException {
         command = cmd;
-        Runnable sendCmd = new SendCmd(callback);
+        Runnable sendCmd = new SendCmd();
         new Thread(sendCmd).start();
     }
 
@@ -123,26 +107,16 @@ public class CameraService {
      * Thread to connect to the camera
      */
     class ConnectSocket implements Runnable {
-
-        MainActivity.CameraCallback callback;
-
-        public ConnectSocket(MainActivity.CameraCallback callback) {
-            this.callback = callback;
-        }
-
         @Override
         public void run() {
             SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
             try {
                 cameraSocket.connect(socketAddress);
+                imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));
             } catch (IOException e) {
                 e.printStackTrace();
-                callback.callback(parseResponse(Constants.ERROR, null));
+                imageChannel.onError(e);
                 return;
-            }
-
-            if (callback != null) {
-                callback.callback(parseResponse(Constants.SUCCESS, null));
             }
         }
     }
@@ -152,24 +126,14 @@ public class CameraService {
      * Thread to disconnect socket
      */
     class DisconnectSocket implements Runnable {
-
-        MainActivity.CameraCallback callback;
-
-        public DisconnectSocket(MainActivity.CameraCallback callback) {
-            this.callback = callback;
-        }
-
         @Override
         public void run() {
             try {
                 cameraSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
-                callback.callback(parseResponse(Constants.ERROR, null));
+                imageChannel.onError(e);
                 return;
-            }
-            if (callback != null) {
-                callback.callback(parseResponse(Constants.SUCCESS, null));
             }
         }
     }
@@ -179,12 +143,6 @@ public class CameraService {
      * Thread to send a command and receive the response
      */
     class SendCmd implements Runnable {
-        MainActivity.CameraCallback callback;
-
-        public SendCmd(MainActivity.CameraCallback callback) {
-            this.callback = callback;
-        }
-
         @Override
         public void run() {
             boolean eof = false;
@@ -201,37 +159,33 @@ public class CameraService {
                         eof = true;
                     }
                 }
+                imageChannel.onNext(parseResponse(response));
             } catch (IOException e) {
                 e.printStackTrace();
                 imageChannel.onError(e);
-                callback.callback(parseResponse(Constants.ERROR, null));
             }
-            imageChannel.onNext(response);
-            callback.callback(parseResponse(Constants.SUCCESS, response));
         }
     }
 
     /**
      * parseResponse
      *
-     * @param resultCode
      * @param response
      * @return
      */
-    JSONObject parseResponse(final String resultCode, String response) {
+    JSONObject parseResponse(String response) {
         try {
-            JSONObject object = new JSONObject(resultCode);
             if (response != null) {
                 //strip out start/stop bytes
                 response = response.substring(1, response.length() - 1);
-                JSONObject responseObj = new JSONObject(response);
-                object.put("response", responseObj);
+                JSONObject object = new JSONObject(response);
+                return object;
             }
-            return object;
         } catch (JSONException e) {
             e.printStackTrace();
             return null; //TODO fix this
         }
+        return null;
     }
 
     /**
@@ -247,7 +201,7 @@ public class CameraService {
         cameraSocket = null;
     }
 
-    public PublishSubject<String> getImageChannel() {
+    public PublishSubject<JSONObject> getImageChannel() {
         return imageChannel;
     }
 }
