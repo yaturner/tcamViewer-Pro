@@ -49,9 +49,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.inject.Singleton;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
 
+@Singleton
 public class CameraFragment extends Fragment implements View.OnTouchListener, View.OnClickListener {
 
     private FragmentCameraBinding binding;
@@ -65,7 +69,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     private CameraUtils cameraUtils;
     private Settings settings;
     private Disposable disposable;
-
+    private Boolean isStreaming = false;
 
     // GetContent creates an ActivityResultLauncher<String> to allow you to pass
     // in the mime type you'd like to allow the user to select
@@ -177,9 +181,19 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 drawScreen();
             }
         };
-        cameraViewModel.getImageLiveData().observe(this, imageObserver);
-        disposable = cameraService.getImageChannel().
-                subscribe(obj -> {
+        cameraViewModel.getImageLiveData().observe(mainActivity, imageObserver);
+
+//        info_value:
+//        0	Command NACK - the command failed. See the information string for more information.
+//        1	Command ACK - the command succeeded.
+//        2	Command unimplemented - the camera firmware does not implement the command.
+//        3	Command bad - the command was incorrectly formatted or was not a json string.
+//        4	Internal Error - the camera detected an internal error. See the information string for more information.
+//        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
+
+        disposable = cameraService.getImageChannel()
+                        .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(obj -> {
                             Timber.d("OnNext String is %s", obj);
                             Iterator<String>  it = obj.keys();
                             String response = it.next();
@@ -206,14 +220,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                                     }
                                 }
                             } else if(response.equalsIgnoreCase("metadata")) {
+                                Timber.d("Received onNext");
                                 Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
                                         mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
-                                cameraViewModel.getImageLiveData().postValue(bitmap);
+                                cameraViewModel.setImage(bitmap);
                                 mainActivity.dismissProgressDialog();
                             }
                         },
                         e -> {
-
+                            e.printStackTrace();
                         });
     }
 
@@ -333,6 +348,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 break;
             }
             case R.id.action_stream: {
+                if(isStreaming) {
+                    startStreaming(false);
+                    isStreaming = false;
+                } else {
+                    startStreaming(true);
+                    isStreaming = true;
+                }
                 break;
             }
             // file menu items
@@ -376,32 +398,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
      * disconnectFromCamera
      */
     private void disconnectFromCamera() {
-//        MainActivity.CameraCallback callback = new MainActivity.CameraCallback() {
-//            @Override
-//            public void callback(JSONObject response) {
-//                try {
-//                    if (response.has("result")) {
-//                        if (response.getString("result").equals("OK")) {
-//                            cameraViewModel.setIsCameraConnected(false);
-//                            mainActivity.invalidateOptionsMenu();
-//                        } else {
-//                            //TODO handle error
-//                            cameraViewModel.setIsCameraConnected(true);
-//                        }
-//                    } else {
-//                        //TODO handle error
-//                        cameraViewModel.setIsCameraConnected(true);
-//                    }
-//                } catch (JSONException e1) {
-//                    //TODO handle error
-//                    cameraViewModel.setIsCameraConnected(true);
-//                }
-//            }
-//        };
         try {
             mainActivity.getCameraService().disconnect();
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -440,6 +440,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         try {
             mainActivity.showProgressDialog(getString(R.string.get_image), getString(R.string.acquiring));
             mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void startStreaming(Boolean flag) {
+        try {
+            if(flag) {
+                mainActivity.getCameraService().startStreaming();
+            } else {
+                mainActivity.getCameraService().stopStreaming();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

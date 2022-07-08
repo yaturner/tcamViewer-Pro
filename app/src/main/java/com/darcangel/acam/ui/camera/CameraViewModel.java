@@ -52,7 +52,7 @@ public class CameraViewModel extends ViewModel {
     }
 
     public void setImage(Bitmap image) {
-        this.image.setValue(image);
+        this.image.postValue(image);
     }
 
     public String getSelectedPalette() {
