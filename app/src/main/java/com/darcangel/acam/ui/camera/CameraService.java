@@ -111,9 +111,6 @@ public class CameraService {
 
     public void stopStreaming() {
         isStreaming = false;
-//        command = Constants.CMD_SET_STREAM_OFF;
-//        Runnable sco = new SendCmdOnly();
-//        new Thread(sco).start();
     }
 
     /**
@@ -230,7 +227,6 @@ public class CameraService {
                     if (bytesRead - threePos > 0) {
                         response += new String(buffer, 0, threePos + 1);
                         JSONObject jsonString = parseResponse(response);
-
                         //Timber.d("Sending onNext()");
                         imageChannel.onNext(jsonString);
                         int bytesLeft = bytesRead - threePos;
