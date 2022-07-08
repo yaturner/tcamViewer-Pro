@@ -57,7 +57,7 @@ public final class Constants {
     public final static String CMD_SET_CONFIG  = "\2{\"cmd\":\"set_config\", \"args\": %s}\3";
     public final static String CMD_SET_SPOTMETER   = "\2{\"cmd\":\"set_spotmeter\", \"args\": %s}\3";
     public final static String CMD_SET_STREAM_ON   = "\2{\"cmd\":\"stream_on\", \"args\": %s}\3";
-    public final static String CMD_SET_STREAM_OFF   = "\2{\"cmd\":\"stream_off\3";
+    public final static String CMD_SET_STREAM_OFF   = "\2{\"cmd\":\"stream_off\"}\3";
     public final static String CMD_SET_WIFI   = "\2{\"cmd\":\"set_wifi\"}\3";
     public final static String CMD_GET_IMAGE   = "\2{\"cmd\":\"get_image\"}\3";
 

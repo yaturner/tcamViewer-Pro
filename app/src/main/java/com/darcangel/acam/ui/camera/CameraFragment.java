@@ -78,7 +78,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                     new ActivityResultCallback<Uri>() {
                         @Override
                         public void onActivityResult(Uri uri) {
-                            Timber.d("Result = %s", uri.toString());
+                            //Timber.d("Result = %s", uri.toString());
                             OutputStream outputStream = null;
                             Bitmap bitmap = cameraViewModel.getImage();
                             try {
@@ -194,7 +194,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         disposable = cameraService.getImageChannel()
                         .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(obj -> {
-                            Timber.d("OnNext String is %s", obj);
+                            //Timber.d("OnNext String is %s", obj);
                             Iterator<String>  it = obj.keys();
                             String response = it.next();
                             if (response.equalsIgnoreCase("connected")) {
@@ -220,7 +220,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                                     }
                                 }
                             } else if(response.equalsIgnoreCase("metadata")) {
-                                Timber.d("Received onNext");
+                                //Timber.d("Received onNext");
                                 Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
                                         mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
                                 cameraViewModel.setImage(bitmap);

@@ -17,6 +17,7 @@ import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import timber.log.Timber;
 
 public class CameraService {
 
@@ -109,13 +110,10 @@ public class CameraService {
     }
 
     public void stopStreaming() {
-        command = Constants.CMD_SET_STREAM_OFF;
-        try {
-            cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
-        } catch(IOException e) {
-
-        }
         isStreaming = false;
+//        command = Constants.CMD_SET_STREAM_OFF;
+//        Runnable sco = new SendCmdOnly();
+//        new Thread(sco).start();
     }
 
     /**
@@ -128,6 +126,7 @@ public class CameraService {
             SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
             try {
                 cameraSocket.connect(socketAddress);
+                cameraSocket.setKeepAlive(true);
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -149,6 +148,25 @@ public class CameraService {
                 e.printStackTrace();
                 imageChannel.onError(e);
                 return;
+            }
+        }
+    }
+
+    /**
+     * SendCmdOnly
+     * Thread to send a command and receive the response
+     */
+    class SendCmdOnly implements Runnable {
+        @Override
+        public void run() {
+            boolean eof = false;
+            int bytesRead = 0;
+            response = "";
+
+            try {
+                cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+
             }
         }
     }
@@ -194,7 +212,9 @@ public class CameraService {
             response = "";
 
             try {
-                bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
+                if(bufferedInputStream == null) {
+                    bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
+                }
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
                 //Timber.d("Sent cmd: '%s' to camera", command);
                 while (isStreaming) {
@@ -225,14 +245,20 @@ public class CameraService {
                         response += new String(buffer, 0, bytesRead);
                     }
                 }
+                command = Constants.CMD_SET_STREAM_OFF;
+                cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
+                //flush out any unprocessed images
+                do {
+                    bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
+                    Timber.d("Flushing %d bytes, last = %d", bytesRead, buffer[bytesRead-1]);
+                    if(buffer[bytesRead-1] == 3) {
+                        bytesRead = -1;
+                    }
+                } while(bytesRead > 0);
+                //Timber.d("Buffer flushed");
             } catch (IOException e) {
                 e.printStackTrace();
                 imageChannel.onError(e);
-                try {
-                    bufferedInputStream.close();
-                } catch(IOException e1) {
-                    //ignore
-                }
             }
         }
     }
