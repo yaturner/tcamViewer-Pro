@@ -43,7 +43,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private OnBackPressedDispatcher onBackPressedDispatcher;
     private OnBackPressedCallback onBackPressedCallback;
     private CameraService cameraService;
-    private Disposable disposable;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -57,30 +56,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         settingsViewModel = mainActivity.getSettingsViewModel();
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
-        disposable = cameraService.getImageChannel().
-                subscribe(t -> {
-                            if (t != null) {
-                                Timber.d("Result String is %s", t);
-                            }
-                        },
-                        e -> {
-                            if (e != null) {
-                                Timber.d("Error String is %s", e);
-                            }
-                        });
 
-        /*
-         * handle the back button, show save dialog first
-         */
-        onBackPressedDispatcher = requireActivity().getOnBackPressedDispatcher();
-        onBackPressedCallback = new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                //createSaveDialog().show();
-            }
-        };
-
-        onBackPressedDispatcher.addCallback(onBackPressedCallback);
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
 
@@ -181,8 +157,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
         settings.persist();
+        cameraService.setIpAddress(settings.getCameraAddress());
     }
 }
