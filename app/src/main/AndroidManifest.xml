@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+
     <application
         android:name=".AcamApplication"
         android:allowBackup="true"
@@ -16,6 +17,7 @@
         android:roundIcon="@drawable/appicon_48"
         android:supportsRtl="true"
         android:theme="@style/Theme.Acam">
+        <profileable android:shell="true"/>
         <provider
             android:name="com.darcangel.acam.providers.ImageProvider"
             android:authorities="com.darcangel.fileprovider"

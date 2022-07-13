@@ -32,8 +32,8 @@ public class CameraUtils {
     private int TLinearEnabled;
     private int TLinearResolution; // 0 = 0.1, 1 = 0.01
     private int spotmeterMean;
-    private Rect spotLoc;
-    private boolean sutterLockout;
+    private Rect spotmeterLocation;
+    private boolean shutterLockout;
     private int FFCState;
     private int FFCDesired;
     private int gainMode;
@@ -91,7 +91,7 @@ public class CameraUtils {
         Integer y1 = telemetryData[offsetC+54]&0xffff;
         Integer x2 = telemetryData[offsetC+57]&0xffff;
         Integer y2 = telemetryData[offsetC+56]&0xffff;
-        spotLoc = new Rect(x1, y1, x2, y2);
+        spotmeterLocation = new Rect(x1, y1, x2, y2);
 
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
@@ -205,11 +205,18 @@ public class CameraUtils {
         return IP_PATTERN.matcher(address).matches();
     }
 
-    public Bitmap drawHotspot(int x, int y) {
-        Paint paint = new Paint();
-        paint.setColor(0xffffffff);
-        paint.setStyle(Paint.Style.STROKE);
+    public Bitmap drawHotspot() {
+        Paint paintWhite = new Paint();
+        Paint paintBlack = new Paint();
+        paintWhite.setColor(0xffffffff);
+        paintWhite.setStyle(Paint.Style.STROKE);
+        paintWhite.setStrokeWidth(1f);
+        paintBlack.setColor(0xff000000);
+        paintBlack.setStyle(Paint.Style.STROKE);
+        paintBlack.setStrokeWidth(1f);
 
+        int imageX = spotmeterLocation.left * Constants.DISPLAY_IMAGE_SCALE;
+        int imageY = spotmeterLocation.top  * Constants.DISPLAY_IMAGE_SCALE;
         //Create a new image bitmap and attach a brand new canvas to it
         Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
         Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.ARGB_8888);
@@ -219,7 +226,8 @@ public class CameraUtils {
         tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
 
         //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
-        tempCanvas.drawRect(new Rect(x-1, y-1, x+1, y+1), paint);
+        tempCanvas.drawRect(new Rect(imageX-2, imageY-2, imageX+2, imageY+2), paintWhite);
+        tempCanvas.drawRect(new Rect(imageX-3, imageY-3, imageX+3, imageY+3), paintBlack);
 
         //Attach the canvas to the ImageView
         return tempBitmap;
@@ -301,5 +309,13 @@ public class CameraUtils {
             json = "";
         }
         return json;
+    }
+
+    public Rect getSpotmeterLocation() {
+        return spotmeterLocation;
+    }
+
+    public void setSpotmeterLocation(Rect rect) {
+        spotmeterLocation = rect;
     }
 }

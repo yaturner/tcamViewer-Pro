@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -53,10 +54,9 @@ import javax.inject.Singleton;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
-import timber.log.Timber;
 
 @Singleton
-public class CameraFragment extends Fragment implements View.OnTouchListener, View.OnClickListener {
+public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     private FragmentCameraBinding binding;
     private Socket cameraSocket;
@@ -158,9 +158,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
 
     public interface FileSelectionEntryPoint {
         Fragment fileSelectionOwner = null;
-
         void onFileCreated(FileDescriptor fileDescriptor);
-
         void onFileSelected(FileDescriptor fileDescriptor);
     }
 
@@ -239,7 +237,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
-        binding.ivCamera.setOnClickListener(this);
+//        binding.ivCamera.setOnClickListener(this);
         return root;
     }
 
@@ -257,13 +255,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
                 binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                         mainActivity.getPaletteFactory().getPaletteByName(
                                 cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
-                if (cameraViewModel.getImage() != null) {
-                    binding.ivCamera.setImageBitmap(cameraViewModel.getImage());
+                    Bitmap image = cameraUtils.drawHotspot();
+                    binding.ivCamera.setImageBitmap(image);
                     binding.tvMaxTemperature.setText(createTemperatureString(
                             cameraUtils.getMaxTemperature(settings.getUnitsC())));
                     binding.tvMinTemperature.setText(createTemperatureString(
                             cameraUtils.getMinTemperature(settings.getUnitsC())));
-                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -271,35 +268,34 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Vi
     }
 
     @Override
-    public void onClick(View v) {
-
-    }
-
-    @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            //scale the UI position to the bitmap
-            float w = v.getRight() - v.getLeft();
-            float h = v.getBottom() - v.getTop();
-            float scaleX = Constants.IMAGE_WIDTH / w;
-            float scaleY = Constants.IMAGE_HEIGHT / h;
-            int touchX = (int) event.getX();
-            int touchY = (int) event.getY();
-            int imageViewX = (int) (touchX * scaleX);
-            int imageViewY = (int) (touchY * scaleY);
-            mainActivity.runOnUiThread(() -> {
-                try {
-                    CameraUtils cameraUtils = mainActivity.getCameraUtils();
-                    binding.ivCamera.setImageBitmap(cameraUtils.drawHotspot(imageViewX, imageViewY));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-
-            return true;
-        } else {
-            return false;
+            cameraUtils.setSpotmeterLocation(new Rect((int)event.getX(), (int) event.getY(),
+                    (int) (event.getX()+1f), (int) (event.getY()+1f)));
+            drawHotspotFromTouch();
         }
+        return true;
+    }
+
+    private void drawHotspotFromTouch() {
+        //scale the UI position to the bitmap
+        Rect loc = cameraUtils.getSpotmeterLocation();
+        float scaleX = (float) Constants.IMAGE_WIDTH / (float) Constants.DISPLAY_IMAGE_WIDTH;
+        float scaleY = (float) Constants.IMAGE_HEIGHT / (float) Constants.DISPLAY_IMAGE_HEIGHT;
+        int imageViewX = (int) (loc.left * scaleX);
+        int imageViewY = (int) (loc.top * scaleY);
+        String args = String.format(Constants.ARGS_SET_SPOTMETER,
+                loc.left / Constants.DISPLAY_IMAGE_SCALE,
+                loc.left / Constants.DISPLAY_IMAGE_SCALE + 1,
+                loc.top / Constants.DISPLAY_IMAGE_SCALE,
+                loc.top / Constants.DISPLAY_IMAGE_SCALE + 1);
+        String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
+//        try {
+//            cameraService.sendCmd(cmd);
+//            cameraViewModel.setImage(cameraUtils.drawHotspot(imageViewX, imageViewY));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override

@@ -163,7 +163,7 @@ public class CameraService {
             try {
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-
+                e.printStackTrace();
             }
         }
     }

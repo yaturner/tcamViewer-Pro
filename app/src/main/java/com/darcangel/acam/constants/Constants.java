@@ -14,9 +14,11 @@ public final class Constants {
 
     public final static int RESULT_CODE_CREATE_DOCUMENT = 3001;
 
+    public final static int DISPLAY_IMAGE_SCALE = 4;
     public final static int IMAGE_HEIGHT = 120;
     public final static int IMAGE_WIDTH  = 160;
-
+    public final static int DISPLAY_IMAGE_HEIGHT = DISPLAY_IMAGE_SCALE * IMAGE_HEIGHT;
+    public final static int DISPLAY_IMAGE_WIDTH  = DISPLAY_IMAGE_SCALE * IMAGE_WIDTH;
     //Settings keys for SharedPrefs
     public final static String KEY_AGC = "agc";
     public final static String KEY_EMISSIVITY = "emissivity";
@@ -55,7 +57,7 @@ public final class Constants {
     public final static String CMD_GET_WIFI    = "\2{\"cmd\":\"get_wifi\"}\3";
     public final static String CMD_SET_TIME    = "\2{\"cmd\":\"set_time\", \"args\": %s}\3";
     public final static String CMD_SET_CONFIG  = "\2{\"cmd\":\"set_config\", \"args\": %s}\3";
-    public final static String CMD_SET_SPOTMETER   = "\2{\"cmd\":\"set_spotmeter\", \"args\": %s}\3";
+    public final static String CMD_SET_SPOTMETER   = "\2{\"cmd\":\"set_spotmeter\", \"args\": %s\n}\3";
     public final static String CMD_SET_STREAM_ON   = "\2{\"cmd\":\"stream_on\", \"args\": %s}\3";
     public final static String CMD_SET_STREAM_OFF   = "\2{\"cmd\":\"stream_off\"}\3";
     public final static String CMD_SET_WIFI   = "\2{\"cmd\":\"set_wifi\"}\3";
@@ -79,8 +81,8 @@ public final class Constants {
     public final static String ARGS_SET_SPOTMETER = "{\n" +
             "    \"c1\": %d,\n" +
             "    \"c2\": %d,\n" +
-            "    \"r1\": %d\n" +
-            "    \"r2\": %d\n" +
+            "    \"r1\": %d,\n" +
+            "    \"r2\": %d \n" +
             "  }";
     public final static String ARGS_SET_STREAM_ON = "{\n" +
             "    \"delay_msec\":%d,\n" +

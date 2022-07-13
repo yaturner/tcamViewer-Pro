@@ -1,6 +1,7 @@
 package com.darcangel.acam.container;
 
 import android.content.SharedPreferences;
+import android.graphics.Rect;
 import android.widget.TextView;
 
 import androidx.databinding.BaseObservable;
