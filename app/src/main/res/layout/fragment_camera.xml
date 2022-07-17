@@ -12,7 +12,7 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/llImage"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@android:color/background_dark"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/nav_view"
@@ -22,15 +22,15 @@
 
         <ImageView
             android:id="@+id/ivCamera"
-            android:layout_width="320dp"
-            android:layout_height="240dp"
+            android:layout_width="@dimen/display_image_width"
+            android:layout_height="@dimen/display_image_height"
             android:scaleType="fitXY"
             tools:srcCompat="@drawable/main_camera" />
 
         <androidx.appcompat.widget.LinearLayoutCompat
             android:id="@+id/llColorBar"
             android:layout_width="80dp"
-            android:layout_height="240dp"
+            android:layout_height="180dp"
             android:background="@android:color/background_dark"
             android:orientation="vertical"
             android:weightSum="20"
