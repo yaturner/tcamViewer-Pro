@@ -7,9 +7,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.darcangel.acam.MainActivity;
 
-import io.reactivex.rxjava3.disposables.Disposable;
-import timber.log.Timber;
-
 public class CameraViewModel extends ViewModel {
 
     private MutableLiveData<Boolean> isCameraConnected;
@@ -39,7 +36,7 @@ public class CameraViewModel extends ViewModel {
 
     public Bitmap getImage() {
         if(image == null) {
-            
+            image = new MutableLiveData<Bitmap>(null);
         }
         return image.getValue();
     }
@@ -51,8 +48,13 @@ public class CameraViewModel extends ViewModel {
         return image;
     }
 
-    public void setImage(Bitmap image) {
-        this.image.postValue(image);
+    public void setImage(Bitmap newImage) {
+        if(image == null) {
+            image = new MutableLiveData<Bitmap>(null);
+        }
+        if(image.getValue() == null || !image.getValue().sameAs(newImage)) {
+            image.setValue(newImage);
+        }
     }
 
     public String getSelectedPalette() {

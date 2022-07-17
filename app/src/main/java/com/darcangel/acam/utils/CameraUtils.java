@@ -215,8 +215,8 @@ public class CameraUtils {
         paintBlack.setStyle(Paint.Style.STROKE);
         paintBlack.setStrokeWidth(1f);
 
-        int imageX = spotmeterLocation.left * Constants.DISPLAY_IMAGE_SCALE;
-        int imageY = spotmeterLocation.top  * Constants.DISPLAY_IMAGE_SCALE;
+        int imageX = spotmeterLocation.left;
+        int imageY = spotmeterLocation.top;
         //Create a new image bitmap and attach a brand new canvas to it
         Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
         Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.ARGB_8888);
@@ -225,11 +225,9 @@ public class CameraUtils {
         //Draw the image bitmap into the canvas
         tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
 
-        //Draw everything else you want into the canvas, in this example a rectangle with rounded edges
         tempCanvas.drawRect(new Rect(imageX-2, imageY-2, imageX+2, imageY+2), paintWhite);
         tempCanvas.drawRect(new Rect(imageX-3, imageY-3, imageX+3, imageY+3), paintBlack);
 
-        //Attach the canvas to the ImageView
         return tempBitmap;
     }
 

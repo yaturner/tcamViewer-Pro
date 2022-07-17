@@ -120,6 +120,9 @@ public class CameraService {
     class ConnectSocket implements Runnable {
         @Override
         public void run() {
+            if(cameraSocket.isClosed()) {
+                cameraSocket = new Socket();
+            }
             SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
             try {
                 cameraSocket.connect(socketAddress);
@@ -141,6 +144,7 @@ public class CameraService {
         public void run() {
             try {
                 cameraSocket.close();
+                imageChannel.onNext(parseResponse("\2{\"connected\":\"false\"}\3"));
             } catch (IOException e) {
                 e.printStackTrace();
                 imageChannel.onError(e);

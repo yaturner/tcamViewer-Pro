@@ -195,6 +195,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                             //Timber.d("OnNext String is %s", obj);
                             Iterator<String>  it = obj.keys();
                             String response = it.next();
+                            //connect/disconnect
                             if (response.equalsIgnoreCase("connected")) {
                                 String value = obj.getString("connected");
                                 if (value.equalsIgnoreCase("true")) {
@@ -203,7 +204,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     if (isConnectingToCamera) {
                                         setTime();
                                     }
+                                } else {
+                                    cameraViewModel.setIsCameraConnected(false);
+                                    mainActivity.invalidateOptionsMenu();
                                 }
+                            //camera settings commands
                             } else if(response.equalsIgnoreCase("cam_info")) {
                                 //multiple response have "cam_info"
                                 JSONObject info = obj.getJSONObject("cam_info");
@@ -217,6 +222,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                         //nothing to do here
                                     }
                                 }
+                                //get image
                             } else if(response.equalsIgnoreCase("metadata")) {
                                 //Timber.d("Received onNext");
                                 Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
@@ -255,12 +261,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                         mainActivity.getPaletteFactory().getPaletteByName(
                                 cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
+                if(cameraViewModel.getImage() != null) {
                     Bitmap image = cameraUtils.drawHotspot();
+                    cameraViewModel.setImage(image);
                     binding.ivCamera.setImageBitmap(image);
                     binding.tvMaxTemperature.setText(createTemperatureString(
                             cameraUtils.getMaxTemperature(settings.getUnitsC())));
                     binding.tvMinTemperature.setText(createTemperatureString(
                             cameraUtils.getMinTemperature(settings.getUnitsC())));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -270,9 +279,22 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            cameraUtils.setSpotmeterLocation(new Rect((int)event.getX(), (int) event.getY(),
-                    (int) (event.getX()+1f), (int) (event.getY()+1f)));
-            drawHotspotFromTouch();
+            float scaleX = (float) Constants.IMAGE_WIDTH / (float) Constants.DISPLAY_IMAGE_WIDTH;
+            float scaleY = (float) Constants.IMAGE_HEIGHT / (float) Constants.DISPLAY_IMAGE_HEIGHT;
+//            int imageViewX = (int) (loc.left * scaleX);
+//            int imageViewY = (int) (loc.top * scaleY);
+//            String args = String.format(Constants.ARGS_SET_SPOTMETER,
+//                    loc.left / Constants.DISPLAY_IMAGE_SCALE,
+//                    loc.left / Constants.DISPLAY_IMAGE_SCALE + 1,
+//                    loc.top / Constants.DISPLAY_IMAGE_SCALE,
+//                    loc.top / Constants.DISPLAY_IMAGE_SCALE + 1);
+//            String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
+//        try {
+//            cameraService.sendCmd(cmd);
+//            cameraViewModel.setImage(cameraUtils.drawHotspot(imageViewX, imageViewY));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         }
         return true;
     }
@@ -315,6 +337,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             }
             case R.id.action_disconnect:
                 disconnectFromCamera();
+                isConnectingToCamera = false;
                 break;
             case R.id.action_get: {
                 getImage();
@@ -333,7 +356,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
-                                    binding.ivCamera.setImageBitmap(mainActivity.getCameraUtils().remapCurrentImage(palette));
+                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
+                                    ////binding.ivCamera.setImageBitmap(cameraUtils.remapCurrentImage(palette));
                                 }
                             }
                         }
@@ -384,7 +408,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
      */
     private void connectToCamera() {
         try {
-            ((MainActivity) mainActivity).getCameraService().connect();
+            mainActivity.getCameraService().connect();
         } catch (Exception e) {
             e.printStackTrace();
         }

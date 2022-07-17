@@ -258,7 +258,7 @@ public class Settings extends BaseObservable {
             emissivity = new MutableLiveData<>();
         }
         if (value != emissivity.getValue()) {
-            emissivity.postValue(value);
+            emissivity.setValue(value);
             notifyPropertyChanged(BR.emissivity);
         }
     }

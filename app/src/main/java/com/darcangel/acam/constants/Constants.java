@@ -14,7 +14,7 @@ public final class Constants {
 
     public final static int RESULT_CODE_CREATE_DOCUMENT = 3001;
 
-    public final static int DISPLAY_IMAGE_SCALE = 4;
+    public final static int DISPLAY_IMAGE_SCALE = 2;
     public final static int IMAGE_HEIGHT = 120;
     public final static int IMAGE_WIDTH  = 160;
     public final static int DISPLAY_IMAGE_HEIGHT = DISPLAY_IMAGE_SCALE * IMAGE_HEIGHT;

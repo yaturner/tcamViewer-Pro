@@ -65,6 +65,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             binding.cameraIPAddress.setText(address, TextView.BufferType.EDITABLE);
         }
 
+        emValues = mainActivity.getResources().getIntArray(R.array.emissivity_values);
+
         /*
          * only update the camera address in the settings, service when the focus changes
          *   otherwise we get called after each char is typed
