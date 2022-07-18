@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -279,45 +278,26 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_UP) {
-            float scaleX = (float) Constants.IMAGE_WIDTH / (float) Constants.DISPLAY_IMAGE_WIDTH;
-            float scaleY = (float) Constants.IMAGE_HEIGHT / (float) Constants.DISPLAY_IMAGE_HEIGHT;
-//            int imageViewX = (int) (loc.left * scaleX);
-//            int imageViewY = (int) (loc.top * scaleY);
-//            String args = String.format(Constants.ARGS_SET_SPOTMETER,
-//                    loc.left / Constants.DISPLAY_IMAGE_SCALE,
-//                    loc.left / Constants.DISPLAY_IMAGE_SCALE + 1,
-//                    loc.top / Constants.DISPLAY_IMAGE_SCALE,
-//                    loc.top / Constants.DISPLAY_IMAGE_SCALE + 1);
-//            String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
-//        try {
-//            cameraService.sendCmd(cmd);
-//            cameraViewModel.setImage(cameraUtils.drawHotspot(imageViewX, imageViewY));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+            float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
+            float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
+            float scaleX = 160.0f / displayImageWidth;
+            float scaleY = 120.0f / displayImageHeight;
+            int imageViewX = (int) (event.getX() * scaleX);
+            int imageViewY = (int) (event.getY() * scaleY);
+            String args = String.format(Constants.ARGS_SET_SPOTMETER,
+                    imageViewX,
+                    imageViewX + 1,
+                    imageViewY,
+                    imageViewY + 1);
+            String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
+            try {
+                cameraService.sendCmd(cmd);
+                cameraViewModel.setImage(cameraUtils.drawHotspot());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return true;
-    }
-
-    private void drawHotspotFromTouch() {
-        //scale the UI position to the bitmap
-        Rect loc = cameraUtils.getSpotmeterLocation();
-        float scaleX = (float) Constants.IMAGE_WIDTH / (float) Constants.DISPLAY_IMAGE_WIDTH;
-        float scaleY = (float) Constants.IMAGE_HEIGHT / (float) Constants.DISPLAY_IMAGE_HEIGHT;
-        int imageViewX = (int) (loc.left * scaleX);
-        int imageViewY = (int) (loc.top * scaleY);
-        String args = String.format(Constants.ARGS_SET_SPOTMETER,
-                loc.left / Constants.DISPLAY_IMAGE_SCALE,
-                loc.left / Constants.DISPLAY_IMAGE_SCALE + 1,
-                loc.top / Constants.DISPLAY_IMAGE_SCALE,
-                loc.top / Constants.DISPLAY_IMAGE_SCALE + 1);
-        String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
-//        try {
-//            cameraService.sendCmd(cmd);
-//            cameraViewModel.setImage(cameraUtils.drawHotspot(imageViewX, imageViewY));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Override

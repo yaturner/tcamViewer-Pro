@@ -160,7 +160,8 @@ public class CameraUtils {
         if(minTemperature == 0 && maxTemperature == 0) {
             return colorBar;
         }
-        float offset = (((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT;
+        float offset = (float)Constants.COLORBAR_HEIGHT -
+                ((((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT);
 
         Paint paint = new Paint();
         paint.setColor(0xffffffff);

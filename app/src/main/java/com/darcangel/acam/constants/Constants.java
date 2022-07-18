@@ -1,5 +1,7 @@
 package com.darcangel.acam.constants;
 
+import com.darcangel.acam.MainActivity;
+
 public final class Constants {
     public final static int COLORBAR_WIDTH = 36;
     public final static int COLORBAR_HEIGHT = 256;
@@ -11,14 +13,11 @@ public final class Constants {
     public final static String ERROR = "{\"result\":\"ERROR\"}";
 
     public final static int REQUEST_WRITE_PERMISSION = 2001;
-
     public final static int RESULT_CODE_CREATE_DOCUMENT = 3001;
 
-    public final static int DISPLAY_IMAGE_SCALE = 2;
+    public final static int IMAGE_WIDTH = 160;
     public final static int IMAGE_HEIGHT = 120;
-    public final static int IMAGE_WIDTH  = 160;
-    public final static int DISPLAY_IMAGE_HEIGHT = DISPLAY_IMAGE_SCALE * IMAGE_HEIGHT;
-    public final static int DISPLAY_IMAGE_WIDTH  = DISPLAY_IMAGE_SCALE * IMAGE_WIDTH;
+
     //Settings keys for SharedPrefs
     public final static String KEY_AGC = "agc";
     public final static String KEY_EMISSIVITY = "emissivity";
