@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -292,6 +293,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
             try {
                 cameraService.sendCmd(cmd);
+                cameraUtils.setSpotmeterLocation(new Rect(
+                        imageViewX,
+                        imageViewY,
+                        imageViewX + 1,
+                        imageViewY + 1));
                 cameraViewModel.setImage(cameraUtils.drawHotspot());
             } catch (IOException e) {
                 e.printStackTrace();

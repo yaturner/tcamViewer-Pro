@@ -151,11 +151,6 @@ public class CameraUtils {
     }
 
     public Bitmap drawHotspotArrow(Bitmap colorBar,  float temperature) {
-        // create and draw triangles
-        // use a Path object to store the 3 line segments
-        // use .offset to draw in many locations
-        // note: this triangle is not centered at 0,0
-
         //if there is no camera image, no arrow
         if(minTemperature == 0 && maxTemperature == 0) {
             return colorBar;
