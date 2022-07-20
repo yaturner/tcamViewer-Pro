@@ -1,7 +1,5 @@
 package com.darcangel.acam.ui.camera;
 
-import androidx.lifecycle.MutableLiveData;
-
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 import com.google.gson.internal.bind.TreeTypeAdapter;
@@ -36,8 +34,8 @@ public class CameraService {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
         //Listen for changes in ipAddress
-        MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
-        camera.observe(mainActivity, this::setIpAddress);
+        //MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
+        //camera.observe(mainActivity, this::setIpAddress);
     }
 
     /***************User APi methods***************/
@@ -47,30 +45,38 @@ public class CameraService {
      * @param address
      */
     public void setIpAddress(final String address) {
-
+        ipAddress = address;
         if (isConnected()) {
             disconnect();
-            connect();
         }
-        ipAddress = address;
     }
 
     /**
      * connect
-     *
      */
     public void connect() {
-        Runnable connect = new ConnectSocket();
-        new Thread(connect).start();
+        try {
+            Runnable connect = new ConnectSocket();
+            Thread thread = new Thread(connect);
+            thread.start();
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * disconnect
-     *
      */
     public void disconnect() {
-        Runnable disconnect = new DisconnectSocket();
-        new Thread(disconnect).start();
+        try {
+            Runnable disconnect = new DisconnectSocket();
+            Thread thread = new Thread(disconnect);
+            thread.start();
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -91,7 +97,7 @@ public class CameraService {
      * @return
      */
     public boolean isConnected() {
-        if (cameraSocket != null) {
+        if (cameraSocket != null || !cameraSocket.isClosed()) {
             return cameraSocket.isConnected();
         } else {
             return false;
@@ -120,12 +126,12 @@ public class CameraService {
     class ConnectSocket implements Runnable {
         @Override
         public void run() {
-            if(cameraSocket.isClosed()) {
-                cameraSocket = new Socket();
-            }
-            SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
             try {
-                cameraSocket.connect(socketAddress);
+                if (cameraSocket.isClosed()) {
+                    cameraSocket = new Socket();
+                }
+                SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
+                cameraSocket.connect(socketAddress, 5000);
                 cameraSocket.setKeepAlive(true);
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));
             } catch (IOException e) {
@@ -213,7 +219,7 @@ public class CameraService {
             response = "";
 
             try {
-                if(bufferedInputStream == null) {
+                if (bufferedInputStream == null) {
                     bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
                 }
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
@@ -234,9 +240,9 @@ public class CameraService {
                         //Timber.d("Sending onNext()");
                         imageChannel.onNext(jsonString);
                         int bytesLeft = bytesRead - threePos;
-                        if(bytesLeft > 0) {
+                        if (bytesLeft > 0) {
                             //Timber.d("There were %d bytes left in the buffer", bytesLeft);
-                            response = new String(buffer, threePos+1, bytesLeft-1);
+                            response = new String(buffer, threePos + 1, bytesLeft - 1);
                             //Timber.d("New Response is '%s'", response);
                         } else {
                             response = "";
@@ -250,11 +256,11 @@ public class CameraService {
                 //flush out any unprocessed images
                 do {
                     bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
-                    Timber.d("Flushing %d bytes, last = %d", bytesRead, buffer[bytesRead-1]);
-                    if(buffer[bytesRead-1] == 3) {
+                    Timber.d("Flushing %d bytes, last = %d", bytesRead, buffer[bytesRead - 1]);
+                    if (buffer[bytesRead - 1] == 3) {
                         bytesRead = -1;
                     }
-                } while(bytesRead > 0);
+                } while (bytesRead > 0);
                 //Timber.d("Buffer flushed");
             } catch (IOException e) {
                 e.printStackTrace();

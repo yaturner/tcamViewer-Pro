@@ -24,10 +24,9 @@ import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
 import com.darcangel.acam.ui.camera.CameraService;
 import com.darcangel.acam.utils.CameraUtils;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import io.reactivex.rxjava3.disposables.Disposable;
-import timber.log.Timber;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener {
@@ -82,86 +81,82 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 }
             } else {
                 hadFocus = true;
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
+                        .setCancelable(true)
+                        .setPositiveButton(R.string.ok, (dialog, which) -> {
+                                dialog.dismiss();
+                            })
+                        .setMessage(R.string.warning_disconnect);
+                builder.create().show();
             }
         });
+
+
         return view;
     }
 
-    private Dialog createSaveDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-        builder.setTitle(R.string.title_settings)
-                .setMessage("Do you wish to save your settings")
-                .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    settings.persist();
-                    dialog.dismiss();
-                    onBackPressedCallback.remove();
-                    mainActivity.onBackPressed();
-                })
-                .setNegativeButton(R.string.no, (dialog, which) -> {
-                    dialog.dismiss();
-                    onBackPressedCallback.remove();
-                    mainActivity.onBackPressed();
-                });
-        return builder.create();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if (mainActivity.getCameraService().isConnected()) {
-            binding.btnCancelSave.btnSave.setEnabled(true);
-            binding.btnNavWiFiSettings.setEnabled(true);
-            binding.btnNavWiFiSettings.setOnClickListener(this);
-        } else {
-            binding.btnCancelSave.btnSave.setEnabled(false);
-            binding.btnNavWiFiSettings.setEnabled(false);
-            binding.btnNavWiFiSettings.setOnClickListener(null);
+        private Dialog createSaveDialog () {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+            builder.setTitle(R.string.title_settings)
+                    .setMessage("Do you wish to save your settings")
+                    .setPositiveButton(R.string.yes, (dialog, which) -> {
+                        settings.persist();
+                        dialog.dismiss();
+                        onBackPressedCallback.remove();
+                        mainActivity.onBackPressed();
+                    })
+                    .setNegativeButton(R.string.no, (dialog, which) -> {
+                        dialog.dismiss();
+                        onBackPressedCallback.remove();
+                        mainActivity.onBackPressed();
+                    });
+            return builder.create();
         }
-        binding.btnEmissivityHint.setOnClickListener(this);
-    }
 
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btnNavWiFiSettings:
-                navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
-                mainActivity.getNavController().navigate(navDirections);
-                break;
-            case R.id.btnEmissivityHint:
-                int selectedItem;
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Select Emissivity")
-                        .setAdapter(new EmissivityDialogListAdapter(getActivity()),
-                                (dialog, which) -> {
-                                    settings.setEmissivity(emValues[which]);
-                                })
-                        .setCancelable(true)
-                        .setNegativeButton(getString(R.string.cancel), null)
-                        .setPositiveButton(getString(R.string.ok), null);
-                AlertDialog dialog = builder.create();
-                dialog.show();
-                break;
+        @Override
+        public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState){
+            super.onViewCreated(view, savedInstanceState);
+            if (mainActivity.getCameraService().isConnected()) {
+                binding.btnCancelSave.btnSave.setEnabled(true);
+                binding.btnNavWiFiSettings.setEnabled(true);
+                binding.btnNavWiFiSettings.setOnClickListener(this);
+            } else {
+                binding.btnCancelSave.btnSave.setEnabled(false);
+                binding.btnNavWiFiSettings.setEnabled(false);
+                binding.btnNavWiFiSettings.setOnClickListener(null);
+            }
+            binding.btnEmissivityHint.setOnClickListener(this);
         }
-    }
 
-    private void setConfig() {
-        String args = String.format(Constants.ARGS_SET_CONFIG,
-                (settings.getAGC() ? 1 : 0),
-                settings.getEmissivity(),
-                (settings.getGainAuto() ? 2 : settings.getGainLow() ? 1 : 0));
-        String cmd = String.format(Constants.CMD_SET_CONFIG, args);
-        try {
-            mainActivity.getCameraService().sendCmd(cmd);
-        } catch (Exception e) {
-            e.printStackTrace();
+
+        @Override
+        public void onClick (View v){
+            switch (v.getId()) {
+                case R.id.btnNavWiFiSettings:
+                    navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
+                    mainActivity.getNavController().navigate(navDirections);
+                    break;
+                case R.id.btnEmissivityHint:
+                    int selectedItem;
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Select Emissivity")
+                            .setAdapter(new EmissivityDialogListAdapter(getActivity()),
+                                    (dialog, which) -> {
+                                        settings.setEmissivity(emValues[which]);
+                                    })
+                            .setCancelable(true)
+                            .setNegativeButton(getString(R.string.cancel), null)
+                            .setPositiveButton(getString(R.string.ok), null);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                    break;
+            }
+        }
+
+        @Override
+        public void onDestroy () {
+            super.onDestroy();
+            settings.persist();
+            //setConfig();
         }
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        settings.persist();
-        cameraService.setIpAddress(settings.getCameraAddress());
-    }
-}

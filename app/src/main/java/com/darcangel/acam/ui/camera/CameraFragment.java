@@ -54,6 +54,8 @@ import javax.inject.Singleton;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
+import kotlin.jvm.Synchronized;
+import timber.log.Timber;
 
 @Singleton
 public class CameraFragment extends Fragment implements View.OnTouchListener {
@@ -233,6 +235,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         },
                         e -> {
                             e.printStackTrace();
+
                         });
     }
 
@@ -243,14 +246,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
-//        binding.ivCamera.setOnClickListener(this);
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        settings.getLiveDataCameraAddress().observe(mainActivity, address -> {
+            Timber.d("address is now %s", address);
+            cameraService.setIpAddress(address);
+        });
         drawScreen();
     }
 
@@ -429,13 +434,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
      * setConfig
      */
     private void setConfig() {
-        String args = String.format(Constants.ARGS_SET_CONFIG, 0, 20, 1); //
-        String cmd = String.format(Constants.CMD_SET_CONFIG, args);
-        isConnectingToCamera = false;
-        try {
-            mainActivity.getCameraService().sendCmd(cmd);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (cameraService.isConnected()) {
+            String args = String.format(Constants.ARGS_SET_CONFIG,
+                    settings.getAGC() ? 1 : 0,
+                    settings.getEmissivity(),
+                    settings.getGainHigh() ? 0 : settings.getGainLow() ? 1 : 2);
+            String cmd = String.format(Constants.CMD_SET_CONFIG, args);
+            isConnectingToCamera = false;
+            try {
+                mainActivity.getCameraService().sendCmd(cmd);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

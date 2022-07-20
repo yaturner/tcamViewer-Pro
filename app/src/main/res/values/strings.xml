@@ -66,4 +66,5 @@
     <string name="footer_pos">"Footer position:</string>
     <string name="section_info_title">[Section Info]</string>
     <string name="close">CLOSE</string>
+    <string name="warning_disconnect">Changing the camera address will disconnect the camera</string>
 </resources>

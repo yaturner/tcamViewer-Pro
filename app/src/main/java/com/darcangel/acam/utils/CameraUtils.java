@@ -31,7 +31,7 @@ public class CameraUtils {
     private int emissivity;
     private int TLinearEnabled;
     private int TLinearResolution; // 0 = 0.1, 1 = 0.01
-    private int spotmeterMean;
+    private float spotmeterMean;
     private Rect spotmeterLocation;
     private boolean shutterLockout;
     private int FFCState;
@@ -147,14 +147,15 @@ public class CameraUtils {
         }
 
         Bitmap bitmap = Bitmap.createBitmap(pixels, width2, Constants.COLORBAR_HEIGHT, Bitmap.Config.ARGB_8888);
-        return drawHotspotArrow(bitmap, spotmeterMean);
+        return drawHotspotArrow(bitmap);
     }
 
-    public Bitmap drawHotspotArrow(Bitmap colorBar,  float temperature) {
+    public Bitmap drawHotspotArrow(Bitmap colorBar) {
         //if there is no camera image, no arrow
         if(minTemperature == 0 && maxTemperature == 0) {
             return colorBar;
         }
+
         float offset = (float)Constants.COLORBAR_HEIGHT -
                 ((((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT);
 
@@ -175,7 +176,6 @@ public class CameraUtils {
         path.lineTo(10, 0);
         path.lineTo(0, 10);
         path.close();
-//        path.offset(20, 10);
         path.offset(20f, offset);
         canvas.drawPath(path, paint);
 
@@ -233,6 +233,18 @@ public class CameraUtils {
 
     public float getMinTemperature(boolean celsius) {
         return scaleTemperature(celsius, minTemperature);
+    }
+
+    public float getMeanTemperatureAtSpotmeter() {
+        float mean = 0f;
+        Rect spotmeter = getSpotmeterLocation();
+        float topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
+        float topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
+        float bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
+        float bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
+        mean = (topLeft + topRight + bottomLeft + bottomRight)/4.0f;
+
+        return mean;
     }
 
     private float scaleTemperature(boolean celsius, float value) {
@@ -311,5 +323,6 @@ public class CameraUtils {
 
     public void setSpotmeterLocation(Rect rect) {
         spotmeterLocation = rect;
+        spotmeterMean = getMeanTemperatureAtSpotmeter();
     }
 }
