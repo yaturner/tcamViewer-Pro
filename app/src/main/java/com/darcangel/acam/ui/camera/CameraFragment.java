@@ -19,10 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
@@ -73,88 +69,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private Disposable disposable;
     private Boolean isStreaming = false;
 
-    // GetContent creates an ActivityResultLauncher<String> to allow you to pass
-    // in the mime type you'd like to allow the user to select
-    private ActivityResultLauncher<String> exportActivityResultLauncher =
-            registerForActivityResult(new ActivityResultContracts.CreateDocument(),
-                    new ActivityResultCallback<Uri>() {
-                        @Override
-                        public void onActivityResult(Uri uri) {
-                            //Timber.d("Result = %s", uri.toString());
-                            OutputStream outputStream = null;
-                            Bitmap bitmap = cameraViewModel.getImage();
-                            try {
-                                ContentResolver contentResolver = mainActivity.getContentResolver();
-                                MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-                                String type = mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
-                                outputStream = contentResolver.openOutputStream(uri);
-                                if (outputStream != null && bitmap != null) {
-                                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                                    outputStream.close();
-                                }
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    });
-
-    private ActivityResultLauncher<Intent> openActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent data = result.getData();
-                        Uri uri = data.getData();
-                        ContentResolver contentResolver = mainActivity.getContentResolver();
-                        MimeTypeMap mimeTypeMap = MimeTypeMap.getSingleton();
-                        String type = contentResolver.getType(uri);
-                        //do what we can can to assure that this is a tjsn file
-                        if (!type.equalsIgnoreCase("application/octet-stream")) {
-                            return;
-                        }
-                        String path = uri.getPath().toString();
-                        String ext = path.substring(path.lastIndexOf(".") + 1);
-                        if (!ext.isEmpty() && !ext.equalsIgnoreCase("tjsn")) {
-                            return;
-                        }
-                        InputStream inputStream;
-                        try {
-                            inputStream = contentResolver.openInputStream(uri);
-
-                            String tjsn = new String();
-                            String line;
-                            // if file the available for reading
-                            if (inputStream != null) {
-
-                                // prepare the file for reading
-                                InputStreamReader chapterReader = new InputStreamReader(inputStream);
-                                BufferedReader bufferedReader = new BufferedReader(chapterReader);
-
-                                while ((line = bufferedReader.readLine()) != null) {
-                                    tjsn = tjsn + line;
-                                }
-                                JSONObject jsonObject = new JSONObject(tjsn);
-                                Bitmap bitmap = cameraUtils.processImageResponse(jsonObject,
-                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
-                                if (bitmap != null) {
-                                    cameraViewModel.setImage(bitmap);
-                                }
-
-                            } else {
-                                //TODO handle error here
-                            }
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            //TODO handle error
-                        } catch (JSONException e1) {
-                            e1.printStackTrace();
-                            //TODO handle error
-                        }
-                    }
-                }
-            });
 
     private MainActivity mainActivity = null;
 
@@ -204,7 +118,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     cameraViewModel.setIsCameraConnected(true);
                                     mainActivity.invalidateOptionsMenu();
                                     if (isConnectingToCamera) {
-                                        setTime();
+                                        cameraViewModel.setTime();
                                     }
                                 } else {
                                     cameraViewModel.setIsCameraConnected(false);
@@ -218,7 +132,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     String infoType = info.getString("info_string");
                                     if(infoType.equalsIgnoreCase("set_time success")) {
                                         if (isConnectingToCamera) {
-                                            setConfig();
+                                            cameraViewModel.setConfig();
                                         }
                                     } else if(infoType.equalsIgnoreCase("set_config success")) {
                                         //nothing to do here
@@ -323,15 +237,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         switch (item.getItemId()) {
             case R.id.action_connect: {
                 isConnectingToCamera = true;
-                connectToCamera();
+                cameraViewModel.connectToCamera();
                 break;
             }
             case R.id.action_disconnect:
-                disconnectFromCamera();
+                cameraViewModel.disconnectFromCamera();
                 isConnectingToCamera = false;
                 break;
             case R.id.action_get: {
-                getImage();
+                cameraViewModel.getImageFromCamera();
                 break;
             }
             case R.id.action_palette: {
@@ -360,10 +274,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             }
             case R.id.action_stream: {
                 if(isStreaming) {
-                    startStreaming(false);
+                    cameraViewModel.startStreaming(false);
                     isStreaming = false;
                 } else {
-                    startStreaming(true);
+                    cameraViewModel.startStreaming(true);
                     isStreaming = true;
                 }
                 break;
@@ -373,7 +287,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mainActivity.quit();
                 break;
             case R.id.action_file_export:
-                exportImage(cameraViewModel.getImage());
+                cameraViewModel.exportImage(cameraViewModel.getImage());
                 break;
             case R.id.action_file_save:
                 try {
@@ -384,116 +298,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 }
                 break;
             case R.id.action_file_open:
-                openImage();
+                cameraViewModel.openImage();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
         }
 
         return true;
-    }
-
-    /**
-     * connectToCamera
-     * this is called when the camera is connected
-     */
-    private void connectToCamera() {
-        try {
-            mainActivity.getCameraService().connect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * disconnectFromCamera
-     */
-    private void disconnectFromCamera() {
-        try {
-            mainActivity.getCameraService().disconnect();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * setTime
-     */
-    private void setTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.ARGS_SET_TIME);
-        String args = simpleDateFormat.format(new Date());
-        String cmd = String.format(Constants.CMD_SET_TIME, args);
-        try {
-            mainActivity.getCameraService().sendCmd(cmd);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * setConfig
-     */
-    private void setConfig() {
-        if (cameraService.isConnected()) {
-            String args = String.format(Constants.ARGS_SET_CONFIG,
-                    settings.getAGC() ? 1 : 0,
-                    settings.getEmissivity(),
-                    settings.getGainHigh() ? 0 : settings.getGainLow() ? 1 : 2);
-            String cmd = String.format(Constants.CMD_SET_CONFIG, args);
-            isConnectingToCamera = false;
-            try {
-                mainActivity.getCameraService().sendCmd(cmd);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * getImage
-     */
-    private void getImage() {
-        try {
-            mainActivity.showProgressDialog(getString(R.string.get_image), getString(R.string.acquiring));
-            mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void startStreaming(Boolean flag) {
-        try {
-            if(flag) {
-                mainActivity.getCameraService().startStreaming();
-            } else {
-                mainActivity.getCameraService().stopStreaming();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * exportImage
-     *
-     * @param image
-     */
-    private void exportImage(@NonNull final Bitmap image) {
-        exportActivityResultLauncher.launch(CameraUtils.generateNewFilename() + ".png");
-    }
-
-    /**
-     * openImage
-     */
-    private void openImage() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.setType("*/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent = Intent.createChooser(intent, "Select an image file");
-        intent.addFlags(
-                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        openActivityResultLauncher.launch(intent);
     }
 
     @Override

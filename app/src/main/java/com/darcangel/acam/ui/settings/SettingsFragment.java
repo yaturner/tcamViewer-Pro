@@ -23,6 +23,7 @@ import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
 import com.darcangel.acam.ui.camera.CameraService;
+import com.darcangel.acam.ui.camera.CameraViewModel;
 import com.darcangel.acam.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -34,6 +35,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private FragmentSettingsBinding binding;
     private ViewGroup container;
     private SettingsViewModel settingsViewModel;
+    private CameraViewModel cameraViewModel;
     private MainActivity mainActivity;
     private Settings settings;
     private NavDirections navDirections;
@@ -53,6 +55,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         }
         cameraService = mainActivity.getCameraService();
         settingsViewModel = mainActivity.getSettingsViewModel();
+        cameraViewModel = mainActivity.getCameraViewModel();
+
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View view = binding.getRoot();
 
@@ -157,6 +161,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         public void onDestroy () {
             super.onDestroy();
             settings.persist();
-            //setConfig();
+            cameraViewModel.setConfig();
         }
     }
