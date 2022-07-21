@@ -1,13 +1,10 @@
 package com.darcangel.acam.ui.camera;
 
-import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.Intent;
+import android.app.AlertDialog;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,25 +28,18 @@ import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentCameraBinding;
 import com.darcangel.acam.utils.CameraUtils;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.FileDescriptor;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.net.SocketTimeoutException;
 import java.util.Iterator;
 
 import javax.inject.Singleton;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
-import kotlin.jvm.Synchronized;
 import timber.log.Timber;
 
 @Singleton
@@ -115,13 +104,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                             if (response.equalsIgnoreCase("connected")) {
                                 String value = obj.getString("connected");
                                 if (value.equalsIgnoreCase("true")) {
-                                    cameraViewModel.setIsCameraConnected(true);
                                     mainActivity.invalidateOptionsMenu();
                                     if (isConnectingToCamera) {
                                         cameraViewModel.setTime();
                                     }
                                 } else {
-                                    cameraViewModel.setIsCameraConnected(false);
                                     mainActivity.invalidateOptionsMenu();
                                 }
                             //camera settings commands
@@ -149,7 +136,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         },
                         e -> {
                             e.printStackTrace();
-
+                            if(e instanceof SocketTimeoutException) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
+                                        .setCancelable(true)
+                                        .setPositiveButton(R.string.ok,((dialog, which) -> {dialog.dismiss();}))
+                                        .setTitle(R.string.title_error)
+                                        .setMessage(R.string.error_can_not_connect);
+                                builder.create().show();
+                            }
                         });
     }
 
@@ -238,11 +232,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             case R.id.action_connect: {
                 isConnectingToCamera = true;
                 cameraViewModel.connectToCamera();
+                mainActivity.invalidateOptionsMenu();
                 break;
             }
             case R.id.action_disconnect:
                 cameraViewModel.disconnectFromCamera();
                 isConnectingToCamera = false;
+                mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
                 cameraViewModel.getImageFromCamera();
@@ -332,7 +328,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         for (int i = 0; i < paletteNames.length; i++) {
             paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE, paletteNames[i]);
         }
-        if (!cameraViewModel.getIsCameraConnected()) {
+        if (!cameraService.isConnected()) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemGet.setEnabled(false);

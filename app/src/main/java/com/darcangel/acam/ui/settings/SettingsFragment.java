@@ -161,6 +161,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         public void onDestroy () {
             super.onDestroy();
             settings.persist();
-            cameraViewModel.setConfig();
+            //changing the ip address will disconnect the camera
+            if(cameraService.isConnected()) {
+                cameraViewModel.setConfig();
+            }
         }
     }

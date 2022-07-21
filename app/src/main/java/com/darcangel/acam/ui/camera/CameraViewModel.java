@@ -127,26 +127,17 @@ public class CameraViewModel extends ViewModel {
 
 
     public CameraViewModel() {
-        setIsCameraConnected(false);
         setSelectedPalette("Fusion"); //TODO get from SharedPrefs
         mainActivity = MainActivity.getInstance();
         cameraService = mainActivity.getCameraService();
         cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
-    }
+        //Listen for changes in ipAddress
+        MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
+        camera.observe(mainActivity, address -> {
+            mainActivity.invalidateOptionsMenu();
+        });
 
-    public Boolean getIsCameraConnected() {
-        if(isCameraConnected == null) {
-            isCameraConnected = new MutableLiveData<>();
-        }
-        return isCameraConnected.getValue();
-    }
-
-    public void setIsCameraConnected(Boolean value) {
-        if(isCameraConnected == null) {
-            isCameraConnected = new MutableLiveData<>();
-        }
-        isCameraConnected.postValue(value);
     }
 
     public Bitmap getImage() {

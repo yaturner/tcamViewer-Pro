@@ -1,5 +1,7 @@
 package com.darcangel.acam.ui.camera;
 
+import androidx.lifecycle.MutableLiveData;
+
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 import com.google.gson.internal.bind.TreeTypeAdapter;
@@ -34,8 +36,8 @@ public class CameraService {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
         //Listen for changes in ipAddress
-        //MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
-        //camera.observe(mainActivity, this::setIpAddress);
+        MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
+        camera.observe(mainActivity, this::setIpAddress);
     }
 
     /***************User APi methods***************/
@@ -45,10 +47,10 @@ public class CameraService {
      * @param address
      */
     public void setIpAddress(final String address) {
-        ipAddress = address;
         if (isConnected()) {
             disconnect();
         }
+        ipAddress = address;
     }
 
     /**
@@ -97,8 +99,8 @@ public class CameraService {
      * @return
      */
     public boolean isConnected() {
-        if (cameraSocket != null || !cameraSocket.isClosed()) {
-            return cameraSocket.isConnected();
+        if (cameraSocket != null && !cameraSocket.isClosed() && cameraSocket.isConnected()) {
+            return true;
         } else {
             return false;
         }
