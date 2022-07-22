@@ -69,4 +69,5 @@
     <string name="warning_disconnect">Changing the camera address will disconnect the camera</string>
     <string name="error_can_not_connect">Failed to connect to camera, please check that the camera is turned on and the camera ip address is correct</string>
     <string name="title_error">Error</string>
+    <string name="file">File</string>
 </resources>
