@@ -182,6 +182,35 @@ public class CameraUtils {
         return tempBitmap;
     }
 
+    public Bitmap createHistogram(int[][] palette, int width) {
+        int[] bin = new int[256];
+        Paint black = new Paint();
+        Paint white = new Paint();
+        Rect fill = new Rect(0, 0, width, Constants.COLORBAR_HEIGHT);
+
+        black.setColor(0xff0000ff);
+        black.setStyle(Paint.Style.FILL);
+
+        white.setColor(0xffffffff);
+        white.setStyle(Paint.Style.STROKE);
+        white.setStrokeWidth(1.0f);
+
+        for(int index = 0; index < imageData.length; index++) {
+            int b = Math.min(((imageData[index] - minTemperature) * 255 / diff), 255);
+            bin[b]++;
+        }
+
+        Bitmap image = Bitmap.createBitmap(width, Constants.COLORBAR_HEIGHT, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(image);
+        canvas.drawRect(fill, black);
+
+        for(int index = 0; index < 256; index++) {
+            white.setColor(rgbToPixel(palette[255 - index]));
+            canvas.drawLine(0, (float)index, (float)bin[index], (float)index, white);
+        }
+
+        return image;
+    }
 
     public Bitmap remapCurrentImage(int[][] palette) {
         if(AGC) {

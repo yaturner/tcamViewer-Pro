@@ -31,6 +31,7 @@ public class CameraService {
     private String ipAddress;
     private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
     private final MainActivity mainActivity;
+    private Thread streamingThread;
 
     public CameraService() {
         cameraSocket = new Socket();
@@ -90,6 +91,24 @@ public class CameraService {
     public void sendCmd(final String cmd) throws IOException {
         command = cmd;
         Runnable sendCmd = new SendCmd();
+        Thread cmdThread = new Thread(sendCmd);
+        cmdThread.start();
+        try {
+            cmdThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * sendCmdNoResponse
+     *
+     * @param cmd
+     * @throws IOException
+     */
+    public void sendCmdNoResponse(final String cmd) throws IOException {
+        command = cmd;
+        Runnable sendCmd = new SendCmdNoResponse();
         new Thread(sendCmd).start();
     }
 
@@ -114,11 +133,17 @@ public class CameraService {
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
         Runnable streamer = new Stream();
         isStreaming = true;
-        new Thread(streamer).start();
+        streamingThread = new Thread(streamer);
+        streamingThread.start();
     }
 
     public void stopStreaming() {
         isStreaming = false;
+        try {
+            streamingThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -163,9 +188,9 @@ public class CameraService {
 
     /**
      * SendCmdOnly
-     * Thread to send a command and receive the response
+     * Thread to send a command with no response
      */
-    class SendCmdOnly implements Runnable {
+    class SendCmdNoResponse implements Runnable {
         @Override
         public void run() {
             boolean eof = false;

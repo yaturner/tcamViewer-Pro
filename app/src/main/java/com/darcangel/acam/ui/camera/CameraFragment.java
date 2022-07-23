@@ -18,6 +18,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 
@@ -36,13 +38,10 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Iterator;
 
-import javax.inject.Singleton;
-
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
 
-@Singleton
 public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     private FragmentCameraBinding binding;
@@ -57,8 +56,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private Settings settings;
     private Disposable disposable;
     private Boolean isStreaming = false;
-
-
     private MainActivity mainActivity = null;
 
     public interface FileSelectionEntryPoint {
@@ -170,18 +167,29 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private void drawScreen() {
         mainActivity.runOnUiThread(() -> {
             try {
+                int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
+                        cameraViewModel.getSelectedPalette());
                 binding.ivColorBar.setVisibility(View.VISIBLE);
                 binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
-                        mainActivity.getPaletteFactory().getPaletteByName(
-                                cameraViewModel.getSelectedPalette()), Constants.COLORBAR_WIDTH));
+                        palette, Constants.COLORBAR_WIDTH));
                 if(cameraViewModel.getImage() != null) {
+                    ConstraintLayout constraintLayout = binding.getRoot();
+                    ConstraintSet constraintSet = new ConstraintSet();
                     Bitmap image = cameraUtils.drawHotspot();
                     cameraViewModel.setImage(image);
                     binding.ivCamera.setImageBitmap(image);
+                    binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,256));
                     binding.tvMaxTemperature.setText(createTemperatureString(
                             cameraUtils.getMaxTemperature(settings.getUnitsC())));
                     binding.tvMinTemperature.setText(createTemperatureString(
                             cameraUtils.getMinTemperature(settings.getUnitsC())));
+                    int topOff = binding.ivColorBar.getTop();
+                    int bottomOff = binding.ivColorBar.getBottom();
+                    constraintSet.clone(constraintLayout);
+                    constraintSet.connect(R.id.ivHistogram,ConstraintSet.TOP, R.id.ivColorBar, ConstraintSet.TOP, topOff);
+                    constraintSet.connect(R.id.ivHistogram,ConstraintSet.BOTTOM, R.id.ivColorBar, ConstraintSet.BOTTOM, 0);
+                    constraintSet.applyTo(constraintLayout);
+                    binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,256));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -205,6 +213,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                     imageViewY + 1);
             String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
             try {
+                if(isStreaming) {
+                    cameraService.stopStreaming();
+                }
                 cameraService.sendCmd(cmd);
                 cameraUtils.setSpotmeterLocation(new Rect(
                         imageViewX,
@@ -212,6 +223,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         imageViewX + 1,
                         imageViewY + 1));
                 cameraViewModel.setImage(cameraUtils.drawHotspot());
+                if(isStreaming) {
+                    cameraService.startStreaming();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
