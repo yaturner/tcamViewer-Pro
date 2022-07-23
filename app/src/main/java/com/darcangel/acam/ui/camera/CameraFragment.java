@@ -183,13 +183,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                             cameraUtils.getMaxTemperature(settings.getUnitsC())));
                     binding.tvMinTemperature.setText(createTemperatureString(
                             cameraUtils.getMinTemperature(settings.getUnitsC())));
-                    int topOff = binding.ivColorBar.getTop();
-                    int bottomOff = binding.ivColorBar.getBottom();
                     constraintSet.clone(constraintLayout);
-                    constraintSet.connect(R.id.ivHistogram,ConstraintSet.TOP, R.id.ivColorBar, ConstraintSet.TOP, topOff);
+                    constraintSet.connect(R.id.ivHistogram,ConstraintSet.TOP, R.id.ivColorBar, ConstraintSet.TOP, 0);
                     constraintSet.connect(R.id.ivHistogram,ConstraintSet.BOTTOM, R.id.ivColorBar, ConstraintSet.BOTTOM, 0);
                     constraintSet.applyTo(constraintLayout);
-                    binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,256));
+                    binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,180));
                 }
             } catch (Exception e) {
                 e.printStackTrace();

@@ -184,11 +184,12 @@ public class CameraUtils {
 
     public Bitmap createHistogram(int[][] palette, int width) {
         int[] bin = new int[256];
+        int maxBinCount = -1;
         Paint black = new Paint();
         Paint white = new Paint();
         Rect fill = new Rect(0, 0, width, Constants.COLORBAR_HEIGHT);
 
-        black.setColor(0xff0000ff);
+        black.setColor(0xff000000);
         black.setStyle(Paint.Style.FILL);
 
         white.setColor(0xffffffff);
@@ -198,7 +199,10 @@ public class CameraUtils {
         for(int index = 0; index < imageData.length; index++) {
             int b = Math.min(((imageData[index] - minTemperature) * 255 / diff), 255);
             bin[b]++;
+            maxBinCount = Math.max(bin[b], maxBinCount);
         }
+
+        float scale = (float)width/(float)maxBinCount;
 
         Bitmap image = Bitmap.createBitmap(width, Constants.COLORBAR_HEIGHT, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(image);
@@ -206,7 +210,7 @@ public class CameraUtils {
 
         for(int index = 0; index < 256; index++) {
             white.setColor(rgbToPixel(palette[255 - index]));
-            canvas.drawLine(0, (float)index, (float)bin[index], (float)index, white);
+            canvas.drawLine(0, (float)index, (float)bin[index]*scale, (float)index, white);
         }
 
         return image;
