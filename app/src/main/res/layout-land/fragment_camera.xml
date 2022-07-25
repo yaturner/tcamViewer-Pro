@@ -4,22 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/holo_blue_bright"
+    android:background="@android:color/black"
     tools:context=".ui.camera.CameraFragment">
 
     <include layout="@layout/guidelines" />
 
     <TextView
         android:id="@+id/tvSpotmeter"
-        android:layout_width="wrap_content"
+        android:layout_width="50sp"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_margin="10dp"
         android:text=""
-        android:layout_margin="5sp"
         android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintTop_toTopOf="@+id/ivCamera"
-        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/ivCamera"/>
 
     <ImageView
@@ -28,17 +27,17 @@
         android:layout_height="@dimen/display_image_height"
         android:scaleType="fitXY"
         android:layout_marginEnd="10dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/ivColorBar"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toEndOf="@+id/tvSpotmeter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/nav_view"/>
 
     <TextView
         android:id="@+id/tvMaxTemperature"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text=""
+        android:layout_gravity="end"
+        android:gravity="end"
         android:layout_marginStart="5sp"
         android:textColor="@color/white"
         android:textSize="12sp"
@@ -76,8 +75,7 @@
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:scaleType="fitXY"
-        android:layout_marginEnd="5dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_margin="5dp"
         app:layout_constraintStart_toEndOf="@+id/ivColorBar"
         app:layout_constraintTop_toBottomOf="@+id/tvMaxTemperature"
         app:layout_constraintBottom_toTopOf="@+id/tvMinTemperature"/>

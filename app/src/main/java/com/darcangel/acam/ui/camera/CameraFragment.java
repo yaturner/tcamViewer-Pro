@@ -18,10 +18,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
@@ -60,7 +57,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     public interface FileSelectionEntryPoint {
         Fragment fileSelectionOwner = null;
+
         void onFileCreated(FileDescriptor fileDescriptor);
+
         void onFileSelected(FileDescriptor fileDescriptor);
     }
 
@@ -75,13 +74,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         cameraUtils = mainActivity.getCameraUtils();
         cameraService = mainActivity.getCameraService();
         settings = mainActivity.getSettings();
-        final Observer<Bitmap> imageObserver = new Observer<Bitmap>() {
-            @Override
-            public void onChanged(@Nullable final Bitmap bitmap) {
-                drawScreen();
-            }
-        };
-        cameraViewModel.getImageLiveData().observe(mainActivity, imageObserver);
+        cameraViewModel.getImageLiveData().observe(getActivity(), b -> {
+            drawScreen();
+        });
 
 //        info_value:
 //        0	Command NACK - the command failed. See the information string for more information.
@@ -92,51 +87,53 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 //        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
 
         disposable = cameraService.getImageChannel()
-                        .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(obj -> {
-                            //Timber.d("OnNext String is %s", obj);
-                            Iterator<String>  it = obj.keys();
+                            Iterator<String> it = obj.keys();
                             String response = it.next();
+                            Timber.d("Response String is %s", response);
                             //connect/disconnect
                             if (response.equalsIgnoreCase("connected")) {
                                 String value = obj.getString("connected");
                                 if (value.equalsIgnoreCase("true")) {
-                                    mainActivity.invalidateOptionsMenu();
                                     if (isConnectingToCamera) {
                                         cameraViewModel.setTime();
                                     }
-                                } else {
-                                    mainActivity.invalidateOptionsMenu();
+                                    getActivity().invalidateOptionsMenu();
                                 }
-                            //camera settings commands
-                            } else if(response.equalsIgnoreCase("cam_info")) {
+                                //camera settings commands
+                            } else if (response.equalsIgnoreCase("cam_info")) {
                                 //multiple response have "cam_info"
                                 JSONObject info = obj.getJSONObject("cam_info");
-                                if(info.has("info_string")) {
+                                if (info.has("info_string")) {
                                     String infoType = info.getString("info_string");
-                                    if(infoType.equalsIgnoreCase("set_time success")) {
+                                    if (infoType.equalsIgnoreCase("set_time success")) {
                                         if (isConnectingToCamera) {
                                             cameraViewModel.setConfig();
                                         }
-                                    } else if(infoType.equalsIgnoreCase("set_config success")) {
+                                    } else if (infoType.equalsIgnoreCase("set_config success")) {
                                         //nothing to do here
                                     }
                                 }
                                 //get image
-                            } else if(response.equalsIgnoreCase("metadata")) {
+                            } else if (response.equalsIgnoreCase("metadata")) {
                                 //Timber.d("Received onNext");
                                 Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
                                         mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
                                 cameraViewModel.setImage(bitmap);
-                                mainActivity.dismissProgressDialog();
+                                drawScreen();
+//                                mainActivity.dismissProgressDialog();
                             }
                         },
                         e -> {
                             e.printStackTrace();
-                            if(e instanceof SocketTimeoutException) {
+                            mainActivity.dismissProgressDialog(); //just in case
+                            if (e instanceof SocketTimeoutException) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
                                         .setCancelable(true)
-                                        .setPositiveButton(R.string.ok,((dialog, which) -> {dialog.dismiss();}))
+                                        .setPositiveButton(R.string.ok, ((dialog, which) -> {
+                                            dialog.dismiss();
+                                        }))
                                         .setTitle(R.string.title_error)
                                         .setMessage(R.string.error_can_not_connect);
                                 builder.create().show();
@@ -148,7 +145,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        binding = FragmentCameraBinding.inflate(inflater, container, false);
+        binding = FragmentCameraBinding. inflate(inflater, container, false);
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
         return root;
@@ -166,34 +163,33 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     private void drawScreen() {
         mainActivity.runOnUiThread(() -> {
-            try {
-                int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
-                        cameraViewModel.getSelectedPalette());
-                binding.ivColorBar.setVisibility(View.VISIBLE);
-                binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
-                        palette, Constants.COLORBAR_WIDTH));
-                if(cameraViewModel.getImage() != null) {
-                    ConstraintLayout constraintLayout = binding.getRoot();
-                    ConstraintSet constraintSet = new ConstraintSet();
-                    Bitmap image = cameraUtils.drawHotspot();
-                    cameraViewModel.setImage(image);
-                    binding.ivCamera.setImageBitmap(image);
-                    binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,256));
-                    binding.tvMaxTemperature.setText(createTemperatureString(
-                            cameraUtils.getMaxTemperature(settings.getUnitsC())));
-                    binding.tvMinTemperature.setText(createTemperatureString(
-                            cameraUtils.getMinTemperature(settings.getUnitsC())));
-                    constraintSet.clone(constraintLayout);
-                    constraintSet.connect(R.id.ivHistogram,ConstraintSet.TOP, R.id.ivColorBar, ConstraintSet.TOP, 0);
-                    constraintSet.connect(R.id.ivHistogram,ConstraintSet.BOTTOM, R.id.ivColorBar, ConstraintSet.BOTTOM, 0);
-                    constraintSet.applyTo(constraintLayout);
-                    binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,180));
+            if (binding.ivColorBar.getVisibility() == View.VISIBLE) {
+                try {
+                    int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
+                            cameraViewModel.getSelectedPalette());
+                    binding.ivColorBar.setVisibility(View.VISIBLE);
+                    binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
+                            palette, Constants.COLORBAR_WIDTH));
+                    if (cameraViewModel.getImage() != null) {
+                        Bitmap image = cameraUtils.drawHotspot();
+                        cameraViewModel.setImage(image);
+                        binding.ivCamera.setImageBitmap(image);
+                        binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette, 256));
+                        binding.tvMaxTemperature.setText(createTemperatureString(
+                                cameraUtils.getMaxTemperature(settings.getUnitsC())));
+                        binding.tvMinTemperature.setText(createTemperatureString(
+                                cameraUtils.getMinTemperature(settings.getUnitsC())));
+                        binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette, 180));
+                        binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
+                                getMeanTemperatureAtSpotmeter(settings.getUnitsC())));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         });
     }
+
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -211,7 +207,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                     imageViewY + 1);
             String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
             try {
-                if(isStreaming) {
+                if (isStreaming) {
                     cameraService.stopStreaming();
                 }
                 cameraService.sendCmd(cmd);
@@ -221,7 +217,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         imageViewX + 1,
                         imageViewY + 1));
                 cameraViewModel.setImage(cameraUtils.drawHotspot());
-                if(isStreaming) {
+                if (isStreaming) {
                     cameraService.startStreaming();
                 }
             } catch (IOException e) {
@@ -270,7 +266,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
                                     cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
-                                    ////binding.ivCamera.setImageBitmap(cameraUtils.remapCurrentImage(palette));
                                 }
                             }
                         }
@@ -281,7 +276,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 break;
             }
             case R.id.action_stream: {
-                if(isStreaming) {
+                if (isStreaming) {
                     cameraViewModel.startStreaming(false);
                     isStreaming = false;
                 } else {

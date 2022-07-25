@@ -24,6 +24,8 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import timber.log.Timber;
+
 
 public class CameraUtils {
     private boolean AGC;
@@ -55,6 +57,9 @@ public class CameraUtils {
     private static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
     private static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
+    public CameraUtils() {
+        Timber.d("Created CameraUtils");
+    }
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
         this.response = response;
@@ -134,12 +139,13 @@ public class CameraUtils {
     }
 
     public Bitmap createColorBar(int[][] palette, int width) {
+        //double the size. half black for the arrow
         int width2 = width*2;
         int[] pixels = new int[width2 * 256];
         for (int row = 0; row < 256; row++) {
             for (int col = 0; col < width2; col++) {
                 if (col < width) {
-                    pixels[row * width2 + col] = 0;
+                    pixels[row * width2 + col] = 0x00;
                 } else {
                     pixels[row * width2 + col] = rgbToPixel(palette[255 - row]);
                 }
@@ -182,6 +188,14 @@ public class CameraUtils {
         return tempBitmap;
     }
 
+    /**
+     *
+     * @param palette
+     * @param width
+     * @return bitmap of histogram
+     *
+     * the indices for the colors are all 255-value to match the color bar
+     */
     public Bitmap createHistogram(int[][] palette, int width) {
         int[] bin = new int[256];
         int maxBinCount = -1;
@@ -198,7 +212,7 @@ public class CameraUtils {
 
         for(int index = 0; index < imageData.length; index++) {
             int b = Math.min(((imageData[index] - minTemperature) * 255 / diff), 255);
-            bin[b]++;
+            bin[255 - b]++;
             maxBinCount = Math.max(bin[b], maxBinCount);
         }
 
@@ -268,6 +282,16 @@ public class CameraUtils {
         return scaleTemperature(celsius, minTemperature);
     }
 
+    public float getMeanTemperatureAtSpotmeter(boolean celsius) {
+        float mean = 0f;
+        Rect spotmeter = getSpotmeterLocation();
+        float topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
+        float topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
+        float bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
+        float bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
+        return scaleTemperature(celsius, (topLeft + topRight + bottomLeft + bottomRight)/4.0f);
+    }
+
     public float getMeanTemperatureAtSpotmeter() {
         float mean = 0f;
         Rect spotmeter = getSpotmeterLocation();
@@ -275,9 +299,7 @@ public class CameraUtils {
         float topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
         float bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
         float bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
-        mean = (topLeft + topRight + bottomLeft + bottomRight)/4.0f;
-
-        return mean;
+        return (topLeft + topRight + bottomLeft + bottomRight)/4.0f;
     }
 
     private float scaleTemperature(boolean celsius, float value) {

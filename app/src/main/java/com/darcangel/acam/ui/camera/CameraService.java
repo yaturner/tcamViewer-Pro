@@ -16,9 +16,12 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
+import javax.inject.Singleton;
+
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import timber.log.Timber;
 
+@Singleton
 public class CameraService {
 
     private Socket cameraSocket;
@@ -33,7 +36,15 @@ public class CameraService {
     private final MainActivity mainActivity;
     private Thread streamingThread;
 
-    public CameraService() {
+    private static CameraService _instance_ = null;
+    public static CameraService getInstance() {
+        if(_instance_ == null) {
+            _instance_ = new CameraService();
+        }
+        return _instance_;
+    }
+
+    private CameraService() {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
         //Listen for changes in ipAddress
@@ -154,7 +165,7 @@ public class CameraService {
         @Override
         public void run() {
             try {
-                if (cameraSocket.isClosed()) {
+                if (cameraSocket != null && (cameraSocket.isClosed() || !cameraSocket.isConnected())) {
                     cameraSocket = new Socket();
                 }
                 SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);

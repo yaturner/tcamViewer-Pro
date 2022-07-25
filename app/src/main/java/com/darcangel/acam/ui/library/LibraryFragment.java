@@ -83,7 +83,7 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        ////////////////////getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
         }

@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private PaletteFactory paletteFactory;
 
     private CameraService cameraService;
-    private CameraUtils util;
+    private CameraUtils cameraUtils;
 
     private ProgressDialog progressDialog;
 
@@ -229,16 +229,16 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     public CameraService getCameraService() {
         if(cameraService == null) {
-            cameraService = new CameraService();
+            cameraService = CameraService.getInstance();
         }
         return cameraService;
     }
 
     public CameraUtils getCameraUtils() {
-        if(util == null) {
-            util = new CameraUtils();
+        if(cameraUtils == null) {
+            cameraUtils = new CameraUtils();
         }
-        return util;
+        return cameraUtils;
     }
 
     public PaletteFactory getPaletteFactory() {

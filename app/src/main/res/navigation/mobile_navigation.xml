@@ -9,7 +9,7 @@
         android:id="@+id/navigation_camera"
         android:name="com.darcangel.acam.ui.camera.CameraFragment"
         android:label="@string/title_camera"
-        tools:layout="@layout/fragment_camera" >
+        tools:layout="@layout-land/fragment_camera" >
         <action
             android:id="@+id/action_navigation_camera_pop"
             app:popUpTo="@id/navigation_camera"

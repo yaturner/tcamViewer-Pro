@@ -239,8 +239,8 @@ public class CameraViewModel extends ViewModel {
      */
     public void getImageFromCamera() {
         try {
-            mainActivity.showProgressDialog(mainActivity.getResources().getString(R.string.get_image),
-                    mainActivity.getResources().getString(R.string.acquiring));
+//            mainActivity.showProgressDialog(mainActivity.getResources().getString(R.string.get_image),
+//                    mainActivity.getResources().getString(R.string.acquiring));
             mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE);
         } catch (Exception e) {
             e.printStackTrace();
