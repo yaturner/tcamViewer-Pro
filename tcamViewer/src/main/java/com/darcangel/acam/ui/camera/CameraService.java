@@ -168,7 +168,8 @@ public class CameraService {
                 if (cameraSocket != null && (cameraSocket.isClosed() || !cameraSocket.isConnected())) {
                     cameraSocket = new Socket();
                 }
-                SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
+                SocketAddress socketAddress = new InetSocketAddress(mainActivity.getSettings().getCameraAddress(),
+                        5001);
                 cameraSocket.connect(socketAddress, 5000);
                 cameraSocket.setKeepAlive(true);
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));

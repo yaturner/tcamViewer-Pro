@@ -1,7 +1,5 @@
 package com.darcangel.acam;
 
-import android.app.Application;
-
 import com.darcangel.acam.constants.Constants;
 
 import java.net.Socket;
@@ -11,7 +9,7 @@ import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
 
 @HiltAndroidApp
-public class AcamApplication extends Application {
+public class Application extends android.app.Application {
     //private DaggerController mDaggerController;
 
     public void onCreate() {

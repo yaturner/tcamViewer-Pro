@@ -64,7 +64,7 @@ public class Settings extends BaseObservable {
         setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, false));
         setGainHigh(sharedPreferences.getBoolean(Constants.KEY_GAIN_HIGH, false));
         setGainLow(sharedPreferences.getBoolean(Constants.KEY_GAIN_LOW, true));
-        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "192.158.0.42"));
+        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "10.0.1.74"));
         setExportOnSave(sharedPreferences.getBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, false));
         setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
         setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));

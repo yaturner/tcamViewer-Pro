@@ -19,7 +19,6 @@ import androidx.navigation.NavDirections;
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.R;
 import com.darcangel.acam.adapters.EmissivityDialogListAdapter;
-import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.container.Settings;
 import com.darcangel.acam.databinding.FragmentSettingsBinding;
 import com.darcangel.acam.ui.camera.CameraService;
@@ -160,8 +159,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         @Override
         public void onPause () {
             super.onPause();
-            settings.persist();
             //changing the ip address will disconnect the camera
+            settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
+            settings.persist();
             if(cameraService.isConnected()) {
                 cameraViewModel.setConfig();
             }
