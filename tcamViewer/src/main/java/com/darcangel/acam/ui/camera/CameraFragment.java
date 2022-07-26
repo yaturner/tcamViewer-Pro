@@ -94,7 +94,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     if (isConnectingToCamera) {
                                         cameraViewModel.setTime();
                                     }
-                                    getActivity().invalidateOptionsMenu();
+                                    mainActivity.invalidateOptionsMenu();
+                                } else {
+                                    mainActivity.invalidateOptionsMenu();
                                 }
                                 //camera settings commands
                             } else if (response.equalsIgnoreCase("cam_info")) {
@@ -152,6 +154,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         settings.getLiveDataCameraAddress().observe(mainActivity, address -> {
             Timber.d("address is now %s", address);
             settings.setCameraAddress(address);
+            cameraService.setIpAddress(address);
+            mainActivity.invalidateOptionsMenu();
         });
         drawScreen();
     }

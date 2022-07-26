@@ -2,6 +2,8 @@ package com.darcangel.acam.container;
 
 import android.content.SharedPreferences;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.widget.TextView;
 
 import androidx.databinding.BaseObservable;
@@ -15,8 +17,8 @@ import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 import com.darcangel.acam.utils.CameraUtils;
 
-public class Settings extends BaseObservable {
-    private SharedPreferences sharedPreferences;
+public class Settings extends BaseObservable implements Parcelable {
+    private final SharedPreferences sharedPreferences = MainActivity.getInstance().getSharedPreferences();
 
     //Settings Fragment
     private MutableLiveData<Boolean> AGC;
@@ -28,7 +30,7 @@ public class Settings extends BaseObservable {
     private MutableLiveData<Boolean> exportOnSave;
     private MutableLiveData<Boolean> exportMetaData;
     private MutableLiveData<Integer> exportResolution;  // HxW for exporting image
-    private MutableLiveData<Boolean> autoRange;         //if the Manual Rangle btn is clicked this false
+    private MutableLiveData<Boolean> autoRange;         //if the Manual Range btn is clicked this false
     private MutableLiveData<Integer> manualRangeMin;
     private MutableLiveData<Integer> manualRangeMax;
     private MutableLiveData<String> palette;
@@ -54,9 +56,66 @@ public class Settings extends BaseObservable {
     private MutableLiveData<Integer> streamDelay;
 
     public Settings() {
-        sharedPreferences = MainActivity.getInstance().getSharedPreferences();
         init();
     }
+
+    protected Settings(Parcel in) {
+        setAGC(in.readBoolean());
+        setEmissivity(in.readInt());
+        setGainAuto(in.readBoolean());
+        setGainHigh(in.readBoolean());
+        setGainLow(in.readBoolean());
+        setCameraAddress(in.readString());
+        setExportOnSave(in.readBoolean());
+        setExportMetaData(in.readBoolean());
+        setExportResolution(in.readInt());
+        setAutoRange(in.readBoolean());
+        setManualRangeMax(in.readInt());
+        setManualRangeMin(in.readInt());
+        setPalette(in.readString());
+        setShutterSound(in.readBoolean());
+        setDisplaySpotmeter(in.readBoolean());
+        setUnitsF(in.readBoolean());
+        setUnitsC(in.readBoolean());
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeBoolean(getAGC());
+        dest.writeInt(getEmissivity());
+        dest.writeBoolean(getGainAuto());
+        dest.writeBoolean(getGainHigh());
+        dest.writeBoolean(getGainLow());
+        dest.writeString(getCameraAddress());
+        dest.writeBoolean(getExportOnSave());
+        dest.writeBoolean(getExportMetaData());
+        dest.writeInt(getExportResolution());
+        dest.writeBoolean(getAutoRange());
+        dest.writeInt(getManualRangeMax());
+        dest.writeInt(getManualRangeMin());
+        dest.writeString(getPalette());
+        dest.writeBoolean(getShutterSound());
+        dest.writeBoolean(getDisplaySpotmeter());
+        dest.writeBoolean(getUnitsF());
+        dest.writeBoolean(getUnitsC());
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Creator<Settings> CREATOR = new Creator<Settings>() {
+        @Override
+        public Settings createFromParcel(Parcel in) {
+            return new Settings(in);
+        }
+
+        @Override
+        public Settings[] newArray(int size) {
+            return new Settings[size];
+        }
+    };
 
     private void init() {
         setAGC(sharedPreferences.getBoolean(Constants.KEY_AGC, false));

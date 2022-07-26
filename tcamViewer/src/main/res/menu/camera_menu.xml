@@ -49,6 +49,6 @@
     <item
         android:id="@+id/action_stream"
         android:title="Stream"
-        android:icon="@drawable/video_camera_30_30"
+        android:icon="@drawable/video_camera_no_t_30_30"
         app:showAsAction="always|withText" />
 </menu>

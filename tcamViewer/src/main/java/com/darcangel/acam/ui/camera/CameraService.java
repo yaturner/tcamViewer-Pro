@@ -1,5 +1,8 @@
 package com.darcangel.acam.ui.camera;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import androidx.lifecycle.MutableLiveData;
 
 import com.darcangel.acam.MainActivity;
@@ -21,35 +24,35 @@ import javax.inject.Singleton;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import timber.log.Timber;
 
-@Singleton
-public class CameraService {
+public class CameraService implements Parcelable {
 
     private Socket cameraSocket;
-    private byte[] buffer = new byte[4096];
+    private byte[] buffer;
     private String response;
     private String command;
     private BufferedInputStream bufferedInputStream;
     private boolean isStreaming = false;
     private TreeTypeAdapter streamThread;
     private String ipAddress;
-    private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
-    private final MainActivity mainActivity;
+    private PublishSubject<JSONObject> imageChannel;
+    private MainActivity mainActivity;
     private Thread streamingThread;
 
-    private static CameraService _instance_ = null;
-    public static CameraService getInstance() {
-        if(_instance_ == null) {
-            _instance_ = new CameraService();
-        }
-        return _instance_;
-    }
-
-    private CameraService() {
+    public CameraService() {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
+        imageChannel = PublishSubject.create();
+        buffer = new byte[4096];
         //Listen for changes in ipAddress
-        MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
-        camera.observe(mainActivity, this::setIpAddress);
+//        mainActivity.getSettings().getLiveDataCameraAddress().observe(mainActivity, address -> {
+//            setIpAddress(address);
+//        });
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(ipAddress);
+        dest.writeBoolean(isStreaming);
     }
 
     /***************User APi methods***************/
@@ -157,6 +160,11 @@ public class CameraService {
         }
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
     /**
      * connectSocket
      * Thread to connect to the camera
@@ -168,8 +176,7 @@ public class CameraService {
                 if (cameraSocket != null && (cameraSocket.isClosed() || !cameraSocket.isConnected())) {
                     cameraSocket = new Socket();
                 }
-                SocketAddress socketAddress = new InetSocketAddress(mainActivity.getSettings().getCameraAddress(),
-                        5001);
+                SocketAddress socketAddress = new InetSocketAddress(ipAddress,5001);
                 cameraSocket.connect(socketAddress, 5000);
                 cameraSocket.setKeepAlive(true);
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));

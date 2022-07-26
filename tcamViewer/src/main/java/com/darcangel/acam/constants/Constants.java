@@ -18,6 +18,11 @@ public final class Constants {
     public final static int IMAGE_WIDTH = 160;
     public final static int IMAGE_HEIGHT = 120;
 
+    //Keys for Save/Restore instance
+    public final static String KEY_CAMERAUTILS = "CameraUtils";
+    public final static String KEY_SETTINGS = "Settings";
+    public final static String KEY_CAMERASERVICE = "CameraService";
+
     //Settings keys for SharedPrefs
     public final static String KEY_AGC = "agc";
     public final static String KEY_EMISSIVITY = "emissivity";

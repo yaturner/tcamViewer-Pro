@@ -65,7 +65,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         _instance = this;
 
         if(savedInstanceState != null) {
-            cameraUtils = savedInstanceState.getParcelable("CameraUtils");
+            cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
+            cameraService = savedInstanceState.getParcelable(Constants.KEY_CAMERASERVICE);
+            settings = savedInstanceState.getParcelable(Constants.KEY_SETTINGS);
         }
 
         //order is important, do this before setting the view
@@ -73,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         settingsViewModel = viewModelProvider.get(SettingsViewModel.class);
         libraryViewModel = viewModelProvider.get(LibraryViewModel.class);
         cameraViewModel = viewModelProvider.get(CameraViewModel.class);
-        settings = new Settings();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -85,7 +86,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelable("CameraUtils", cameraUtils);
+        outState.putParcelable(Constants.KEY_CAMERASERVICE, cameraUtils);
+        outState.putParcelable(Constants.KEY_SETTINGS, settings);
+        outState.putParcelable(Constants.KEY_CAMERASERVICE, cameraService);
         super.onSaveInstanceState(outState);
     }
 
@@ -226,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     public CameraService getCameraService() {
         if(cameraService == null) {
-            cameraService = CameraService.getInstance();
+            cameraService = new CameraService();
         }
         return cameraService;
     }
