@@ -57,9 +57,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     public interface FileSelectionEntryPoint {
         Fragment fileSelectionOwner = null;
-
         void onFileCreated(FileDescriptor fileDescriptor);
-
         void onFileSelected(FileDescriptor fileDescriptor);
     }
 
@@ -74,9 +72,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         cameraUtils = mainActivity.getCameraUtils();
         cameraService = mainActivity.getCameraService();
         settings = mainActivity.getSettings();
-        cameraViewModel.getImageLiveData().observe(getActivity(), b -> {
-            drawScreen();
-        });
 
 //        info_value:
 //        0	Command NACK - the command failed. See the information string for more information.

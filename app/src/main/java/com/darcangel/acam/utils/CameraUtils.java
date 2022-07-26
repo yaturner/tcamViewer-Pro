@@ -6,6 +6,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Environment;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
@@ -24,10 +26,11 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import io.reactivex.rxjava3.annotations.NonNull;
 import timber.log.Timber;
 
 
-public class CameraUtils {
+public class CameraUtils implements Parcelable {
     private boolean AGC;
     private boolean shutdown;
     private int emissivity;
@@ -48,18 +51,33 @@ public class CameraUtils {
     int minTemperature;
     private JSONObject response;
 
-    private int offsetA = 0;
-    private int offsetB = 80;
-    private int offsetC = 160;
+    private final static int offsetA = 0;
+    private final static int offsetB = 80;
+    private final static int offsetC = 160;
 
     private static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     private static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
     private static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
+    //default constructor
     public CameraUtils() {
-        Timber.d("Created CameraUtils");
+        Timber.d("CameraUtils default constructor");
     }
+
+    public CameraUtils(@NonNull String responseString, @NonNull int[][] palette) {
+        Timber.d("Created CameraUtils");
+        if(responseString != null && !responseString.isEmpty()) {
+            try {
+                JSONObject response = new JSONObject(responseString);
+                processImageResponse(response, palette);
+            } catch (JSONException e) {
+                e.printStackTrace();
+                //JMT fatal error
+            }
+        }
+    }
+
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
         this.response = response;
@@ -379,5 +397,15 @@ public class CameraUtils {
     public void setSpotmeterLocation(Rect rect) {
         spotmeterLocation = rect;
         spotmeterMean = getMeanTemperatureAtSpotmeter();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(response.toString());
     }
 }

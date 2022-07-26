@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 
@@ -31,8 +30,6 @@ import com.darcangel.acam.ui.library.LibraryViewModel;
 import com.darcangel.acam.ui.settings.SettingsViewModel;
 import com.darcangel.acam.utils.CameraUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import org.json.JSONObject;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
@@ -67,10 +64,15 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         super.onCreate(savedInstanceState);
         _instance = this;
 
+        if(savedInstanceState != null) {
+            cameraUtils = savedInstanceState.getParcelable("CameraUtils");
+        }
+
         //order is important, do this before setting the view
-        settingsViewModel = new ViewModelProvider(this).get(SettingsViewModel.class);
-        libraryViewModel = new ViewModelProvider(this).get(LibraryViewModel.class);
-        cameraViewModel = new ViewModelProvider(this).get(CameraViewModel.class);
+        ViewModelProvider viewModelProvider = new ViewModelProvider(this);
+        settingsViewModel = viewModelProvider.get(SettingsViewModel.class);
+        libraryViewModel = viewModelProvider.get(LibraryViewModel.class);
+        cameraViewModel = viewModelProvider.get(CameraViewModel.class);
         settings = new Settings();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -81,15 +83,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         getSettings();
     }
 
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        // Checks the orientation of the screen
-        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            Timber.d("landscape");
-        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            Timber.d("portrait");
-        }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("CameraUtils", cameraUtils);
+        super.onSaveInstanceState(outState);
     }
 
     private void init() {
