@@ -160,7 +160,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         public void onPause () {
             super.onPause();
             //changing the ip address will disconnect the camera
-            settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
+            //settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
             settings.persist();
             if(cameraService.isConnected()) {
                 cameraViewModel.setConfig();

@@ -32,6 +32,7 @@ import com.darcangel.acam.utils.CameraUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.sentry.Sentry;
 import timber.log.Timber;
 
 @AndroidEntryPoint

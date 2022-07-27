@@ -34,19 +34,15 @@ public class CameraService implements Parcelable {
     private boolean isStreaming = false;
     private TreeTypeAdapter streamThread;
     private String ipAddress;
-    private PublishSubject<JSONObject> imageChannel;
+    private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
     private MainActivity mainActivity;
     private Thread streamingThread;
 
     public CameraService() {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        imageChannel = PublishSubject.create();
         buffer = new byte[4096];
-        //Listen for changes in ipAddress
-//        mainActivity.getSettings().getLiveDataCameraAddress().observe(mainActivity, address -> {
-//            setIpAddress(address);
-//        });
+        ipAddress = mainActivity.getSettings().getCameraAddress();
     }
 
     @Override

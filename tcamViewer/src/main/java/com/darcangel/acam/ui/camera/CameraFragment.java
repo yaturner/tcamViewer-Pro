@@ -119,7 +119,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                         mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
                                 cameraViewModel.setImage(bitmap);
                                 drawScreen();
-//                                mainActivity.dismissProgressDialog();
+                                mainActivity.dismissProgressDialog();
                             }
                         },
                         e -> {
@@ -152,10 +152,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         settings.getLiveDataCameraAddress().observe(mainActivity, address -> {
-            Timber.d("address is now %s", address);
-            settings.setCameraAddress(address);
-            cameraService.setIpAddress(address);
-            mainActivity.invalidateOptionsMenu();
+            Timber.d("Camera ip address is now %s", address);
+            if(!address.equals(settings.getCameraAddress())) {
+                cameraService.setIpAddress(address);
+                mainActivity.invalidateOptionsMenu();
+            }
         });
         drawScreen();
     }
@@ -248,6 +249,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
+                mainActivity.showProgressDialog(getString(R.string.acquiring), "");
                 cameraViewModel.getImageFromCamera();
                 break;
             }
@@ -265,6 +267,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
                                     cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
+                                    drawScreen();
                                 }
                             }
                         }
