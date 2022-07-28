@@ -170,20 +170,29 @@ public class Settings extends BaseObservable implements Parcelable {
 
     @BindingAdapter("android:text")
     public static void setText(TextView view, Integer value) {
-        if (view.getText() != null && value != null) {
-            //If the editText is empty, just set the value
-            if (view.getText().toString().isEmpty()) {
-                view.setText(Integer.toString(value));
-                //See if the value changed to prevent infinite loop
-            } else if (Integer.parseInt(view.getText().toString()) != value) {
-                view.setText(Integer.toString(value));
+        try {
+            if (view.getText() != null && value != null) {
+                //If the editText is empty, just set the value
+                if (view.getText().toString().isEmpty()) {
+                    view.setText(Integer.toString(value));
+                    //See if the value changed to prevent infinite loop
+                } else if (Integer.parseInt(view.getText().toString()) != value) {
+                    view.setText(Integer.toString(value));
+                }
             }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
     }
 
     @InverseBindingAdapter(attribute = "android:text")
     public static int getText(TextView view) {
-        return Integer.parseInt(view.getText().toString());
+        try {
+            return Integer.parseInt(view.getText().toString());
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     //Getters and Setters

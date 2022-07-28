@@ -41,6 +41,8 @@ public class CameraViewModel extends ViewModel {
     private CameraUtils cameraUtils;
     private MainActivity mainActivity;
     private Settings settings;
+    private Boolean isStreaming = false;
+
 
     // GetContent creates an ActivityResultLauncher<String> to allow you to pass
     // in the mime type you'd like to allow the user to select
@@ -254,6 +256,7 @@ public class CameraViewModel extends ViewModel {
             } else {
                 mainActivity.getCameraService().stopStreaming();
             }
+            isStreaming = flag;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -280,5 +283,13 @@ public class CameraViewModel extends ViewModel {
                 Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
                         Intent.FLAG_GRANT_READ_URI_PERMISSION);
         openActivityResultLauncher.launch(intent);
+    }
+
+    public Boolean getStreaming() {
+        return isStreaming;
+    }
+
+    public void setStreaming(Boolean streaming) {
+        isStreaming = streaming;
     }
 }

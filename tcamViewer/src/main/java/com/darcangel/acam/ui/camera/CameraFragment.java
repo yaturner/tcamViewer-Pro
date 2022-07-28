@@ -52,7 +52,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private CameraUtils cameraUtils;
     private Settings settings;
     private Disposable disposable;
-    private Boolean isStreaming = false;
     private MainActivity mainActivity = null;
 
     public interface FileSelectionEntryPoint {
@@ -85,41 +84,43 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(obj -> {
                             Iterator<String> it = obj.keys();
-                            String response = it.next();
-                            Timber.d("Response String is %s", response);
-                            //connect/disconnect
-                            if (response.equalsIgnoreCase("connected")) {
-                                String value = obj.getString("connected");
-                                if (value.equalsIgnoreCase("true")) {
-                                    if (isConnectingToCamera) {
-                                        cameraViewModel.setTime();
-                                    }
-                                    mainActivity.invalidateOptionsMenu();
-                                } else {
-                                    mainActivity.invalidateOptionsMenu();
-                                }
-                                //camera settings commands
-                            } else if (response.equalsIgnoreCase("cam_info")) {
-                                //multiple response have "cam_info"
-                                JSONObject info = obj.getJSONObject("cam_info");
-                                if (info.has("info_string")) {
-                                    String infoType = info.getString("info_string");
-                                    if (infoType.equalsIgnoreCase("set_time success")) {
+                            if (it.hasNext()) {
+                                String response = it.next();
+                                Timber.d("Response String is %s", response);
+                                //connect/disconnect
+                                if (response.equalsIgnoreCase("connected")) {
+                                    String value = obj.getString("connected");
+                                    if (value.equalsIgnoreCase("true")) {
                                         if (isConnectingToCamera) {
-                                            cameraViewModel.setConfig();
+                                            cameraViewModel.setTime();
                                         }
-                                    } else if (infoType.equalsIgnoreCase("set_config success")) {
-                                        //nothing to do here
+                                        mainActivity.invalidateOptionsMenu();
+                                    } else {
+                                        mainActivity.invalidateOptionsMenu();
                                     }
+                                    //camera settings commands
+                                } else if (response.equalsIgnoreCase("cam_info")) {
+                                    //multiple response have "cam_info"
+                                    JSONObject info = obj.getJSONObject("cam_info");
+                                    if (info.has("info_string")) {
+                                        String infoType = info.getString("info_string");
+                                        if (infoType.equalsIgnoreCase("set_time success")) {
+                                            if (isConnectingToCamera) {
+                                                cameraViewModel.setConfig();
+                                            }
+                                        } else if (infoType.equalsIgnoreCase("set_config success")) {
+                                            //nothing to do here
+                                        }
+                                    }
+                                    //get image
+                                } else if (response.equalsIgnoreCase("metadata")) {
+                                    //Timber.d("Received onNext");
+                                    Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
+                                            mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                    cameraViewModel.setImage(bitmap);
+                                    drawScreen();
+                                    mainActivity.dismissProgressDialog();
                                 }
-                                //get image
-                            } else if (response.equalsIgnoreCase("metadata")) {
-                                //Timber.d("Received onNext");
-                                Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
-                                        mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
-                                cameraViewModel.setImage(bitmap);
-                                drawScreen();
-                                mainActivity.dismissProgressDialog();
                             }
                         },
                         e -> {
@@ -207,7 +208,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                     imageViewY + 1);
             String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
             try {
-                if (isStreaming) {
+                if (cameraViewModel.getStreaming()) {
                     cameraService.stopStreaming();
                 }
                 cameraService.sendCmd(cmd);
@@ -217,7 +218,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         imageViewX + 1,
                         imageViewY + 1));
                 cameraViewModel.setImage(cameraUtils.drawHotspot());
-                if (isStreaming) {
+                if (cameraViewModel.getStreaming()) {
                     cameraService.startStreaming();
                 }
             } catch (IOException e) {
@@ -278,12 +279,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 break;
             }
             case R.id.action_stream: {
-                if (isStreaming) {
+                if (cameraViewModel.getStreaming()) {
                     cameraViewModel.startStreaming(false);
-                    isStreaming = false;
                 } else {
                     cameraViewModel.startStreaming(true);
-                    isStreaming = true;
                 }
                 break;
             }
@@ -377,8 +376,27 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        if(cameraViewModel.getStreaming()) {
+            cameraService.stopStreaming();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(cameraViewModel.getStreaming()) {
+            cameraService.startStreaming();
+        }
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if(cameraViewModel.getStreaming()) {
+            cameraService.stopStreaming();
+        }
         binding = null;
     }
 }

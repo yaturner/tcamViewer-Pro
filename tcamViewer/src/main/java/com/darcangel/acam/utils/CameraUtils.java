@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -64,20 +65,6 @@ public class CameraUtils implements Parcelable {
     public CameraUtils() {
         Timber.d("CameraUtils default constructor");
     }
-
-    public CameraUtils(@NonNull String responseString, @NonNull int[][] palette) {
-        Timber.d("Created CameraUtils");
-        if(responseString != null && !responseString.isEmpty()) {
-            try {
-                JSONObject response = new JSONObject(responseString);
-                processImageResponse(response, palette);
-            } catch (JSONException e) {
-                e.printStackTrace();
-                //JMT fatal error
-            }
-        }
-    }
-
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
         this.response = response;

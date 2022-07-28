@@ -3,8 +3,6 @@ package com.darcangel.acam.ui.camera;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.lifecycle.MutableLiveData;
-
 import com.darcangel.acam.MainActivity;
 import com.darcangel.acam.constants.Constants;
 import com.google.gson.internal.bind.TreeTypeAdapter;
@@ -18,8 +16,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
-
-import javax.inject.Singleton;
 
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import timber.log.Timber;
@@ -284,6 +280,8 @@ public class CameraService implements Parcelable {
                         int bytesLeft = bytesRead - threePos;
                         if (bytesLeft > 0) {
                             //Timber.d("There were %d bytes left in the buffer", bytesLeft);
+                            Timber.d("buffer is %s null, threePos = %d, bytesLeft = %d",
+                                    (buffer==null?"":"not"), threePos, bytesLeft);
                             response = new String(buffer, threePos + 1, bytesLeft - 1);
                             //Timber.d("New Response is '%s'", response);
                         } else {
@@ -327,9 +325,9 @@ public class CameraService implements Parcelable {
             }
         } catch (JSONException e) {
             e.printStackTrace();
-            return null; //TODO fix this
+            imageChannel.onError(e);
         }
-        return null;
+        return new JSONObject();
     }
 
     /**
