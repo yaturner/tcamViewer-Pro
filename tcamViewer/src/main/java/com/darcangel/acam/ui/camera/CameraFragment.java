@@ -220,6 +220,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 cameraViewModel.setImage(cameraUtils.drawHotspot());
                 if (cameraViewModel.getStreaming()) {
                     cameraService.startStreaming();
+                } else {
+                    drawScreen();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
