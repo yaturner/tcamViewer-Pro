@@ -68,15 +68,15 @@ public final class Constants {
     public final static String CMD_GET_IMAGE   = "\2{\"cmd\":\"get_image\"}\3";
 
     //Camera Command args
-    public final static String ARGS_SET_TIME   = "'{'" +
-            "    '\"sec\":' s," +
-            "    '\"min\":' m," +
-            "    '\"hour\":' k," +
-            "    '\"dow\":' d," +
-            "    '\"day\":\"' E\"," +
-            "    '\"mon\":' M," +
-            "    '\"year\":' y" +
-            "  '}'";
+    public final static String ARGS_SET_TIME   = "{" +
+            "    \"sec\":  %d," +
+            "    \"min\":  %d," +
+            "    \"hour\": %d," +
+            "    \"dow\":  %d," +
+            "    \"day\":  %d," +
+            "    \"mon\":  %d," +
+            "    \"year\": %d" +
+            "   }";
     public final static String ARGS_SET_CONFIG = "{\n" +
             "    \"agc_enabled\": %d,\n" +
             "    \"emissivity\": %d,\n" +

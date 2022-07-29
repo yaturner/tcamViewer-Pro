@@ -29,7 +29,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class CameraViewModel extends ViewModel {
@@ -205,10 +208,28 @@ public class CameraViewModel extends ViewModel {
 
     /**
      * setTime
+     *
+     * set_time argument	Description
+     *          sec	        Seconds 0-59
+     *          min	        Minutes 0-59
+     *          hour	    Hour 0-23
+     *          dow	        Day of Week starting with Sunday 1-7
+     *          day	        Day of Month 1-28 to 1-31 depending
+     *          mon	        Month 1-12
+     *          year	    Year offset from 1970
      */
     public void setTime() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(Constants.ARGS_SET_TIME);
-        String args = simpleDateFormat.format(new Date());
+        Calendar now = Calendar.getInstance();
+
+        String args = String.format(Constants.ARGS_SET_TIME,
+                now.get(Calendar.SECOND),
+                now.get(Calendar.MINUTE),
+                now.get(Calendar.HOUR),
+                now.get(Calendar.DAY_OF_WEEK),
+                now.get(Calendar.DAY_OF_MONTH),
+                now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.YEAR) - 1970);
+
         String cmd = String.format(Constants.CMD_SET_TIME, args);
         try {
             mainActivity.getCameraService().sendCmd(cmd);
