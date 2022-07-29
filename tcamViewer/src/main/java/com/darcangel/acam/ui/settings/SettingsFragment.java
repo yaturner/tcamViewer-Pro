@@ -88,6 +88,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                         .setCancelable(true)
                         .setPositiveButton(R.string.ok, (dialog, which) -> {
                                 dialog.dismiss();
+                                binding.cameraIPAddress.requestFocus();
                             })
                         .setMessage(R.string.warning_disconnect);
                 builder.create().show();
@@ -160,7 +161,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         public void onPause () {
             super.onPause();
             //changing the ip address will disconnect the camera
-            //settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
+            if(!binding.cameraIPAddress.getText().toString().equals(settings.getCameraAddress())) {
+                cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
+            }
             settings.persist();
             if(cameraService.isConnected()) {
                 cameraViewModel.setConfig();
