@@ -8,14 +8,8 @@
         app:showAsAction="always|withText">
         <!-- File submenu -->
         <menu>
-            <item android:id="@+id/action_file_open"
-                android:title="@string/open" />
-            <item android:id="@+id/action_file_browse"
-                android:title="@string/browse" />
             <item android:id="@+id/action_file_save"
                 android:title="@string/save" />
-            <item android:id="@+id/action_file_export"
-                android:title="@string/export" />
             <item android:id="@+id/action_file_quit"
                 android:title="@string/quit" />
         </menu>

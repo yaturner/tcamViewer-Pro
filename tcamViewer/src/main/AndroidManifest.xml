@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.darcangel.acam">
+    package="com.darcangel.tcamViewer">
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -10,7 +10,7 @@
 
 
     <application
-        android:name=".Application"
+        android:name="com.darcangel.tcamViewer.Application"
         android:allowBackup="true"
         android:icon="@drawable/appicon_48"
         android:label="@string/app_name"
@@ -19,7 +19,7 @@
         android:theme="@style/Theme.Acam">
         <profileable android:shell="true"/>
         <provider
-            android:name="com.darcangel.acam.providers.ImageProvider"
+            android:name="com.darcangel.tcamViewer.providers.ImageProvider"
             android:authorities="com.darcangel.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
@@ -28,7 +28,7 @@
                 android:resource="@xml/image_paths" />
         </provider>
         <activity
-            android:name=".MainActivity"
+            android:name="com.darcangel.tcamViewer.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>

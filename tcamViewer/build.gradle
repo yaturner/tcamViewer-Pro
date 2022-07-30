@@ -12,7 +12,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.darcangel.acam"
+        applicationId "com.darcangel.tcamViewer"
         minSdk 21
         targetSdk 32
         versionName "nameExt"
@@ -63,6 +63,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'com.github.luizgrp:SectionedRecyclerViewAdapter:v3.2.0'
     implementation 'io.sentry:sentry-android:6.3.0'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation ('io.socket:socket.io-client:2.0.0') {
             exclude group: 'org.json', module: 'json'
         }
