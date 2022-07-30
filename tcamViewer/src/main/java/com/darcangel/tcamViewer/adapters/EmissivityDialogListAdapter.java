@@ -1,4 +1,4 @@
-package com.darcangel.acam.adapters;
+package com.darcangel.tcamViewer.adapters;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -8,10 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
-
-import com.darcangel.acam.MainActivity;
-import com.darcangel.acam.R;
+import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
 
 public class EmissivityDialogListAdapter extends BaseAdapter {
     private LayoutInflater inflater;

@@ -1,4 +1,4 @@
-package com.darcangel.acam.adapters;
+package com.darcangel.tcamViewer.adapters;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -7,12 +7,12 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.darcangel.acam.MainActivity;
-import com.darcangel.acam.R;
-import com.darcangel.acam.container.Settings;
-import com.darcangel.acam.utils.CameraUtils;
-import com.darcangel.acam.viewholders.LibraryHeaderViewHolder;
-import com.darcangel.acam.viewholders.LibraryItemViewHolder;
+import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.viewholders.LibraryHeaderViewHolder;
+import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +33,7 @@ public class LibrarySection extends Section {
 //        void onHeaderMoreButtonClicked(@NonNull final LibrarySection section, int itemAdapterPosition);
         void onItemRootViewClicked(@NonNull final LibrarySection section, final LibraryItemViewHolder holder);
     }
+
     private ArrayList<String> imageFile;
     private String imageFolder;
     private ClickListener clickListener;
@@ -42,7 +43,6 @@ public class LibrarySection extends Section {
     private CameraUtils cameraUtils;
     private Settings settings;
     private int itemCount;
-    private int selectedPos = RecyclerView.NO_POSITION;
 
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
@@ -122,8 +122,14 @@ public class LibrarySection extends Section {
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
                 itemHolder.getImageView().setImageBitmap(image);
-                itemHolder.getImageView().setBackground(mainActivity.getResources().
-                        getDrawable(R.drawable.library_item_highlight_selector));
+//                if(itemHolder.isSelected()) {
+//                    itemHolder.getImageView().setBackground(mainActivity.getResources().
+//                            getDrawable(R.drawable.library_item_highlight_selector));
+//                } else {
+//                    itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
+//                            getColor(R.color.white,null));
+//
+//                }
                 itemHolder.setImagePath(path);
                 if (imageName != null && !imageName.isEmpty()) {
                     Matcher matcher = PATTERN.matcher(imageName);
@@ -139,14 +145,14 @@ public class LibrarySection extends Section {
                 e.printStackTrace();
                 //TODO handle error
             }
-            itemHolder.getRootView().setSelected(selectedPos == position);
-
         }
 
         itemHolder.getRootView().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clickListener.onItemRootViewClicked(LibrarySection.this, (LibraryItemViewHolder) holder);
+                LibraryItemViewHolder viewHolder = (LibraryItemViewHolder) holder;
+//                viewHolder.setSelected(!viewHolder.isSelected());
+                clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
             }
         });
     }
@@ -176,7 +182,7 @@ public class LibrarySection extends Section {
         return imageFolder;
     }
 
-    public void setSelectedPos(int selectedPos) {
-        this.selectedPos = selectedPos;
-    }
+//    public void setSelectedPos(int selectedPos) {
+//
+//    }
 }

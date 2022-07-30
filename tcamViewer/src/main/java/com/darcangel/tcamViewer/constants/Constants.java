@@ -1,6 +1,4 @@
-package com.darcangel.acam.constants;
-
-import com.darcangel.acam.MainActivity;
+package com.darcangel.tcamViewer.constants;
 
 public final class Constants {
     public final static int COLORBAR_WIDTH = 48;

@@ -1,9 +1,4 @@
-package com.darcangel.acam;
-
-import com.darcangel.acam.constants.Constants;
-
-import java.net.Socket;
-import java.net.URISyntaxException;
+package com.darcangel.tcamViewer;
 
 import dagger.hilt.android.HiltAndroidApp;
 import timber.log.Timber;
