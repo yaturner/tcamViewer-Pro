@@ -16,14 +16,6 @@
     </item>
 
     <item
-        android:id="@+id/action_palette"
-        android:title="@string/palette"
-        android:icon="@drawable/palette_30_30"
-        app:showAsAction="ifRoom|withText">
-        <menu></menu>
-    </item>
-
-    <item
         android:id="@+id/action_connect"
         android:title="@string/connect"
         android:icon="@drawable/bolt_30_30"

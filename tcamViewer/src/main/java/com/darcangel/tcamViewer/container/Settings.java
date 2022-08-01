@@ -58,44 +58,44 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     protected Settings(Parcel in) {
-        setAGC(in.readBoolean());
+        setAGC(in.readInt()==1);
         setEmissivity(in.readInt());
-        setGainAuto(in.readBoolean());
-        setGainHigh(in.readBoolean());
-        setGainLow(in.readBoolean());
+        setGainAuto(in.readInt()==1);
+        setGainHigh(in.readInt()==1);
+        setGainLow(in.readInt()==1);
         setCameraAddress(in.readString());
-        setExportOnSave(in.readBoolean());
-        setExportMetaData(in.readBoolean());
+        setExportOnSave(in.readInt()==1);
+        setExportMetaData(in.readInt()==1);
         setExportResolution(in.readInt());
-        setAutoRange(in.readBoolean());
+        setAutoRange(in.readInt()==1);
         setManualRangeMax(in.readInt());
         setManualRangeMin(in.readInt());
         setPalette(in.readString());
-        setShutterSound(in.readBoolean());
-        setDisplaySpotmeter(in.readBoolean());
-        setUnitsF(in.readBoolean());
-        setUnitsC(in.readBoolean());
+        setShutterSound(in.readInt()==1);
+        setDisplaySpotmeter(in.readInt()==1);
+        setUnitsF(in.readInt()==1);
+        setUnitsC(in.readInt()==1);
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeBoolean(getAGC());
+        dest.writeInt(getAGC()?1:0);
         dest.writeInt(getEmissivity());
-        dest.writeBoolean(getGainAuto());
-        dest.writeBoolean(getGainHigh());
-        dest.writeBoolean(getGainLow());
+        dest.writeInt(getGainAuto()?1:0);
+        dest.writeInt(getGainHigh()?1:0);
+        dest.writeInt(getGainLow()?1:0);
         dest.writeString(getCameraAddress());
-        dest.writeBoolean(getExportOnSave());
-        dest.writeBoolean(getExportMetaData());
+        dest.writeInt(getExportOnSave()?1:0);
+        dest.writeInt(getExportMetaData()?1:0);
         dest.writeInt(getExportResolution());
-        dest.writeBoolean(getAutoRange());
+        dest.writeInt(getAutoRange()?1:0);
         dest.writeInt(getManualRangeMax());
         dest.writeInt(getManualRangeMin());
         dest.writeString(getPalette());
-        dest.writeBoolean(getShutterSound());
-        dest.writeBoolean(getDisplaySpotmeter());
-        dest.writeBoolean(getUnitsF());
-        dest.writeBoolean(getUnitsC());
+        dest.writeInt(getShutterSound()?1:0);
+        dest.writeInt(getDisplaySpotmeter()?1:0);
+        dest.writeInt(getUnitsF()?1:0);
+        dest.writeInt(getUnitsC()?1:0);
     }
 
     @Override

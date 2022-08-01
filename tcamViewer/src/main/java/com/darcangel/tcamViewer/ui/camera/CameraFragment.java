@@ -159,8 +159,31 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mainActivity.invalidateOptionsMenu();
             }
         });
+        binding.ivColorBar.setOnClickListener(v -> {
+            rotateColormap();
+        });
         drawScreen();
     }
+
+    private void rotateColormap() {
+        String pal = cameraViewModel.getSelectedPalette();
+        for(int index=0; index<paletteNames.length; index++) {
+            if (pal.equalsIgnoreCase(paletteNames[index])) {
+                if(index == paletteNames.length -1) {
+                    index = -1;
+                }
+                cameraViewModel.setSelectedPalette(paletteNames[index+1]);
+                if (cameraViewModel.getImage() != null) {
+                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
+                            getPaletteByName(cameraViewModel.getSelectedPalette())));
+                }
+                drawScreen();
+                break;
+            }
+        }
+    }
+
+
 
     private void drawScreen() {
         mainActivity.runOnUiThread(() -> {
@@ -256,30 +279,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 cameraViewModel.getImageFromCamera();
                 break;
             }
-            case R.id.action_palette: {
-                String title = ((MenuItemImpl) item).getTitle().toString();
-                if (!title.equalsIgnoreCase("Palette") &&
-                        !title.equalsIgnoreCase(cameraViewModel.getSelectedPalette())) {
-                    cameraViewModel.setSelectedPalette(title);
-                    mainActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            int[][] palette = mainActivity.getPaletteFactory()
-                                    .getPaletteByName(cameraViewModel.getSelectedPalette());
-                            if (palette != null) {
-                                binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
-                                if (cameraViewModel.getImage() != null) {
-                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
-                                    drawScreen();
-                                }
-                            }
-                        }
-                    });
-                }
-                binding.ivCamera.getRootView().setOnTouchListener(this);
-                mainActivity.invalidateOptionsMenu();
-                break;
-            }
             case R.id.action_stream: {
                 if (cameraViewModel.getStreaming()) {
                     cameraViewModel.startStreaming(false);
@@ -320,29 +319,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);
-        MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
-        SubMenu paletteSubMenu = itemPalette.getSubMenu();
 
-        if (cameraViewModel.getSelectedPalette() != null && !cameraViewModel.getSelectedPalette().isEmpty()) {
-            itemPalette.setTitle(cameraViewModel.getSelectedPalette());
-        }
-        //since this fragment can be recreated, prevent multiple items
-        paletteSubMenu.clear();
-        for (int i = 0; i < paletteNames.length; i++) {
-            paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE, paletteNames[i]);
-        }
         if (!cameraService.isConnected()) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemGet.setEnabled(false);
-            itemPalette.setEnabled(false);
             itemStream.setEnabled(false);
         } else {
             itemConnect.setVisible(false);
             itemDisconnect.setVisible(true);
             itemGet.setEnabled(true);
-            itemPalette.setEnabled(true);
             itemStream.setEnabled(true);
         }
     }

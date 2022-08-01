@@ -41,10 +41,17 @@ public class CameraService implements Parcelable {
         ipAddress = mainActivity.getSettings().getCameraAddress();
     }
 
+    public CameraService(Parcel in) {
+        cameraSocket = new Socket();
+        mainActivity = MainActivity.getInstance();
+        buffer = new byte[4096];
+        ipAddress = mainActivity.getSettings().getCameraAddress();
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(ipAddress);
-        dest.writeBoolean(isStreaming);
+        dest.writeInt(isStreaming?1:0);
     }
 
     /***************User APi methods***************/

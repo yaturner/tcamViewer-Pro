@@ -54,6 +54,4 @@ public class PaletteFactory {
         }
         return null;
     }
-
-
 }

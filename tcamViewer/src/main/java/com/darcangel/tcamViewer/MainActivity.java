@@ -260,6 +260,19 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if(cameraViewModel != null && cameraViewModel.getStreaming()) {
+            cameraService.stopStreaming();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
     }
