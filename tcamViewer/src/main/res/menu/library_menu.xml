@@ -12,6 +12,11 @@
         android:visible="true"
         app:showAsAction="always" />
 
+    <item android:id="@+id/action_item_export"
+        android:icon="@drawable/export_image_30_30"
+        android:visible="true"
+        app:showAsAction="always" />
+
     <item android:id="@+id/action_item_share"
         android:icon="@drawable/ic_baseline_share_24"
         android:visible="true"

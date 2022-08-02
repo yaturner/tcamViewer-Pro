@@ -20,14 +20,18 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySection;
+import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.container.SelectedItem;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
@@ -55,7 +59,8 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
     private CameraUtils cameraUtils;
-    private SectionedRecyclerViewAdapter sectionAdapter;
+//    private SectionedRecyclerViewAdapter sectionAdapter;
+    private LibrarySelectionAdapter sectionAdapter;
     private ArrayList<LibrarySection> librarySections;
 
     private AssetManager assetManager;
@@ -63,6 +68,9 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
     private int nFolders = 0;
+
+    private SelectionTracker<String> selectionTracker;
+
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -77,7 +85,6 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
                     }
                 }
             });
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -109,7 +116,7 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
 
 
         // Create an instance of SectionedRecyclerViewAdapter
-        sectionAdapter = new SectionedRecyclerViewAdapter();
+        sectionAdapter = new LibrarySelectionAdapter(); ///SectionedRecyclerViewAdapter
 
 
         // Add your Sections only if the directory is not empty
@@ -117,7 +124,7 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
         try {
             for (int i = 0; i < imageFolder.size(); i++) {
                 if (hasImages(imageFolder.get(i).toString())) {
-                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(), null /*this*/);
+                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(), this, selectionTracker);
                     librarySections.add(section);
                     sectionAdapter.addSection(section);
                 }
@@ -146,6 +153,18 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        selectionTracker = new SelectionTracker.Builder<>("librarySelection",
+                binding.rvLibrary,
+                new LibrarySelectionAdapter.KeyProvider(binding.rvLibrary.getAdapter()),
+                new LibrarySelectionAdapter.DetailsLookup(binding.rvLibrary),
+                StorageStrategy.createStringStorage())
+                .withSelectionPredicate(new LibrarySelectionAdapter.Predicate())
+                .build();
+    }
+
+    @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.library_menu, menu);
         setMenuItems(menu);
@@ -160,6 +179,9 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
                 shareImage(libraryViewModel.getSelectedImage().getValue());
             case R.id.action_item_delete:
                 deleteImage(libraryViewModel.getSelectedImage().getValue());
+                break;
+            case R.id.action_item_export:
+                exportImage();
                 break;
             case R.id.action_slideshow:
                 break;
@@ -247,6 +269,10 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
         sectionAdapter.notifyDataSetChanged();
     }
 
+    private void exportImage() {
+
+    }
+
     @Override
     public void onDestroyView() {
         libraryViewModel.clearAllSelectedImages();
@@ -262,17 +288,20 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
         int itemAdapterPosition = holder.getAbsoluteAdapterPosition();
         SectionItemInfo sectionItemInfo = SectionItemInfoFactory.create(itemAdapterPosition, sectionAdapter);
         SectionInfo sectionInfo = SectionInfoFactory.create(section, sectionAdapter.getAdapterForSection(section));
-        Timber.d("Clicked: AdapterPosition = %d, positionInSection = %s", sectionItemInfo.getAdapterPosition(),
+        Timber.d("C\\\\onItemRootViewClicked\\\\ AdapterPosition = %d, positionInSection = %s", sectionItemInfo.getAdapterPosition(),
                 sectionItemInfo.getPositionInSection());
-        Timber.d("Clicked: sectionPosition = %d, headerPosition = %d", sectionInfo.getSectionPosition(),
+        Timber.d("\\\\onItemRootViewClicked\\\\ sectionPosition = %d, headerPosition = %d", sectionInfo.getSectionPosition(),
                 sectionInfo.getSectionHeaderPosition());
         int sectionIndex = sectionInfo.getSectionPosition()/2;
         int posInSection = Integer.parseInt(sectionItemInfo.getPositionInSection());
         int posInAdapter = sectionItemInfo.getAdapterPosition();
         librarySection = librarySections.get(sectionIndex);
         String path = librarySection.getImageFile().get(posInSection);
-        holder.setSelected(true);
-        ////sectionAdapter.notifyItemChanged(posInAdapter);
+
+        Timber.d("\\\\onItemRootViewClicked\\\\ title = %s, position = %d, selected = %s",
+                holder.getTitleView().getText(), posInAdapter, (holder.isSelected()?"true":"false"));
+
+        sectionAdapter.notifyItemChanged(posInAdapter);
         selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
         libraryViewModel.getSelectedImage().setValue(selectedItem);
     }

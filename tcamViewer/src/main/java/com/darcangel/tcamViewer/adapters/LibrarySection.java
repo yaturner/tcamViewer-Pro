@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -27,6 +28,7 @@ import java.util.regex.Pattern;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.Section;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
+import timber.log.Timber;
 
 public class LibrarySection extends Section {
     public interface ClickListener {
@@ -47,7 +49,7 @@ public class LibrarySection extends Section {
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
 
-    public LibrarySection(String imageFolder, ClickListener clickListener) {
+    public LibrarySection(String imageFolder, ClickListener clickListener, SelectionTracker selectionTracker) {
         // call constructor with layout resources for this Section header and items
         super(SectionParameters.builder()
                 .itemResourceId(R.layout.library_item_view)
@@ -93,7 +95,7 @@ public class LibrarySection extends Section {
     @Override
     public void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position) {
         LibraryItemViewHolder itemHolder = (LibraryItemViewHolder) holder;
-
+        //////details.position = position;
         String json = new String();
         String line;
         String  imageName;
@@ -121,15 +123,16 @@ public class LibrarySection extends Section {
                 JSONObject jsonObject = new JSONObject(json);
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
+                if(itemHolder.isSelected()) {
+                    itemHolder.getImageView().setBackground(mainActivity.getResources().
+                            getDrawable(R.drawable.library_item_highlight_selector));
+                } else {
+                    itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
+                            getColor(R.color.white,null));
+
+                }
                 itemHolder.getImageView().setImageBitmap(image);
-//                if(itemHolder.isSelected()) {
-//                    itemHolder.getImageView().setBackground(mainActivity.getResources().
-//                            getDrawable(R.drawable.library_item_highlight_selector));
-//                } else {
-//                    itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
-//                            getColor(R.color.white,null));
-//
-//                }
+
                 itemHolder.setImagePath(path);
                 if (imageName != null && !imageName.isEmpty()) {
                     Matcher matcher = PATTERN.matcher(imageName);
@@ -145,15 +148,15 @@ public class LibrarySection extends Section {
                 e.printStackTrace();
                 //TODO handle error
             }
+            Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
+                    itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
+
         }
 
-        itemHolder.getRootView().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LibraryItemViewHolder viewHolder = (LibraryItemViewHolder) holder;
-//                viewHolder.setSelected(!viewHolder.isSelected());
-                clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
-            }
+        itemHolder.getRootView().setOnClickListener(v -> {
+            LibraryItemViewHolder viewHolder = (LibraryItemViewHolder) holder;
+            clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
+            viewHolder.setSelected(!viewHolder.isSelected());
         });
     }
 
@@ -181,8 +184,4 @@ public class LibrarySection extends Section {
     public String getImageFolder() {
         return imageFolder;
     }
-
-//    public void setSelectedPos(int selectedPos) {
-//
-//    }
 }
