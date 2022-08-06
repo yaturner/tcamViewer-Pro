@@ -236,9 +236,10 @@
                         android:text="@string/palette" />
 
                     <ImageButton
-                        style="@style/SettingsBtnEnd"
+                        android:id="@+id/btnPalette"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
+                        style="@style/SettingsBtnEnd"
                         app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -302,6 +303,7 @@
                         android:text="@string/version" />
 
                     <TextView
+                        android:id="@+id/tvVersion"
                         style="@style/SettingsTextEnd"
                         android:text="0.1.0" />
                 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -11,13 +11,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -48,6 +46,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private View root = null;
     private boolean isConnectingToCamera = false;
     private final boolean isVisibleToUser = false;
+    private boolean isRemapNeeded = false;
     private String[] paletteNames = null;
     private CameraUtils cameraUtils;
     private Settings settings;
@@ -159,6 +158,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mainActivity.invalidateOptionsMenu();
             }
         });
+
+        settings.getLiveDataPalette().observe(mainActivity, palette ->
+        {
+            isRemapNeeded = true;
+        });
+
         binding.ivColorBar.setOnClickListener(v -> {
             rotateColormap();
         });
@@ -196,6 +201,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         Bitmap image = cameraUtils.drawHotspot();
+                        if(isRemapNeeded) {
+                            isRemapNeeded = false;
+                            cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
+                                    getPaletteByName(cameraViewModel.getSelectedPalette()));
+                        }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette, 256));

@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -35,12 +36,7 @@ import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.container.SelectedItem;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
-import com.darcangel.tcamViewer.info.SectionInfo;
-import com.darcangel.tcamViewer.info.SectionInfoFactory;
-import com.darcangel.tcamViewer.info.SectionItemInfo;
-import com.darcangel.tcamViewer.info.SectionItemInfoFactory;
 import com.darcangel.tcamViewer.utils.CameraUtils;
-import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,9 +47,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
-import timber.log.Timber;
 
-public class LibraryFragment extends Fragment implements LibrarySection.ClickListener {
+public class LibraryFragment extends Fragment {
 
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
@@ -124,7 +119,7 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
         try {
             for (int i = 0; i < imageFolder.size(); i++) {
                 if (hasImages(imageFolder.get(i).toString())) {
-                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(), this, selectionTracker);
+                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(),  selectionTracker);
                     librarySections.add(section);
                     sectionAdapter.addSection(section);
                 }
@@ -162,6 +157,7 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
                 StorageStrategy.createStringStorage())
                 .withSelectionPredicate(new LibrarySelectionAdapter.Predicate())
                 .build();
+        sectionAdapter.setSelectionTracker(selectionTracker);
     }
 
     @Override
@@ -184,6 +180,7 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
                 exportImage();
                 break;
             case R.id.action_slideshow:
+                Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
                 break;
         }
         return true;
@@ -280,29 +277,29 @@ public class LibraryFragment extends Fragment implements LibrarySection.ClickLis
         binding = null;
     }
 
-    @Override
-    public void onItemRootViewClicked(@NonNull LibrarySection section, LibraryItemViewHolder holder) {
-        SelectedItem selectedItem;
-        LibrarySection librarySection;
-
-        int itemAdapterPosition = holder.getAbsoluteAdapterPosition();
-        SectionItemInfo sectionItemInfo = SectionItemInfoFactory.create(itemAdapterPosition, sectionAdapter);
-        SectionInfo sectionInfo = SectionInfoFactory.create(section, sectionAdapter.getAdapterForSection(section));
-        Timber.d("C\\\\onItemRootViewClicked\\\\ AdapterPosition = %d, positionInSection = %s", sectionItemInfo.getAdapterPosition(),
-                sectionItemInfo.getPositionInSection());
-        Timber.d("\\\\onItemRootViewClicked\\\\ sectionPosition = %d, headerPosition = %d", sectionInfo.getSectionPosition(),
-                sectionInfo.getSectionHeaderPosition());
-        int sectionIndex = sectionInfo.getSectionPosition()/2;
-        int posInSection = Integer.parseInt(sectionItemInfo.getPositionInSection());
-        int posInAdapter = sectionItemInfo.getAdapterPosition();
-        librarySection = librarySections.get(sectionIndex);
-        String path = librarySection.getImageFile().get(posInSection);
-
-        Timber.d("\\\\onItemRootViewClicked\\\\ title = %s, position = %d, selected = %s",
-                holder.getTitleView().getText(), posInAdapter, (holder.isSelected()?"true":"false"));
-
-        sectionAdapter.notifyItemChanged(posInAdapter);
-        selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
-        libraryViewModel.getSelectedImage().setValue(selectedItem);
-    }
+//    @Override
+//    public void onItemRootViewClicked(@NonNull LibrarySection section, LibraryItemViewHolder holder) {
+//        SelectedItem selectedItem;
+//        LibrarySection librarySection;
+//
+//        int itemAdapterPosition = holder.getAbsoluteAdapterPosition();
+//        SectionItemInfo sectionItemInfo = SectionItemInfoFactory.create(itemAdapterPosition, sectionAdapter);
+//        SectionInfo sectionInfo = SectionInfoFactory.create(section, sectionAdapter.getAdapterForSection(section));
+//        Timber.d("C\\\\onItemRootViewClicked\\\\ AdapterPosition = %d, positionInSection = %s", sectionItemInfo.getAdapterPosition(),
+//                sectionItemInfo.getPositionInSection());
+//        Timber.d("\\\\onItemRootViewClicked\\\\ sectionPosition = %d, headerPosition = %d", sectionInfo.getSectionPosition(),
+//                sectionInfo.getSectionHeaderPosition());
+//        int sectionIndex = sectionInfo.getSectionPosition()/2;
+//        int posInSection = Integer.parseInt(sectionItemInfo.getPositionInSection());
+//        int posInAdapter = sectionItemInfo.getAdapterPosition();
+//        librarySection = librarySections.get(sectionIndex);
+//        String path = librarySection.getImageFile().get(posInSection);
+//
+//        Timber.d("\\\\onItemRootViewClicked\\\\ title = %s, position = %d, selected = %s",
+//                holder.getTitleView().getText(), posInAdapter, (holder.isSelected()?"true":"false"));
+//
+//        sectionAdapter.notifyItemChanged(posInAdapter);
+//        selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
+//        libraryViewModel.getSelectedImage().setValue(selectedItem);
+//    }
 }

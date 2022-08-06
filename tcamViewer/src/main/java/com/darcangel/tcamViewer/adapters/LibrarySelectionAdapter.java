@@ -15,9 +15,18 @@ import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
+    private SelectionTracker<String> selectionTracker;
 
     public LibrarySelectionAdapter() {
         super();
+    }
+
+    public void setSelectionTracker(SelectionTracker<String> selectionTracker) {
+        this.selectionTracker = selectionTracker;
+    }
+
+    public SelectionTracker<String> getSelectionTracker() {
+        return selectionTracker;
     }
 
     static public class KeyProvider extends ItemKeyProvider<String> {
@@ -65,7 +74,7 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
 
         @Override
         public boolean canSetStateForKey(@NonNull String key, boolean nextState) {
-            return false;
+            return true;
         }
 
         @Override

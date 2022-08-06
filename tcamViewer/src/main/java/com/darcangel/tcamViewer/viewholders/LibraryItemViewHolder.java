@@ -1,5 +1,6 @@
 package com.darcangel.tcamViewer.viewholders;
 
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -7,27 +8,33 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
+import com.darcangel.tcamViewer.container.LibraryItemDetails;
+import com.darcangel.tcamViewer.databinding.LibraryItemViewBinding;
 
-public class LibraryItemViewHolder
-        extends RecyclerView.ViewHolder {
+public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView imageView;
     private final TextView titleView;
     private final View rootView;
+    private ItemDetailsLookup.ItemDetails<String> itemDetails;
 
     private String imagePath;
-    private boolean selected;
+    private SelectionTracker selectionTracker;
     private MainActivity mainActivity;
+    private int position;
 
-    public LibraryItemViewHolder(@NonNull View itemView) {
+    public LibraryItemViewHolder(@NonNull View itemView, SelectionTracker selectionTracker) {
         super(itemView);
+        this.selectionTracker = selectionTracker;
+
         mainActivity = MainActivity.getInstance();
         imageView = (ImageView) itemView.findViewById(R.id.ivLibraryItem);
         titleView = (TextView) itemView.findViewById(R.id.tvLibraryItemName);
-        selected = false;
         rootView = itemView;
     }
 
@@ -52,27 +59,25 @@ public class LibraryItemViewHolder
     }
 
     public boolean isSelected() {
-        return selected;
-    }
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
-
-    public LibraryItemDetails getItemDetails() {
-        return new LibraryItemDetails();
-    }
-
-    static class LibraryItemDetails extends ItemDetailsLookup.ItemDetails<String> {
-        private boolean selected;
-        private String key;
-
-        public int getPosition() {
-            return 0;
+        if (selectionTracker != null) {
+            return selectionTracker.isSelected(getImagePath());
+        } else {
+            return false;
         }
+    }
 
-        public String getSelectionKey() {
-            return null;
+    public ItemDetailsLookup.ItemDetails<String> getItemDetails() {
+        return new LibraryItemDetails( position, getImagePath());
+    }
+
+    public void bind(final int position) {
+        this.position = position;
+        if(isSelected()) {
+            imageView.setBackground(mainActivity.getResources().getDrawable(R.drawable.image_border));
+            imageView.setActivated(true);
+        } else {
+            imageView.setBackgroundColor(R.color.white);
+            imageView.setActivated(false);
         }
     }
 }

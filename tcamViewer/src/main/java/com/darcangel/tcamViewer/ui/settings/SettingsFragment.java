@@ -16,9 +16,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 
+import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.EmissivityDialogListAdapter;
+import com.darcangel.tcamViewer.adapters.PaletteDialogListAdapter;
 import com.darcangel.tcamViewer.container.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
@@ -130,28 +132,47 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 binding.btnNavWiFiSettings.setOnClickListener(null);
             }
             binding.btnEmissivityHint.setOnClickListener(this);
+            binding.btnPalette.setOnClickListener(this);
+            binding.tvVersion.setText(BuildConfig.VERSION_NAME);
         }
 
 
         @Override
         public void onClick (View v){
+            int selectedItem;
+            AlertDialog.Builder builder;
+            AlertDialog dialog;
             switch (v.getId()) {
                 case R.id.btnNavWiFiSettings:
                     navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
                     mainActivity.getNavController().navigate(navDirections);
                     break;
                 case R.id.btnEmissivityHint:
-                    int selectedItem;
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder = new AlertDialog.Builder(getActivity());
                     builder.setTitle("Select Emissivity")
                             .setAdapter(new EmissivityDialogListAdapter(getActivity()),
-                                    (dialog, which) -> {
+                                    (emdialog, which) -> {
                                         settings.setEmissivity(emValues[which]);
                                     })
                             .setCancelable(true)
                             .setNegativeButton(getString(R.string.cancel), null)
                             .setPositiveButton(getString(R.string.ok), null);
-                    AlertDialog dialog = builder.create();
+                    dialog = builder.create();
+                    dialog.show();
+                    break;
+                case R.id.btnPalette:
+                    builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle("Select Palette")
+                            .setAdapter(new PaletteDialogListAdapter(getActivity()),
+                                    (paldialog, which) -> {
+                                        String palette = mainActivity.getPaletteFactory().getPaletteName(which);
+                                        settings.setPalette(palette);
+                                        cameraViewModel.setSelectedPalette(palette);
+                                    })
+                            .setCancelable(true)
+                            .setNegativeButton(getString(R.string.cancel), null)
+                            .setPositiveButton(getString(R.string.ok), null);
+                    dialog = builder.create();
                     dialog.show();
                     break;
             }

@@ -609,6 +609,13 @@ public class Settings extends BaseObservable implements Parcelable {
         return palette.getValue();
     }
 
+    public MutableLiveData<String> getLiveDataPalette() {
+        if (palette == null) {
+            palette = new MutableLiveData<>();
+        }
+        return palette;
+    }
+
     public void setPalette(String value) {
         if (palette == null) {
             palette = new MutableLiveData<String>();

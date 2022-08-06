@@ -4,7 +4,6 @@ import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -31,14 +30,9 @@ import io.github.luizgrp.sectionedrecyclerviewadapter.SectionParameters;
 import timber.log.Timber;
 
 public class LibrarySection extends Section {
-    public interface ClickListener {
-//        void onHeaderMoreButtonClicked(@NonNull final LibrarySection section, int itemAdapterPosition);
-        void onItemRootViewClicked(@NonNull final LibrarySection section, final LibraryItemViewHolder holder);
-    }
-
     private ArrayList<String> imageFile;
     private String imageFolder;
-    private ClickListener clickListener;
+    private SelectionTracker<String> selectionTracker;
 
     private AssetManager assetManager;
     private MainActivity mainActivity;
@@ -49,14 +43,14 @@ public class LibrarySection extends Section {
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
 
-    public LibrarySection(String imageFolder, ClickListener clickListener, SelectionTracker selectionTracker) {
+    public LibrarySection(String imageFolder, SelectionTracker selectionTracker) {
         // call constructor with layout resources for this Section header and items
         super(SectionParameters.builder()
                 .itemResourceId(R.layout.library_item_view)
                 .headerResourceId(R.layout.library_item_header)
                 .build());
         this.imageFolder = imageFolder;
-        this.clickListener = clickListener;
+        this.selectionTracker = selectionTracker;
 
         mainActivity = MainActivity.getInstance();
         cameraUtils = mainActivity.getCameraUtils();
@@ -89,7 +83,7 @@ public class LibrarySection extends Section {
     @Override
     public RecyclerView.ViewHolder getItemViewHolder(View view) {
         // return a custom instance of ViewHolder for the items of this section
-        return new LibraryItemViewHolder(view);
+        return new LibraryItemViewHolder(view, selectionTracker);
     }
 
     @Override
@@ -153,11 +147,12 @@ public class LibrarySection extends Section {
 
         }
 
-        itemHolder.getRootView().setOnClickListener(v -> {
-            LibraryItemViewHolder viewHolder = (LibraryItemViewHolder) holder;
-            clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
-            viewHolder.setSelected(!viewHolder.isSelected());
-        });
+//        itemHolder.getRootView().setOnClickListener(v -> {
+//            LibraryItemViewHolder viewHolder = (LibraryItemViewHolder) holder;
+//            clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
+//        });
+
+        itemHolder.bind(position);
     }
 
     @Override
