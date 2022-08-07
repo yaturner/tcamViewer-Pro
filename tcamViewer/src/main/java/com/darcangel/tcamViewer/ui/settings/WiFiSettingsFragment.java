@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 
@@ -76,6 +77,12 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
             mainActivity.getCameraService().sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        ActionBar actionBar = mainActivity.getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setHomeButtonEnabled(false); // disable the button
+            actionBar.setDisplayHomeAsUpEnabled(false); // remove the left caret
+            actionBar.setDisplayShowHomeEnabled(false); // remove the icon
         }
     }
 
