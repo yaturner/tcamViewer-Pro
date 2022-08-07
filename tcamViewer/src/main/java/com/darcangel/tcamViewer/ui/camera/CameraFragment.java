@@ -115,7 +115,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
                                     Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
-                                            mainActivity.getPaletteFactory().getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
                                     cameraViewModel.setImage(bitmap);
                                     drawScreen();
                                     mainActivity.dismissProgressDialog();
@@ -171,16 +171,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     }
 
     private void rotateColormap() {
-        String pal = cameraViewModel.getSelectedPalette();
+        String pal = settings.getPalette();
         for(int index=0; index<paletteNames.length; index++) {
             if (pal.equalsIgnoreCase(paletteNames[index])) {
                 if(index == paletteNames.length -1) {
                     index = -1;
                 }
-                cameraViewModel.setSelectedPalette(paletteNames[index+1]);
+                settings.setPalette(paletteNames[index+1]);
                 if (cameraViewModel.getImage() != null) {
                     cameraViewModel.setImage(cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                            getPaletteByName(cameraViewModel.getSelectedPalette())));
+                            getPaletteByName(settings.getPalette())));
                 }
                 drawScreen();
                 break;
@@ -195,7 +195,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             if (binding.ivColorBar.getVisibility() == View.VISIBLE) {
                 try {
                     int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
-                            cameraViewModel.getSelectedPalette());
+                            settings.getPalette());
                     binding.ivColorBar.setVisibility(View.VISIBLE);
                     binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                             palette, Constants.COLORBAR_WIDTH));
@@ -204,7 +204,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         if(isRemapNeeded) {
                             isRemapNeeded = false;
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                    getPaletteByName(cameraViewModel.getSelectedPalette()));
+                                    getPaletteByName(settings.getPalette()));
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);

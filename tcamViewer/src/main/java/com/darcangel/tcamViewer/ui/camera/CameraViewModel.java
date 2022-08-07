@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.darcangel.tcamViewer.MainActivity;
-import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.container.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
@@ -25,7 +24,6 @@ public class CameraViewModel extends ViewModel {
     private Boolean isStreaming = false;
 
     public CameraViewModel() {
-        setSelectedPalette("Fusion"); //TODO get from SharedPrefs
         mainActivity = MainActivity.getInstance();
         cameraService = mainActivity.getCameraService();
         cameraUtils = mainActivity.getCameraUtils();
@@ -59,20 +57,6 @@ public class CameraViewModel extends ViewModel {
         if(image.getValue() == null || !image.getValue().sameAs(newImage)) {
             image.setValue(newImage);
         }
-    }
-
-    public String getSelectedPalette() {
-        if(selectedPalette == null) {
-            selectedPalette = new MutableLiveData<>();
-        }
-        return selectedPalette.getValue();
-    }
-
-    public void setSelectedPalette(String value) {
-        if(selectedPalette == null) {
-            selectedPalette = new MutableLiveData<>();
-        }
-        selectedPalette.setValue(value);
     }
 
     //Camera operations

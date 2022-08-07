@@ -167,7 +167,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                                     (paldialog, which) -> {
                                         String palette = mainActivity.getPaletteFactory().getPaletteName(which);
                                         settings.setPalette(palette);
-                                        cameraViewModel.setSelectedPalette(palette);
                                     })
                             .setCancelable(true)
                             .setNegativeButton(getString(R.string.cancel), null)
