@@ -11,9 +11,8 @@
         android:label="@string/title_camera"
         tools:layout="@layout-land/fragment_camera" >
         <action
-            android:id="@+id/action_navigation_camera_pop"
-            app:popUpTo="@id/navigation_camera"
-            app:popUpToInclusive="true" />
+            android:id="@+id/action_navigation_camera_to_navigation_library2"
+            app:destination="@id/navigation_library" />
     </fragment>
 
     <fragment
@@ -21,10 +20,6 @@
         android:name="com.darcangel.tcamViewer.ui.settings.SettingsFragment"
         android:label="@string/title_settings"
         tools:layout="@layout/fragment_settings" >
-        <action
-            android:id="@+id/action_navigation_settings_pop"
-            app:popUpTo="@id/navigation_settings"
-            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_navigation_settings_to_wiFiSettingsFragment"
             app:destination="@id/wiFiSettingsFragment" />
@@ -39,9 +34,8 @@
         android:label="@string/title_library"
         tools:layout="@layout/fragment_library" >
         <action
-            android:id="@+id/action_navigation_library_pop"
-            app:popUpTo="@id/navigation_library"
-            app:popUpToInclusive="true" />
+            android:id="@+id/action_navigation_library_to_navigation_camera"
+            app:destination="@id/navigation_camera" />
     </fragment>
     <fragment
         android:id="@+id/wiFiSettingsFragment"

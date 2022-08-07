@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavDirections;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -44,15 +43,13 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         this.container = container;
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-        settingsViewModel =
-                new ViewModelProvider(this).get(SettingsViewModel.class);
-
-        binding = FragmentWifiSettingsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
         }
+
+        settingsViewModel = mainActivity.getSettingsViewModel();
+        binding = FragmentWifiSettingsBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
 
         if(settings == null) {
             settings = mainActivity.getSettings();
@@ -82,7 +79,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         }
     }
 
-    private void sendWiFI() {
+    private void sendWiFi() {
         StringBuilder stringBuilder = new StringBuilder();
         
     }
@@ -125,7 +122,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
                 break;
             case R.id.btnSave:
                 //TODO send config settings to camera and persist SharedPreferences
-                sendWiFI();
+                sendWiFi();
                 navDirections = WiFiSettingsFragmentDirections.actionWiFiSettingsFragmentToNavigationSettings();
                 mainActivity.getNavController().navigate(navDirections);
                 break;
