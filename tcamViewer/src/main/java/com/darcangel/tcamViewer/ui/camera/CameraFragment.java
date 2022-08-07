@@ -295,6 +295,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 } else {
                     cameraViewModel.startStreaming(true);
                 }
+                mainActivity.invalidateOptionsMenu();
                 break;
             }
             // file menu items
@@ -341,6 +342,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             itemDisconnect.setVisible(true);
             itemGet.setEnabled(true);
             itemStream.setEnabled(true);
+        }
+        if(cameraViewModel.getStreaming()) {
+            itemGet.setEnabled(false);
+        } else {
+            itemGet.setEnabled(true);
         }
     }
 
