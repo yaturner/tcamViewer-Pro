@@ -11,28 +11,32 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="5dp"
         tools:context=".ui.settings.SettingsFragment">
 
-        <include layout="@layout/guidelines" />
+        <include layout="@layout/btn_cancel_save" android:id="@+id/btnCancelSave"
+            app:layout_constraintTop_toBottomOf="@+id/svSettings"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
         <ScrollView
             android:id="@+id/svSettings"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:orientation="vertical"
             android:scrollbarAlwaysDrawVerticalTrack="true"
-            app:layout_constraintEnd_toEndOf="@+id/glEnd"
-            app:layout_constraintStart_toStartOf="@+id/glStart"
-            app:layout_constraintTop_toBottomOf="@+id/glTop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@+id/btnCancelSave">
 
             <!--Scrollview Container-->
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="@+id/glEnd"
                 app:layout_constraintStart_toStartOf="@+id/glStart">
@@ -325,11 +329,6 @@
             </androidx.appcompat.widget.LinearLayoutCompat>
         </ScrollView>
 
-        <include layout="@layout/btn_cancel_save" android:id="@+id/btnCancelSave"
-            app:layout_constraintTop_toBottomOf="@+id/svSettings"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/nav_view"
-            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

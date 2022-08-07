@@ -2,6 +2,7 @@ package com.darcangel.tcamViewer.ui.settings;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -108,12 +109,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     .setPositiveButton(R.string.yes, (dialog, which) -> {
                         settings.persist();
                         dialog.dismiss();
-                        onBackPressedCallback.remove();
+                        onBackPressedCallback.setEnabled(false);
                         mainActivity.onBackPressed();
                     })
                     .setNegativeButton(R.string.no, (dialog, which) -> {
                         dialog.dismiss();
-                        onBackPressedCallback.remove();
+                        onBackPressedCallback.setEnabled(false);
                         mainActivity.onBackPressed();
                     });
             return builder.create();
@@ -123,11 +124,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState){
             super.onViewCreated(view, savedInstanceState);
             if (mainActivity.getCameraService().isConnected()) {
-                binding.btnCancelSave.btnSave.setEnabled(true);
                 binding.btnNavWiFiSettings.setEnabled(true);
                 binding.btnNavWiFiSettings.setOnClickListener(this);
             } else {
-                binding.btnCancelSave.btnSave.setEnabled(false);
                 binding.btnNavWiFiSettings.setEnabled(false);
                 binding.btnNavWiFiSettings.setOnClickListener(null);
             }
@@ -178,13 +177,29 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         }
 
         @Override
+        public void onAttach(@NonNull Context context) {
+            super.onAttach(context);
+            onBackPressedCallback = new OnBackPressedCallback(
+                    true // default to enabled
+            ) {
+                @Override
+                public void handleOnBackPressed() {
+                    onBackPressedCallback.setEnabled(false);
+                    createSaveDialog().show();
+                }
+            };
+            requireActivity().getOnBackPressedDispatcher().addCallback(
+                    this, // LifecycleOwner
+                    onBackPressedCallback);
+        }
+
+        @Override
         public void onPause () {
             super.onPause();
             //changing the ip address will disconnect the camera
             if(!binding.cameraIPAddress.getText().toString().equals(settings.getCameraAddress())) {
                 cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
             }
-            settings.persist();
             if(cameraService.isConnected()) {
                 cameraViewModel.setConfig();
             }
