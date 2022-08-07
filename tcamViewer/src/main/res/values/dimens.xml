@@ -4,5 +4,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="display_image_height">210dp</dimen>
     <dimen name="display_image_width">270dp</dimen>
+    <dimen name="histogram_width">156dp</dimen>
     <dimen name="temperature_text_width">50sp</dimen>
 </resources>

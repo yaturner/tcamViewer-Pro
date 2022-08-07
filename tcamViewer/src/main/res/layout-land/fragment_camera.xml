@@ -72,10 +72,11 @@
 
     <ImageView
         android:id="@+id/ivHistogram"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/histogram_width"
         android:layout_height="0dp"
         android:scaleType="fitXY"
-        android:layout_margin="5dp"
+        android:paddingEnd="10dp"
+        android:cropToPadding="true"
         app:layout_constraintStart_toEndOf="@+id/ivColorBar"
         app:layout_constraintTop_toBottomOf="@+id/tvMaxTemperature"
         app:layout_constraintBottom_toTopOf="@+id/tvMinTemperature"/>

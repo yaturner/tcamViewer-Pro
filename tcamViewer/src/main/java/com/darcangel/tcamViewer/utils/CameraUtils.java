@@ -2,6 +2,7 @@ package com.darcangel.tcamViewer.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -203,31 +204,32 @@ public class CameraUtils implements Parcelable {
         int[] bin = new int[256];
         int maxBinCount = -1;
         Paint black = new Paint();
-        Paint white = new Paint();
+        Paint paint = new Paint();
         Rect fill = new Rect(0, 0, width, Constants.COLORBAR_HEIGHT);
 
         black.setColor(0xff000000);
         black.setStyle(Paint.Style.FILL);
 
-        white.setColor(0xffffffff);
-        white.setStyle(Paint.Style.STROKE);
-        white.setStrokeWidth(1.0f);
+        paint.setColor(0xffffffff);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(1.0f);
 
         for(int index = 0; index < imageData.length; index++) {
             int b = Math.min(((imageData[index] - minTemperature) * 255 / diff), 255);
             bin[255 - b]++;
-            maxBinCount = Math.max(bin[b], maxBinCount);
+            maxBinCount = Math.max(bin[255 - b], maxBinCount);
         }
 
-        float scale = (float)width/(float)maxBinCount;
+        //add a 5% margin
+        float scale = (float)width/(float)(maxBinCount + maxBinCount/20);
 
         Bitmap image = Bitmap.createBitmap(width, Constants.COLORBAR_HEIGHT, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(image);
         canvas.drawRect(fill, black);
 
         for(int index = 0; index < 256; index++) {
-            white.setColor(rgbToPixel(palette[255 - index]));
-            canvas.drawLine(0, (float)index, (float)bin[index]*scale, (float)index, white);
+            paint.setColor(rgbToPixel(palette[255 - index]));
+            canvas.drawLine(0, (float)index, (float)bin[index]*scale, (float)index, paint);
         }
 
         return image;
