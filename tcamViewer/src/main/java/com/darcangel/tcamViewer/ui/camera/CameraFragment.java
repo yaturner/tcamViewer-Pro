@@ -208,10 +208,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
-                        binding.tvMaxTemperature.setText(createTemperatureString(
-                                cameraUtils.getMaxTemperature(settings.getUnitsC())));
-                        binding.tvMinTemperature.setText(createTemperatureString(
-                                cameraUtils.getMinTemperature(settings.getUnitsC())));
+                        if(settings.getAGC()) {
+                            binding.tvMaxTemperature.setText("AGC");
+                            binding.tvMinTemperature.setText("AGC");
+                        } else {
+                            binding.tvMaxTemperature.setText(createTemperatureString(
+                                    cameraUtils.getMaxTemperature(settings.getUnitsC())));
+                            binding.tvMinTemperature.setText(createTemperatureString(
+                                    cameraUtils.getMinTemperature(settings.getUnitsC())));
+                        }
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
                                 (int)getResources().getDimension(R.dimen.histogram_width)));
                         binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.

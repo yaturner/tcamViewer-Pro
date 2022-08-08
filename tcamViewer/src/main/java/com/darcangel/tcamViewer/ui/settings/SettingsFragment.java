@@ -97,12 +97,25 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 builder.create().show();
             }
         });
-
-
         return view;
     }
 
-        private Dialog createSaveDialog () {
+    @Override
+    public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState){
+        super.onViewCreated(view, savedInstanceState);
+        if (mainActivity.getCameraService().isConnected()) {
+            binding.btnNavWiFiSettings.setEnabled(true);
+            binding.btnNavWiFiSettings.setOnClickListener(this);
+        } else {
+            binding.btnNavWiFiSettings.setEnabled(false);
+            binding.btnNavWiFiSettings.setOnClickListener(null);
+        }
+        binding.btnEmissivityHint.setOnClickListener(this);
+        binding.btnPalette.setOnClickListener(this);
+        binding.tvVersion.setText(BuildConfig.VERSION_NAME);
+    }
+
+    private Dialog createSaveDialog () {
             AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
             builder.setTitle(R.string.title_settings)
                     .setMessage("Do you wish to save your settings")
@@ -119,22 +132,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     });
             return builder.create();
         }
-
-        @Override
-        public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState){
-            super.onViewCreated(view, savedInstanceState);
-            if (mainActivity.getCameraService().isConnected()) {
-                binding.btnNavWiFiSettings.setEnabled(true);
-                binding.btnNavWiFiSettings.setOnClickListener(this);
-            } else {
-                binding.btnNavWiFiSettings.setEnabled(false);
-                binding.btnNavWiFiSettings.setOnClickListener(null);
-            }
-            binding.btnEmissivityHint.setOnClickListener(this);
-            binding.btnPalette.setOnClickListener(this);
-            binding.tvVersion.setText(BuildConfig.VERSION_NAME);
-        }
-
 
         @Override
         public void onClick (View v){
