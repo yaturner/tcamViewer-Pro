@@ -5,6 +5,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -105,10 +106,31 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                         String infoType = info.getString("info_string");
                                         if (infoType.equalsIgnoreCase("set_time success")) {
                                             if (isConnectingToCamera) {
-                                                cameraViewModel.setConfig();
+                                                cameraViewModel.getConfig();
                                             }
                                         } else if (infoType.equalsIgnoreCase("set_config success")) {
                                             //nothing to do here
+                                        }
+                                    }
+                                } else if(response.equalsIgnoreCase("config")) {
+                                    JSONObject config = obj.getJSONObject("config");
+                                    if(config.has("agc_enabled")) {
+                                        settings.setAGC(config.getInt("agc_enabled")==1);
+                                    }
+                                    if(config.has("emissivity")) {
+                                        settings.setEmissivity(config.getInt("emissivity"));
+                                    }
+                                    if(config.has("gain_mode")) {
+                                        switch(config.getInt("gain_mode")) {
+                                            case 0:
+                                                settings.setGainHigh(true);
+                                                break;
+                                            case 1:
+                                                settings.setGainLow(true);
+                                                break;
+                                            case 2:
+                                                settings.setGainAuto(true);
+                                                break;
                                         }
                                     }
                                     //get image
@@ -158,15 +180,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mainActivity.invalidateOptionsMenu();
             }
         });
-
+        //watch for palette changes
         settings.getLiveDataPalette().observe(mainActivity, palette ->
         {
             isRemapNeeded = true;
         });
-
+        //watch for palette rotation requests
         binding.ivColorBar.setOnClickListener(v -> {
             rotateColormap();
         });
+
         drawScreen();
     }
 
@@ -192,6 +215,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     private void drawScreen() {
         mainActivity.runOnUiThread(() -> {
+            Bitmap image = null;
             if (binding.ivColorBar.getVisibility() == View.VISIBLE) {
                 try {
                     int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
@@ -200,7 +224,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                     binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
-                        Bitmap image = cameraUtils.drawHotspot();
+                        if(settings.getDisplaySpotmeter()) {
+                            image = cameraUtils.drawHotspot();
+                        } else {
+                            image = cameraViewModel.getImage();
+                        }
                         if(isRemapNeeded) {
                             isRemapNeeded = false;
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
@@ -290,6 +318,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
+                MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
+                mediaPlayer.start();
                 mainActivity.showProgressDialog(getString(R.string.acquiring), "");
                 cameraViewModel.getImageFromCamera();
                 break;

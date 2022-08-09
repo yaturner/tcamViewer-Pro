@@ -48,6 +48,18 @@ public class CameraService implements Parcelable {
         ipAddress = mainActivity.getSettings().getCameraAddress();
     }
 
+    public static final Creator<CameraService> CREATOR = new Creator<CameraService>() {
+        @Override
+        public CameraService createFromParcel(Parcel in) {
+            return new CameraService(in);
+        }
+
+        @Override
+        public CameraService[] newArray(int size) {
+            return new CameraService[size];
+        }
+    };
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(ipAddress);

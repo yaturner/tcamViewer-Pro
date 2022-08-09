@@ -134,6 +134,17 @@ public class CameraViewModel extends ViewModel {
         }
     }
 
+    public void getConfig() {
+        if(cameraService.isConnected()) {
+            String cmd = Constants.CMD_GET_CONFIG;
+            try {
+                mainActivity.getCameraService().sendCmd(cmd);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * getImage
      */
