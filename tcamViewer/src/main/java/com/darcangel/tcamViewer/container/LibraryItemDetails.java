@@ -6,12 +6,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 
-public class LibraryItemDetails extends ItemDetailsLookup.ItemDetails<String> {
-    private String key;
+public class LibraryItemDetails extends ItemDetailsLookup.ItemDetails<Long> {
     private int position;
 
-    public LibraryItemDetails(final int position, final String key) {
-        this.key = key;
+    public LibraryItemDetails(final int position) {
         this.position = position;
     }
 
@@ -22,8 +20,8 @@ public class LibraryItemDetails extends ItemDetailsLookup.ItemDetails<String> {
 
     @Nullable
     @Override
-    public String getSelectionKey() {
-        return key;
+    public Long getSelectionKey() {
+        return Long.valueOf(position);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView imageView;
     private final TextView titleView;
     private final View rootView;
-    private ItemDetailsLookup.ItemDetails<String> itemDetails;
+    private ItemDetailsLookup.ItemDetails<Long> itemDetails;
 
     private String imagePath;
     private SelectionTracker selectionTracker;
@@ -66,8 +66,8 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    public ItemDetailsLookup.ItemDetails<String> getItemDetails() {
-        return new LibraryItemDetails( position, getImagePath());
+    public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
+        return new LibraryItemDetails( position);
     }
 
     public void bind(final int position) {

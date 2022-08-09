@@ -64,7 +64,7 @@ public class LibraryFragment extends Fragment {
     private ArrayList<File> imageFolder;
     private int nFolders = 0;
 
-    private SelectionTracker<String> selectionTracker;
+    private SelectionTracker<Long> selectionTracker;
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -154,7 +154,7 @@ public class LibraryFragment extends Fragment {
                 binding.rvLibrary,
                 new LibrarySelectionAdapter.KeyProvider(binding.rvLibrary.getAdapter()),
                 new LibrarySelectionAdapter.DetailsLookup(binding.rvLibrary),
-                StorageStrategy.createStringStorage())
+                StorageStrategy.createLongStorage())
                 .withSelectionPredicate(new LibrarySelectionAdapter.Predicate())
                 .build();
         sectionAdapter.setSelectionTracker(selectionTracker);

@@ -15,21 +15,21 @@ import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
 public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
-    private SelectionTracker<String> selectionTracker;
+    private SelectionTracker<Long> selectionTracker;
 
     public LibrarySelectionAdapter() {
         super();
     }
 
-    public void setSelectionTracker(SelectionTracker<String> selectionTracker) {
+    public void setSelectionTracker(SelectionTracker<Long> selectionTracker) {
         this.selectionTracker = selectionTracker;
     }
 
-    public SelectionTracker<String> getSelectionTracker() {
+    public SelectionTracker<Long> getSelectionTracker() {
         return selectionTracker;
     }
 
-    static public class KeyProvider extends ItemKeyProvider<String> {
+    static public class KeyProvider extends ItemKeyProvider<Long> {
 
         public KeyProvider(RecyclerView.Adapter adapter) {
             super(ItemKeyProvider.SCOPE_MAPPED);
@@ -37,18 +37,18 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
 
         @Nullable
         @Override
-        public String getKey(int position) {
+        public Long getKey(int position) {
             return null; //JMT (long) position;
         }
 
         @Override
-        public int getPosition(@NonNull String key) {
-            String value = key;
+        public int getPosition(@NonNull Long key) {
+            Long value = key;
             return 0; //JMT (int) value;
         }
     }
 
-    static public class DetailsLookup extends ItemDetailsLookup<String> {
+    static public class DetailsLookup extends ItemDetailsLookup<Long> {
 
         private RecyclerView recyclerView;
 
@@ -58,7 +58,7 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
 
         @Nullable
         @Override
-        public ItemDetails<String> getItemDetails(@NonNull MotionEvent e) {
+        public ItemDetails<Long> getItemDetails(@NonNull MotionEvent e) {
             View view = recyclerView.findChildViewUnder(e.getX(), e.getY());
             if (view != null) {
                 RecyclerView.ViewHolder viewHolder = recyclerView.getChildViewHolder(view);
@@ -70,10 +70,10 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
         }
     }
 
-    static public class Predicate extends SelectionTracker.SelectionPredicate<String> {
+    static public class Predicate extends SelectionTracker.SelectionPredicate<Long> {
 
         @Override
-        public boolean canSetStateForKey(@NonNull String key, boolean nextState) {
+        public boolean canSetStateForKey(@NonNull Long key, boolean nextState) {
             return true;
         }
 
