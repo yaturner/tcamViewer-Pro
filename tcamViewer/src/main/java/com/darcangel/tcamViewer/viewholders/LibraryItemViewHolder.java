@@ -1,21 +1,17 @@
 package com.darcangel.tcamViewer.viewholders;
 
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
-import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.container.LibraryItemDetails;
-import com.darcangel.tcamViewer.databinding.LibraryItemViewBinding;
 
 public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView imageView;
@@ -24,9 +20,9 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private ItemDetailsLookup.ItemDetails<Long> itemDetails;
 
     private String imagePath;
+    private Long position;
     private SelectionTracker selectionTracker;
     private MainActivity mainActivity;
-    private int position;
 
     public LibraryItemViewHolder(@NonNull View itemView, SelectionTracker selectionTracker) {
         super(itemView);
@@ -58,21 +54,25 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
         return rootView;
     }
 
+    public void setPosition(Long position) {
+        this.position = position;
+    }
+
     public boolean isSelected() {
         if (selectionTracker != null) {
-            return selectionTracker.isSelected(getImagePath());
+            return selectionTracker.isSelected(Long.valueOf(getAbsoluteAdapterPosition()));
         } else {
             return false;
         }
     }
 
-    public ItemDetailsLookup.ItemDetails<Long> getItemDetails() {
-        return new LibraryItemDetails( position);
+    public LibraryItemDetails getItemDetails() {
+        return new LibraryItemDetails(position);
     }
 
-    public void bind(final int position) {
-        this.position = position;
-        if(isSelected()) {
+    public void bind(final Long position) {
+        this.position = Long.valueOf(getAbsoluteAdapterPosition());
+        if(selectionTracker.isSelected(this.position)) {
             imageView.setBackground(mainActivity.getResources().getDrawable(R.drawable.image_border));
             imageView.setActivated(true);
         } else {

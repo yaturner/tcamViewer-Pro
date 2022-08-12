@@ -30,21 +30,22 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
     }
 
     static public class KeyProvider extends ItemKeyProvider<Long> {
+        private LibrarySelectionAdapter adapter;
 
         public KeyProvider(RecyclerView.Adapter adapter) {
             super(ItemKeyProvider.SCOPE_MAPPED);
+            this.adapter = (LibrarySelectionAdapter) adapter;
         }
 
         @Nullable
         @Override
         public Long getKey(int position) {
-            return null; //JMT (long) position;
+            return Long.valueOf(position);
         }
 
         @Override
         public int getPosition(@NonNull Long key) {
-            Long value = key;
-            return 0; //JMT (int) value;
+            return key.intValue();
         }
     }
 

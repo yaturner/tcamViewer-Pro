@@ -32,7 +32,7 @@ import timber.log.Timber;
 public class LibrarySection extends Section {
     private ArrayList<String> imageFile;
     private String imageFolder;
-    private SelectionTracker<String> selectionTracker;
+    private SelectionTracker<Long> selectionTracker;
 
     private AssetManager assetManager;
     private MainActivity mainActivity;
@@ -43,7 +43,7 @@ public class LibrarySection extends Section {
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
 
-    public LibrarySection(String imageFolder, SelectionTracker selectionTracker) {
+    public LibrarySection(String imageFolder, SelectionTracker<Long> selectionTracker) {
         // call constructor with layout resources for this Section header and items
         super(SectionParameters.builder()
                 .itemResourceId(R.layout.library_item_view)
@@ -152,7 +152,7 @@ public class LibrarySection extends Section {
 //            clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
 //        });
 
-        itemHolder.bind(position);
+        itemHolder.bind(Long.valueOf(position));
     }
 
     @Override

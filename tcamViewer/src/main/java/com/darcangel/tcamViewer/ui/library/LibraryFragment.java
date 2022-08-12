@@ -95,7 +95,6 @@ public class LibraryFragment extends Fragment {
         libraryViewModel = mainActivity.getLibraryViewModel();
         cameraUtils = mainActivity.getCameraUtils();
         librarySections = new ArrayList<>();
-
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -112,22 +111,6 @@ public class LibraryFragment extends Fragment {
 
         // Create an instance of SectionedRecyclerViewAdapter
         sectionAdapter = new LibrarySelectionAdapter(); ///SectionedRecyclerViewAdapter
-
-
-        // Add your Sections only if the directory is not empty
-        //  or in the free version only movie files
-        try {
-            for (int i = 0; i < imageFolder.size(); i++) {
-                if (hasImages(imageFolder.get(i).toString())) {
-                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(),  selectionTracker);
-                    librarySections.add(section);
-                    sectionAdapter.addSection(section);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            //TODO handle error
-        }
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
@@ -150,13 +133,29 @@ public class LibraryFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        selectionTracker = new SelectionTracker.Builder<>("librarySelection",
+        selectionTracker = new SelectionTracker.Builder<Long>("librarySelection",
                 binding.rvLibrary,
                 new LibrarySelectionAdapter.KeyProvider(binding.rvLibrary.getAdapter()),
                 new LibrarySelectionAdapter.DetailsLookup(binding.rvLibrary),
                 StorageStrategy.createLongStorage())
                 .withSelectionPredicate(new LibrarySelectionAdapter.Predicate())
                 .build();
+
+        // Add your Sections only if the directory is not empty
+        //  or in the free version only movie files
+        try {
+            for (int i = 0; i < imageFolder.size(); i++) {
+                if (hasImages(imageFolder.get(i).toString())) {
+                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(),  selectionTracker);
+                    librarySections.add(section);
+                    sectionAdapter.addSection(section);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            //TODO handle error
+        }
+
         sectionAdapter.setSelectionTracker(selectionTracker);
     }
 
