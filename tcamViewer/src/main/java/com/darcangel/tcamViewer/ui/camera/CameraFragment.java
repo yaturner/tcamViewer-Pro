@@ -12,11 +12,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -201,6 +203,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                     index = -1;
                 }
                 settings.setPalette(paletteNames[index+1]);
+                settings.persist();
                 if (cameraViewModel.getImage() != null) {
                     cameraViewModel.setImage(cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
                             getPaletteByName(settings.getPalette())));
@@ -324,6 +327,31 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 cameraViewModel.getImageFromCamera();
                 break;
             }
+            case R.id.action_palette: {
+                String title = ((MenuItemImpl) item).getTitle().toString();
+                if (!title.equalsIgnoreCase("Palette") &&
+                        !title.equalsIgnoreCase(settings.getPalette())) {
+                    settings.setPalette(title);
+                    settings.persist();
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            int[][] palette = mainActivity.getPaletteFactory()
+                                    .getPaletteByName(settings.getPalette());
+                            if (palette != null) {
+                                binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
+                                if (cameraViewModel.getImage() != null) {
+                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
+                                    drawScreen();
+                                }
+                            }
+                        }
+                    });
+                }
+                binding.ivCamera.getRootView().setOnTouchListener(this);
+                mainActivity.invalidateOptionsMenu();
+                break;
+            }
             case R.id.action_stream: {
                 if (cameraViewModel.getStreaming()) {
                     cameraViewModel.startStreaming(false);
@@ -361,8 +389,19 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);
+        MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
+        SubMenu paletteSubMenu = itemPalette.getSubMenu();
 
+        if (settings.getPalette() != null && !settings.getPalette().isEmpty()) {
+            itemPalette.setTitle(settings.getPalette());
+        }
+        //since this fragment can be recreated, prevent multiple items
+        paletteSubMenu.clear();
+        for (int i = 0; i < paletteNames.length; i++) {
+            paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE, paletteNames[i]);
+        }
+        itemPalette.setEnabled(true);
         if (!cameraService.isConnected()) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);

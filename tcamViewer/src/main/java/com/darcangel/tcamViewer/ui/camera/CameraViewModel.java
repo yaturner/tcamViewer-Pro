@@ -14,8 +14,6 @@ import java.util.Calendar;
 
 public class CameraViewModel extends ViewModel {
 
-    private MutableLiveData<Boolean> isCameraConnected;
-    private MutableLiveData<String> selectedPalette;
     private MutableLiveData<Bitmap> image;
     private CameraService cameraService;
     private CameraUtils cameraUtils;
