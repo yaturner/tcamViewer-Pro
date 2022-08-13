@@ -60,7 +60,7 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
 
     public boolean isSelected() {
         if (selectionTracker != null) {
-            return selectionTracker.isSelected(Long.valueOf(getAbsoluteAdapterPosition()));
+            return selectionTracker.isSelected((long) getAbsoluteAdapterPosition());
         } else {
             return false;
         }
@@ -71,12 +71,12 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bind(final Long position) {
-        this.position = Long.valueOf(getAbsoluteAdapterPosition());
+        this.position = (long) getAbsoluteAdapterPosition();
         if(selectionTracker.isSelected(this.position)) {
             imageView.setBackground(mainActivity.getResources().getDrawable(R.drawable.image_border));
             imageView.setActivated(true);
         } else {
-            imageView.setBackgroundColor(R.color.white);
+            imageView.setBackgroundColor(mainActivity.getResources().getColor(R.color.white, null));
             imageView.setActivated(false);
         }
     }
