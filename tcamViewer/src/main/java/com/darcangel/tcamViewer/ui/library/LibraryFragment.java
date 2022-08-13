@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -34,7 +35,6 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySection;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.container.SelectedItem;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
@@ -54,7 +55,7 @@ public class LibraryFragment extends Fragment {
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
     private CameraUtils cameraUtils;
-//    private SectionedRecyclerViewAdapter sectionAdapter;
+    //    private SectionedRecyclerViewAdapter sectionAdapter;
     private LibrarySelectionAdapter sectionAdapter;
     private ArrayList<LibrarySection> librarySections;
 
@@ -75,7 +76,7 @@ public class LibraryFragment extends Fragment {
                     // There are no request codes
                     File imagePath = mainActivity.getCacheDir();
                     File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
-                    if(newFile.exists()) {
+                    if (newFile.exists()) {
                         newFile.delete();
                     }
                 }
@@ -146,7 +147,7 @@ public class LibraryFragment extends Fragment {
         try {
             for (int i = 0; i < imageFolder.size(); i++) {
                 if (hasImages(imageFolder.get(i).toString())) {
-                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(),  selectionTracker);
+                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(), selectionTracker);
                     librarySections.add(section);
                     sectionAdapter.addSection(section);
                 }
@@ -169,18 +170,16 @@ public class LibraryFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         // command switch
-        switch (item.getItemId()) {
-            case R.id.action_item_share:
-                shareImage(libraryViewModel.getSelectedImage().getValue());
-            case R.id.action_item_delete:
-                deleteImage(libraryViewModel.getSelectedImage().getValue());
-                break;
-            case R.id.action_item_export:
-                exportImage();
-                break;
-            case R.id.action_slideshow:
-                Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
-                break;
+        int id = item.getItemId();
+        Selection<Long> selection = selectionTracker.getSelection();
+        if (id == R.id.action_item_share) {
+            shareImage(selection);
+        } else if (id == R.id.action_item_delete) {
+            deleteImage(selection);
+        } else if (id == R.id.action_item_export) {
+            exportImage();
+        } else if (id == R.id.action_slideshow) {
+            Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
         }
         return true;
     }
@@ -214,67 +213,88 @@ public class LibraryFragment extends Fragment {
     }
 
 
-    private void shareImage(final SelectedItem selectedItem) {
+    private void shareImage(final Selection selection) {
+        String filename = "";
+        String tjsnString = "";
+        JSONObject jsonObject = null;
+        int key;
+        ArrayList<String> imageFile;
         try {
-            LibrarySection section = librarySections.get(selectedItem.getSectionIndex());
-            String filename = selectedItem.getPath();
-            Intent shareIntent = new Intent();
-            String tjsnString = cameraUtils.readTjsnFile(filename);
-            JSONObject jsonObject = new JSONObject(tjsnString);
-            int[][] palette = mainActivity.getPaletteFactory().getPaletteByName("Rainbow");
-            Bitmap bitmap = cameraUtils.processImageResponse(jsonObject, palette);
-            File imagePath = mainActivity.getCacheDir();
-            File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
-            if (bitmap != null) {
-                if (newFile.exists()) {
-                    newFile.delete();
+            if (!selection.isEmpty()) {
+                Iterator<Long> it = selection.iterator();
+                while (it.hasNext()) {
+                    key = it.next().intValue();
+                    int position = sectionAdapter.getPositionInSection(key);
+                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
+                    imageFile = section.getImageFile();
+                    filename = imageFile.get(position);
+                    Intent shareIntent = new Intent();
+                    tjsnString = cameraUtils.readTjsnFile(filename);
+                    jsonObject = new JSONObject(tjsnString);
+                    int[][] palette = mainActivity.getPaletteFactory().getPaletteByName("Rainbow");
+                    Bitmap bitmap = cameraUtils.processImageResponse(jsonObject, palette);
+                    File imagePath = mainActivity.getCacheDir();
+                    File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
+                    if (bitmap != null) {
+                        if (newFile.exists()) {
+                            newFile.delete();
+                        }
+                        cameraUtils.saveBitmapToFile(bitmap, newFile);
+                        Uri imageUri = FileProvider.getUriForFile(mainActivity, "com.darcangel.fileprovider", newFile);
+                        shareIntent.setAction(Intent.ACTION_SEND);
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                        shareIntent.setType(mainActivity.getContentResolver().getType(imageUri));
+                        shareIntent.setData(imageUri);
+                        shareIntent.setClipData(ClipData.newRawUri("", imageUri));
+                        shareIntent.putExtra(Intent.EXTRA_SUBJECT, Constants.SHARED_IMAGE_FILENAME);
+                        shareIntent.addFlags(
+                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        shareActivityResultLauncher.launch(shareIntent);
+                    }
                 }
-                cameraUtils.saveBitmapToFile(bitmap, newFile);
-                Uri imageUri = FileProvider.getUriForFile(mainActivity, "com.darcangel.fileprovider", newFile);
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                shareIntent.setType(mainActivity.getContentResolver().getType(imageUri));
-                shareIntent.setData(imageUri);
-                shareIntent.setClipData(ClipData.newRawUri("", imageUri));
-                shareIntent.putExtra(Intent.EXTRA_SUBJECT,Constants.SHARED_IMAGE_FILENAME);
-                shareIntent.addFlags(
-                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareActivityResultLauncher.launch(shareIntent);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
             //TODO handle error
-        }
-        catch (JSONException e1) {
+        } catch (JSONException e1) {
             e1.printStackTrace();
         }
     }
 
-    private void deleteImage(SelectedItem selectedItem) {
-        LibrarySection section = librarySections.get(selectedItem.getSectionIndex());
-        String filename = selectedItem.getPath();
-
-        File file = new File(filename);
-        if(file.exists()) {
-            file.delete();
+        private void deleteImage (final Selection selection) {
+            int key;
+            String filename;
+            ArrayList<String> imageFile;
+            if (!selection.isEmpty()) {
+                Iterator<Long> it = selection.iterator();
+                while (it.hasNext()) {
+                    key = it.next().intValue();
+                    int position = sectionAdapter.getPositionInSection(key);
+                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
+                    imageFile = section.getImageFile();
+                    filename = imageFile.get(position);
+                    File file = new File(filename);
+                    if (file.exists()) {
+                        //file.delete();
+                    }
+                    section.deleteItem(position);
+                    //sectionAdapter.notifyItemRemoved(position);
+                }
+            }
         }
-        int pos = selectedItem.getPosInSection();
-        section.deleteItem(pos);
-        sectionAdapter.notifyItemRemoved(pos);
-        sectionAdapter.notifyDataSetChanged();
-    }
 
-    private void exportImage() {
+        private void exportImage () {
 
-    }
+        }
 
-    @Override
-    public void onDestroyView() {
-        libraryViewModel.clearAllSelectedImages();
-        super.onDestroyView();
-        binding = null;
-    }
+        @Override
+        public void onDestroyView () {
+            libraryViewModel.clearAllSelectedImages();
+            super.onDestroyView();
+            binding = null;
+        }
 
 //    @Override
 //    public void onItemRootViewClicked(@NonNull LibrarySection section, LibraryItemViewHolder holder) {
@@ -301,4 +321,4 @@ public class LibraryFragment extends Fragment {
 //        selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
 //        libraryViewModel.getSelectedImage().setValue(selectedItem);
 //    }
-}
+    }
