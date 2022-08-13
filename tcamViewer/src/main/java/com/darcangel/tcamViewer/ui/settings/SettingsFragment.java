@@ -112,6 +112,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         }
         binding.btnEmissivityHint.setOnClickListener(this);
         binding.btnPalette.setOnClickListener(this);
+        binding.btnPrivacy.setOnClickListener(this);
         binding.tvVersion.setText(BuildConfig.VERSION_NAME);
     }
 
@@ -139,6 +140,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             AlertDialog.Builder builder;
             AlertDialog dialog;
             switch (v.getId()) {
+                case R.id.btn_privacy:
+                    navDirections = SettingsFragmentDirections.actionNavigationSettingsToPrivacyDisclosure();
+                    mainActivity.getNavController().navigate(navDirections);
+                    break;
                 case R.id.btnNavWiFiSettings:
                     navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
                     mainActivity.getNavController().navigate(navDirections);

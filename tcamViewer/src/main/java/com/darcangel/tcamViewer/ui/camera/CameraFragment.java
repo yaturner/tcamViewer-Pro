@@ -334,9 +334,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 break;
             }
             // file menu items
-            case R.id.action_file_quit:
-                mainActivity.quit();
-                break;
             case R.id.action_file_save:
                 try {
                     cameraUtils.saveTjsn();
@@ -361,7 +358,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private void setMenuItems(Menu menu) {
         MenuItem itemFile = menu.findItem(R.id.action_file);
         // File submenu items
-        MenuItem itemFileQuit = menu.findItem(R.id.action_file_quit);
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);

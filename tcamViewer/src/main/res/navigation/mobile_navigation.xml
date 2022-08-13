@@ -26,6 +26,9 @@
         <action
             android:id="@+id/action_navigation_settings_to_navigation_camera"
             app:destination="@id/navigation_camera" />
+        <action
+            android:id="@+id/action_navigation_settings_to_privacyDisclosure"
+            app:destination="@id/privacyDisclosure" />
     </fragment>
 
     <fragment
@@ -36,6 +39,9 @@
         <action
             android:id="@+id/action_navigation_library_to_navigation_camera"
             app:destination="@id/navigation_camera" />
+        <action
+            android:id="@+id/action_navigation_library_to_librarySlideShowFragment"
+            app:destination="@id/librarySlideShowFragment" />
     </fragment>
     <fragment
         android:id="@+id/wiFiSettingsFragment"
@@ -45,5 +51,21 @@
         <action
             android:id="@+id/action_wiFiSettingsFragment_to_navigation_settings"
             app:destination="@id/navigation_settings" />
+    </fragment>
+    <fragment
+        android:id="@+id/privacyDisclosure"
+        android:name="com.darcangel.tcamViewer.ui.settings.PrivacyDisclosure"
+        android:label="PrivacyDisclosure" >
+        <action
+            android:id="@+id/action_privacyDisclosure_to_navigation_settings"
+            app:destination="@id/navigation_settings" />
+    </fragment>
+    <fragment
+        android:id="@+id/librarySlideShowFragment"
+        android:name="com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragment"
+        android:label="LibrarySlideShowFragment" >
+        <action
+            android:id="@+id/action_librarySlideShowFragment_to_navigation_library"
+            app:destination="@id/navigation_library" />
     </fragment>
 </navigation>

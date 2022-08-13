@@ -10,8 +10,6 @@
         <menu>
             <item android:id="@+id/action_file_save"
                 android:title="@string/save" />
-            <item android:id="@+id/action_file_quit"
-                android:title="@string/quit" />
         </menu>
     </item>
 
@@ -37,4 +35,11 @@
         android:title="Stream"
         android:icon="@drawable/video_camera_no_t_30_30"
         app:showAsAction="always|withText" />
+    <item
+        android:id="@+id/action_palette"
+        android:title="@string/palette"
+        android:icon="@drawable/palette_30_30"
+        app:showAsAction="ifRoom|withText">
+        <menu></menu>
+    </item>
 </menu>

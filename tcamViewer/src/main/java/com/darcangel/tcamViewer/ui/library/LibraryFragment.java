@@ -55,7 +55,6 @@ public class LibraryFragment extends Fragment {
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
     private CameraUtils cameraUtils;
-    //    private SectionedRecyclerViewAdapter sectionAdapter;
     private LibrarySelectionAdapter sectionAdapter;
     private ArrayList<LibrarySection> librarySections;
 
@@ -172,12 +171,8 @@ public class LibraryFragment extends Fragment {
         // command switch
         int id = item.getItemId();
         Selection<Long> selection = selectionTracker.getSelection();
-        if (id == R.id.action_item_share) {
-            shareImage(selection);
-        } else if (id == R.id.action_item_delete) {
+        if (id == R.id.action_item_delete) {
             deleteImage(selection);
-        } else if (id == R.id.action_item_export) {
-            exportImage();
         } else if (id == R.id.action_slideshow) {
             Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
         }
@@ -192,9 +187,13 @@ public class LibraryFragment extends Fragment {
 
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
-        MenuItem itemShare = menu.findItem(R.id.action_item_share);
-        itemDelete.setVisible(true);
-        itemShare.setVisible(true);
+        MenuItem itemSlideShow = menu.findItem(R.id.action_slideshow);
+        if(selectionTracker != null && selectionTracker.hasSelection()) {
+            itemDelete.setEnabled(true);
+        } else {
+            itemDelete.setEnabled(false);
+        }
+        itemSlideShow.setEnabled(true);
     }
 
     private Boolean hasImages(String imageFolder) {
@@ -280,7 +279,7 @@ public class LibraryFragment extends Fragment {
                         //file.delete();
                     }
                     section.deleteItem(position);
-                    //sectionAdapter.notifyItemRemoved(position);
+                    sectionAdapter.notifyItemRemoved(position);
                 }
             }
         }

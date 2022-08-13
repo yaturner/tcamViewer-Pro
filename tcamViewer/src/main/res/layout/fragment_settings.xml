@@ -320,6 +320,7 @@
                         android:text="@string/privacy_policy" />
 
                     <ImageButton
+                        android:id="@+id/btn_privacy"
                         style="@style/SettingsBtnEnd"
                         app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
