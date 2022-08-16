@@ -111,7 +111,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                                 cameraViewModel.getConfig();
                                             }
                                         } else if (infoType.equalsIgnoreCase("set_config success")) {
-                                            //nothing to do here
+
                                         }
                                     }
                                 } else if(response.equalsIgnoreCase("config")) {
@@ -135,6 +135,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                                 break;
                                         }
                                     }
+                                    settings.persist();
                                     //get image
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
