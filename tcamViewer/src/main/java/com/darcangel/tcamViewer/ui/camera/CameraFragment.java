@@ -114,6 +114,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
                                         }
                                     }
+                                    //get_config
                                 } else if(response.equalsIgnoreCase("config")) {
                                     JSONObject config = obj.getJSONObject("config");
                                     if(config.has("agc_enabled")) {
@@ -147,6 +148,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                 }
                             }
                         },
+                        //Error handling
                         e -> {
                             e.printStackTrace();
                             mainActivity.dismissProgressDialog(); //just in case
@@ -228,11 +230,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                     binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
-                        if(settings.getDisplaySpotmeter()) {
-                            image = cameraUtils.drawHotspot();
-                        } else {
-                            image = cameraViewModel.getImage();
-                        }
+                        image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter());
                         if(isRemapNeeded) {
                             isRemapNeeded = false;
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
@@ -287,7 +285,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                         imageViewY,
                         imageViewX + 1,
                         imageViewY + 1));
-                cameraViewModel.setImage(cameraUtils.drawHotspot());
+                cameraViewModel.setImage(cameraUtils.drawHotspot(settings.getDisplaySpotmeter()));
                 if (cameraViewModel.getStreaming()) {
                     cameraService.startStreaming();
                 } else {

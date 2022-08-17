@@ -253,7 +253,7 @@ public class CameraUtils implements Parcelable {
         return IP_PATTERN.matcher(address).matches();
     }
 
-    public Bitmap drawHotspot() {
+    public Bitmap drawHotspot(boolean draw) {
         Paint paintWhite = new Paint();
         Paint paintBlack = new Paint();
         paintWhite.setColor(0xffffffff);
@@ -272,9 +272,10 @@ public class CameraUtils implements Parcelable {
 
         //Draw the image bitmap into the canvas
         tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
-
-        tempCanvas.drawRect(new Rect(imageX-2, imageY-2, imageX+2, imageY+2), paintWhite);
-        tempCanvas.drawRect(new Rect(imageX-3, imageY-3, imageX+3, imageY+3), paintBlack);
+        if(draw) {
+            tempCanvas.drawRect(new Rect(imageX - 2, imageY - 2, imageX + 2, imageY + 2), paintWhite);
+            tempCanvas.drawRect(new Rect(imageX - 3, imageY - 3, imageX + 3, imageY + 3), paintBlack);
+        }
 
         return tempBitmap;
     }
