@@ -82,6 +82,14 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         init();
         getPermissions();
         getSettings();
+
+        navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
+            if(navDestination.getId() == R.id.navigation_settings) {
+                getNavView().setVisibility(View.GONE);
+            } else {
+                getNavView().setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     @Override
@@ -256,7 +264,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public View getNavView() {
-        return binding.navView;
+        try {
+            return binding.navView;
+        } catch (NullPointerException e) {
+            return null;
+        }
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.darcangel.tcamViewer.ui.settings;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,8 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -43,14 +40,14 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private NavDirections navDirections;
     private int[] emValues;
     private boolean hadFocus = false;
-    private OnBackPressedDispatcher onBackPressedDispatcher;
-    private OnBackPressedCallback onBackPressedCallback;
+//    private OnBackPressedDispatcher onBackPressedDispatcher;
+//    private OnBackPressedCallback onBackPressedCallback;
     private CameraService cameraService;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         this.container = container;
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
@@ -82,6 +79,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 if (CameraUtils.isValidIPAddress(etAddress)) {
                     if (mainActivity.getCameraService() != null) {
                         settings.setCameraAddress(etAddress);
+                        settings.persist();
                         hadFocus = false;
                     }
                 }
@@ -101,7 +99,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState){
+    public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (mainActivity.getCameraService().isConnected()) {
             binding.btnNavWiFiSettings.setEnabled(true);
@@ -114,6 +112,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         binding.btnPalette.setOnClickListener(this);
         binding.btnPrivacy.setOnClickListener(this);
         binding.tvVersion.setText(BuildConfig.VERSION_NAME);
+
+        binding.btnCancelSave.btnSave.setOnClickListener(this);
+        binding.btnCancelSave.btnCancel.setOnClickListener(this);
     }
 
     private Dialog createSaveDialog () {
@@ -123,12 +124,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     .setPositiveButton(R.string.yes, (dialog, which) -> {
                         settings.persist();
                         dialog.dismiss();
-                        onBackPressedCallback.setEnabled(false);
                         mainActivity.onBackPressed();
                     })
                     .setNegativeButton(R.string.no, (dialog, which) -> {
                         dialog.dismiss();
-                        onBackPressedCallback.setEnabled(false);
                         mainActivity.onBackPressed();
                     });
             return builder.create();
@@ -175,24 +174,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     dialog = builder.create();
                     dialog.show();
                     break;
-            }
-        }
-
-        @Override
-        public void onAttach(@NonNull Context context) {
-            super.onAttach(context);
-            onBackPressedCallback = new OnBackPressedCallback(
-                    true // default to enabled
-            ) {
-                @Override
-                public void handleOnBackPressed() {
-                    onBackPressedCallback.setEnabled(false);
+                case R.id.btnSave:
                     createSaveDialog().show();
-                }
-            };
-            requireActivity().getOnBackPressedDispatcher().addCallback(
-                    this, // LifecycleOwner
-                    onBackPressedCallback);
+                    break;
+                case R.id.btnCancel:
+                    mainActivity.onBackPressed();
+                    break;
+            }
         }
 
         @Override

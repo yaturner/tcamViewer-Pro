@@ -16,30 +16,34 @@
         android:layout_marginEnd="5dp"
         tools:context=".ui.settings.SettingsFragment">
 
-        <include layout="@layout/btn_cancel_save" android:id="@+id/btnCancelSave"
-            app:layout_constraintTop_toBottomOf="@+id/svSettings"
-            app:layout_constraintStart_toStartOf="parent"
+        <include
+            android:id="@+id/btnCancelSave"
+            layout="@layout/btn_cancel_save"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:id="@+id/svSettings"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:orientation="vertical"
             android:scrollbarAlwaysDrawVerticalTrack="true"
+            app:layout_constraintBottom_toTopOf="@+id/btnCancelSave"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/btnCancelSave">
+            app:layout_constraintTop_toTopOf="parent">
 
             <!--Scrollview Container-->
             <androidx.appcompat.widget.LinearLayoutCompat
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
+                app:layout_constraintBottom_toTopOf="@+id/btnCancelSave"
                 app:layout_constraintEnd_toEndOf="@+id/glEnd"
-                app:layout_constraintStart_toStartOf="@+id/glStart">
+                app:layout_constraintStart_toStartOf="@+id/glStart"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <!--Heading-->
                 <TextView
@@ -52,8 +56,8 @@
                     android:id="@+id/switchAGC"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_marginBottom="10sp"
                     android:layout_marginTop="10sp"
+                    android:layout_marginBottom="10sp"
                     android:layout_weight="1"
                     android:checked="@={settings.AGC}"
                     android:text="@string/agc" />
@@ -241,9 +245,9 @@
 
                     <ImageButton
                         android:id="@+id/btnPalette"
+                        style="@style/SettingsBtnEnd"
                         android:minWidth="0dp"
                         android:minHeight="0dp"
-                        style="@style/SettingsBtnEnd"
                         app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
@@ -328,7 +332,7 @@
 
                 <!--End of scrollable context-->
             </androidx.appcompat.widget.LinearLayoutCompat>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
