@@ -20,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.NavController;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -497,6 +496,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         super.onDestroyView();
         if (cameraViewModel.getStreaming()) {
             cameraService.stopStreaming();
+        }
+        if(disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
         }
         binding = null;
     }
