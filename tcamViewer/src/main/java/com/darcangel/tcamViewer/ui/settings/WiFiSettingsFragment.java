@@ -1,5 +1,8 @@
 package com.darcangel.tcamViewer.ui.settings;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,11 +10,14 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -19,9 +25,7 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.container.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -33,11 +37,15 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
     private FragmentWifiSettingsBinding binding;
     private ViewGroup container;
     private SettingsViewModel settingsViewModel;
+    private CameraViewModel cameraViewModel;
     private MainActivity mainActivity;
     private Settings settings;
     private NavDirections navDirections;
     private CameraService cameraService;
     private Disposable disposable;
+    private OnBackPressedDispatcher onBackPressedDispatcher;
+    private OnBackPressedCallback onBackPressedCallback;
+    private View root;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -49,8 +57,9 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         }
 
         settingsViewModel = mainActivity.getSettingsViewModel();
+        cameraViewModel = mainActivity.getCameraViewModel();
         binding = FragmentWifiSettingsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        root = binding.getRoot();
 
         if(settings == null) {
             settings = mainActivity.getSettings();
@@ -84,55 +93,73 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
             actionBar.setDisplayHomeAsUpEnabled(false); // remove the left caret
             actionBar.setDisplayShowHomeEnabled(false); // remove the icon
         }
+
+        getWifi();
     }
 
-    private void sendWiFi() {
-        StringBuilder stringBuilder = new StringBuilder();
-        
+    private Dialog createSaveDialog () {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        builder.setTitle(R.string.title_settings)
+                .setMessage("Do you wish to save your settings")
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    setWiFi();
+                    dialog.dismiss();
+                    onBackPressedCallback.setEnabled(false);
+                    Navigation.findNavController(root).popBackStack();
+                })
+                .setNegativeButton(R.string.no, (dialog, which) -> {
+                    dialog.dismiss();
+                    onBackPressedCallback.setEnabled(false);
+                    Navigation.findNavController(root).popBackStack();
+                });
+        return builder.create();
     }
 
-    private void handleGetWifiResponse(JSONObject response) {
-        try {
-            JSONObject wifi = response.getJSONObject("wifi");
-//            Iterator<String> keys = wifi.keys();
-//            while (keys.hasNext()) {
-//                String key = keys.next();
-//                if (wifi.get(key).equals("flags")) {
-//                    int value = ((Double) wifi.get(key)).intValue();
-//                    //process flags
-//                    settings.setAccessPoint((value & 0x80) != 0x80);
-//                    settings.setStaticIP((value & 0x01) == 0x01);
-//                } else {
-//                    String value = (String) wifi.getKey(key).getValue();
-//                    if (entry.get().equals("sta_ssid")) {
-//                        settings.setSSID(value);
-//                    }
-//                    if (wifi.get(key).equals("sta_ip_addr")) {
-//                        settings.setStaticIPAddress(value);
-//                    }
-//                    if (entry.get(key).equals("sta_netmask")) {
-//                        settings.setStaticNetmask(value);
-//                    }
-//                }
-//            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+//    public final static String ARGS_SET_WIFI = "{\n" +
+//            "    \"ap_ssid\": \"%s\"\n" +
+//            "    \"ap_pw: \"%s\"\n" +
+//            "    \"ap_ip_addr\": \"%s\",\n" +
+//            "    \"flags\": %d,\n" +
+//            "    \"sta_ssid\": \"%s\",\n" +
+//            "    \"sta_pw\": \"%s\",\n" +
+//            "  }";
+
+    private void setWiFi() {
+
+    }
+
+    private void getWifi() {
+        cameraViewModel.getWifi();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnCancel:
-                navDirections = WiFiSettingsFragmentDirections.actionWiFiSettingsFragmentToNavigationSettings();
-                mainActivity.getNavController().navigate(navDirections);
+                Navigation.findNavController(root).popBackStack();
                 break;
             case R.id.btnSave:
-                //TODO send config settings to camera and persist SharedPreferences
-                sendWiFi();
-                navDirections = WiFiSettingsFragmentDirections.actionWiFiSettingsFragmentToNavigationSettings();
-                mainActivity.getNavController().navigate(navDirections);
+                //TODO send config settings to camera
+                createSaveDialog().show();
+                Navigation.findNavController(root).popBackStack();
                 break;
         }
     }
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(
+                true // default to enabled
+        ) {
+            @Override
+            public void handleOnBackPressed() {
+                onBackPressedCallback.setEnabled(false);
+                createSaveDialog().show();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+                this, // LifecycleOwner
+                onBackPressedCallback);
+    }
+
 }

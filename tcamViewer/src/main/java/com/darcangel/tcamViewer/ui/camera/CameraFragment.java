@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -117,14 +118,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     //get_config
                                 } else if(response.equalsIgnoreCase("config")) {
                                     JSONObject config = obj.getJSONObject("config");
-                                    if(config.has("agc_enabled")) {
-                                        settings.setAGC(config.getInt("agc_enabled")==1);
+                                    if (config.has("agc_enabled")) {
+                                        settings.setAGC(config.getInt("agc_enabled") == 1);
                                     }
-                                    if(config.has("emissivity")) {
+                                    if (config.has("emissivity")) {
                                         settings.setEmissivity(config.getInt("emissivity"));
                                     }
-                                    if(config.has("gain_mode")) {
-                                        switch(config.getInt("gain_mode")) {
+                                    if (config.has("gain_mode")) {
+                                        switch (config.getInt("gain_mode")) {
                                             case 0:
                                                 settings.setGainHigh(true);
                                                 break;
@@ -137,6 +138,27 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                         }
                                     }
                                     settings.persist();
+                                    //get wifi
+                                } else if(response.equalsIgnoreCase("wifi")) {
+                                    JSONObject wifi = obj.getJSONObject("wifi");
+                                    if (wifi.has("ap_ssid")) {
+                                        settings.setApSSID(wifi.getString("ap_ssid"));
+                                    }
+                                    if (wifi.has("sta_ssid")) {
+                                        settings.setStaticSSID(wifi.getString("ap_ssid"));
+                                    }
+                                    if (wifi.has("ap_ip_addr")) {
+                                        settings.setApIPAddress(wifi.getString("ap_ip_addr"));
+                                    }
+                                    if (wifi.has("sta_ip_addr")) {
+                                        settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
+                                    }
+                                    if (wifi.has("sta_netmask")) {
+                                        settings.setStaticNetmask("sta_netmask");
+                                    }
+                                    if (wifi.has("flags")) {
+                                        settings.setFlags(wifi.getInt("flags")&0xff);
+                                    }
                                     //get image
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
@@ -217,12 +239,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         }
     }
 
-
-
     private void drawScreen() {
         mainActivity.runOnUiThread(() -> {
             Bitmap image = null;
-            if (binding.ivColorBar.getVisibility() == View.VISIBLE) {
+            if (binding != null && binding.ivColorBar.getVisibility() == View.VISIBLE) {
                 try {
                     int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
                             settings.getPalette());

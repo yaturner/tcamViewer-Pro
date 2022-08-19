@@ -143,6 +143,17 @@ public class CameraViewModel extends ViewModel {
         }
     }
 
+    public void getWifi() {
+        if(cameraService.isConnected()) {
+            String cmd = Constants.CMD_GET_WIFI;
+            try {
+                mainActivity.getCameraService().sendCmd(cmd);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * getImage
      */

@@ -37,14 +37,20 @@ public class Settings extends BaseObservable implements Parcelable {
     private MutableLiveData<Boolean> unitsF;
     private MutableLiveData<Boolean> unitsC;
 
-    //WiFi Settings
-    private MutableLiveData<Boolean> accessPoint;
+    //WiFi Settings, never persisted
+    //User settable
+    private MutableLiveData<Boolean> cameraIsAccessPoint;
+    private MutableLiveData<Boolean> useStaticIPWhenClient;
     private MutableLiveData<String> SSID;
     private MutableLiveData<String> password;
-    private MutableLiveData<Boolean> staticIP;
     private MutableLiveData<String> staticIPAddress;
     private MutableLiveData<String> staticNetmask;
-
+    //Camera settings
+    private String apSSID;
+    private String staticSSID;
+    private String apIPAddress;
+    private String currentIPAddress;
+    private int flags;
 
     private MutableLiveData<Integer> gain;
     private MutableLiveData<Float> streamRate;
@@ -671,22 +677,61 @@ public class Settings extends BaseObservable implements Parcelable {
     /**
      * WiFi Settings
      */
-
-    @Bindable
-    public Boolean getAccessPoint() {
-        if (accessPoint == null) {
-            accessPoint = new MutableLiveData<>(false);
-        }
-        return accessPoint.getValue();
+    public String getApSSID() {
+        return apSSID;
     }
 
-    public void setAccessPoint(Boolean value) {
-        if (accessPoint == null) {
-            accessPoint = new MutableLiveData<>(false);
+    public void setApSSID(String apSSID) {
+        this.apSSID = apSSID;
+    }
+
+    public String getStaticSSID() {
+        return staticSSID;
+    }
+
+    public void setStaticSSID(String staticSSID) {
+        this.staticSSID = staticSSID;
+    }
+
+    public String getApIPAddress() {
+        return apIPAddress;
+    }
+
+    public void setApIPAddress(String apIPAddress) {
+        this.apIPAddress = apIPAddress;
+    }
+
+    public String getCurrentIPAddress() {
+        return currentIPAddress;
+    }
+
+    public void setCurrentIPAddress(String currentIPAddress) {
+        this.currentIPAddress = currentIPAddress;
+    }
+
+    public int getFlags() {
+        return flags;
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
+
+    @Bindable
+    public Boolean getCameraIsAccessPoint() {
+        if (cameraIsAccessPoint == null) {
+            cameraIsAccessPoint = new MutableLiveData<>(false);
         }
-        if (accessPoint.getValue() != value) {
-            accessPoint.setValue(value);
-            notifyPropertyChanged(BR.accessPoint);
+        return cameraIsAccessPoint.getValue();
+    }
+
+    public void setCameraIsAccessPoint(Boolean value) {
+        if (cameraIsAccessPoint == null) {
+            cameraIsAccessPoint = new MutableLiveData<>(false);
+        }
+        if (cameraIsAccessPoint.getValue() != value) {
+            cameraIsAccessPoint.setValue(value);
+            notifyPropertyChanged(BR.cameraIsAccessPoint);
         }
     }
 
@@ -734,20 +779,20 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Boolean getStaticIP() {
-        if (staticIP == null) {
-            staticIP = new MutableLiveData<>(false);
+    public Boolean getUseStaticIPWhenClient() {
+        if (useStaticIPWhenClient == null) {
+            useStaticIPWhenClient = new MutableLiveData<>(false);
         }
-        return staticIP.getValue();
+        return useStaticIPWhenClient.getValue();
     }
 
-    public void setStaticIP(Boolean value) {
-        if (staticIP == null) {
-            accessPoint = new MutableLiveData<>(false);
+    public void setUseStaticIPWhenClient(Boolean value) {
+        if (useStaticIPWhenClient == null) {
+            useStaticIPWhenClient = new MutableLiveData<>(false);
         }
-        if (staticIP.getValue() != value) {
-            staticIP.setValue(value);
-            notifyPropertyChanged(BR.staticIP);
+        if (useStaticIPWhenClient.getValue() != value) {
+            useStaticIPWhenClient.setValue(value);
+            notifyPropertyChanged(BR.useStaticIPWhenClient);
         }
     }
 

@@ -2,6 +2,7 @@ package com.darcangel.tcamViewer.ui.settings;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,10 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
@@ -40,9 +44,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private NavDirections navDirections;
     private int[] emValues;
     private boolean hadFocus = false;
-//    private OnBackPressedDispatcher onBackPressedDispatcher;
-//    private OnBackPressedCallback onBackPressedCallback;
+    private OnBackPressedDispatcher onBackPressedDispatcher;
+    private OnBackPressedCallback onBackPressedCallback;
     private CameraService cameraService;
+    private View root;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -57,7 +62,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         cameraViewModel = mainActivity.getCameraViewModel();
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
-        View view = binding.getRoot();
+        root = binding.getRoot();
 
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
@@ -79,7 +84,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 if (CameraUtils.isValidIPAddress(etAddress)) {
                     if (mainActivity.getCameraService() != null) {
                         settings.setCameraAddress(etAddress);
-                        settings.persist();
                         hadFocus = false;
                     }
                 }
@@ -95,7 +99,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 builder.create().show();
             }
         });
-        return view;
+        root = binding.getRoot();
+        return root;
     }
 
     @Override
@@ -124,11 +129,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     .setPositiveButton(R.string.yes, (dialog, which) -> {
                         settings.persist();
                         dialog.dismiss();
-                        mainActivity.onBackPressed();
+                        onBackPressedCallback.setEnabled(false);
+                        Navigation.findNavController(root).popBackStack();
                     })
                     .setNegativeButton(R.string.no, (dialog, which) -> {
                         dialog.dismiss();
-                        mainActivity.onBackPressed();
+                        onBackPressedCallback.setEnabled(false);
+                        Navigation.findNavController(root).popBackStack();
                     });
             return builder.create();
         }
@@ -174,13 +181,24 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                     dialog = builder.create();
                     dialog.show();
                     break;
-                case R.id.btnSave:
-                    createSaveDialog().show();
-                    break;
-                case R.id.btnCancel:
-                    mainActivity.onBackPressed();
-                    break;
             }
+        }
+
+        @Override
+        public void onAttach(@NonNull Context context) {
+            super.onAttach(context);
+            onBackPressedCallback = new OnBackPressedCallback(
+                    true // default to enabled
+            ) {
+                @Override
+                public void handleOnBackPressed() {
+                    onBackPressedCallback.setEnabled(false);
+                    createSaveDialog().show();
+                }
+            };
+            requireActivity().getOnBackPressedDispatcher().addCallback(
+                    this, // LifecycleOwner
+                    onBackPressedCallback);
         }
 
         @Override
@@ -189,9 +207,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             //changing the ip address will disconnect the camera
             if(!binding.cameraIPAddress.getText().toString().equals(settings.getCameraAddress())) {
                 cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
-            }
-            if(cameraService.isConnected()) {
-                cameraViewModel.setConfig();
             }
         }
     }

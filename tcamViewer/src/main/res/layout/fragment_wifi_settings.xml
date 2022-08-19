@@ -11,11 +11,19 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_margin="10dp"
         tools:context=".ui.settings.wifiSettingsFragment">
 
         <include layout="@layout/guidelines"/>
+        <include
+            android:id="@+id/btnCancelSave"
+            layout="@layout/btn_cancel_save"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
+
 
         <ScrollView
             android:layout_width="match_parent"
@@ -40,7 +48,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
-                    android:checked="@={settings.accessPoint}"
+                    android:checked="@={settings.cameraIsAccessPoint}"
                     android:text="@string/camera_is_access_point" />
 
                 <!--SSID-->
@@ -82,7 +90,7 @@
                     android:layout_height="0dp"
                     android:layout_marginBottom="10sp"
                     android:layout_weight="1"
-                    android:checked="@={settings.staticIP}"
+                    android:checked="@={settings.useStaticIPWhenClient}"
                     android:text="@string/use_static_ip_when_client" />
 
                 <!--Client Static IP Address-->
@@ -118,6 +126,5 @@
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.appcompat.widget.LinearLayoutCompat>
         </ScrollView>
-        <include layout="@layout/btn_cancel_save" android:id="@+id/btnCancelSave"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
