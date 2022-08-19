@@ -59,7 +59,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     public interface FileSelectionEntryPoint {
         Fragment fileSelectionOwner = null;
+
         void onFileCreated(FileDescriptor fileDescriptor);
+
         void onFileSelected(FileDescriptor fileDescriptor);
     }
 
@@ -116,7 +118,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                         }
                                     }
                                     //get_config
-                                } else if(response.equalsIgnoreCase("config")) {
+                                } else if (response.equalsIgnoreCase("config")) {
                                     JSONObject config = obj.getJSONObject("config");
                                     if (config.has("agc_enabled")) {
                                         settings.setAGC(config.getInt("agc_enabled") == 1);
@@ -139,13 +141,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     }
                                     settings.persist();
                                     //get wifi
-                                } else if(response.equalsIgnoreCase("wifi")) {
+                                } else if (response.equalsIgnoreCase("wifi")) {
+                                    int flags = 0;
                                     JSONObject wifi = obj.getJSONObject("wifi");
                                     if (wifi.has("ap_ssid")) {
                                         settings.setApSSID(wifi.getString("ap_ssid"));
                                     }
                                     if (wifi.has("sta_ssid")) {
-                                        settings.setStaticSSID(wifi.getString("ap_ssid"));
+                                        settings.setStaticSSID(wifi.getString("sta_ssid"));
                                     }
                                     if (wifi.has("ap_ip_addr")) {
                                         settings.setApIPAddress(wifi.getString("ap_ip_addr"));
@@ -154,10 +157,20 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                         settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
                                     }
                                     if (wifi.has("sta_netmask")) {
-                                        settings.setStaticNetmask("sta_netmask");
+                                        settings.setStaticNetmask(wifi.getString("sta_netmask"));
                                     }
                                     if (wifi.has("flags")) {
-                                        settings.setFlags(wifi.getInt("flags")&0xff);
+                                        flags = wifi.getInt("flags") & 0xff;
+                                        settings.setFlags(flags);
+                                    }
+                                    //parse flags and set values
+                                    settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE) == 0);
+                                    settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
+                                            Constants.WIFI_MASK_STATIC_IP);
+                                    if (settings.getCameraIsAccessPoint()) {
+                                        settings.setSSID(settings.getApSSID());
+                                    } else {
+                                        settings.setSSID(settings.getStaticSSID());
                                     }
                                     //get image
                                 } else if (response.equalsIgnoreCase("metadata")) {
@@ -191,7 +204,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        binding = FragmentCameraBinding. inflate(inflater, container, false);
+        binding = FragmentCameraBinding.inflate(inflater, container, false);
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
         return root;
@@ -202,7 +215,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
         super.onViewCreated(view, savedInstanceState);
         settings.getLiveDataCameraAddress().observe(mainActivity, address -> {
             Timber.d("Camera ip address is now %s", address);
-            if(!address.equals(settings.getCameraAddress())) {
+            if (!address.equals(settings.getCameraAddress())) {
                 cameraService.setIpAddress(address);
                 mainActivity.invalidateOptionsMenu();
             }
@@ -222,12 +235,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
 
     private void rotateColormap() {
         String pal = settings.getPalette();
-        for(int index=0; index<paletteNames.length; index++) {
+        for (int index = 0; index < paletteNames.length; index++) {
             if (pal.equalsIgnoreCase(paletteNames[index])) {
-                if(index == paletteNames.length -1) {
+                if (index == paletteNames.length - 1) {
                     index = -1;
                 }
-                settings.setPalette(paletteNames[index+1]);
+                settings.setPalette(paletteNames[index + 1]);
                 settings.persist();
                 if (cameraViewModel.getImage() != null) {
                     cameraViewModel.setImage(cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
@@ -251,14 +264,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter());
-                        if(isRemapNeeded) {
+                        if (isRemapNeeded) {
                             isRemapNeeded = false;
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
                                     getPaletteByName(settings.getPalette()));
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
-                        if(settings.getAGC()) {
+                        if (settings.getAGC()) {
                             binding.tvMaxTemperature.setText("AGC");
                             binding.tvMinTemperature.setText("AGC");
                         } else {
@@ -268,7 +281,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                                     cameraUtils.getMinTemperature(settings.getUnitsC())));
                         }
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
-                                (int)getResources().getDimension(R.dimen.histogram_width)));
+                                (int) getResources().getDimension(R.dimen.histogram_width)));
                         binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
                                 getMeanTemperatureAtSpotmeter(settings.getUnitsC())));
                     }
@@ -432,7 +445,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             itemGet.setEnabled(true);
             itemStream.setEnabled(true);
         }
-        if(cameraViewModel.getStreaming()) {
+        if (cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
         } else {
             itemGet.setEnabled(true);
@@ -466,7 +479,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     @Override
     public void onPause() {
         super.onPause();
-        if(cameraViewModel.getStreaming()) {
+        if (cameraViewModel.getStreaming()) {
             cameraService.stopStreaming();
         }
     }
@@ -474,7 +487,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     @Override
     public void onResume() {
         super.onResume();
-        if(cameraViewModel.getStreaming()) {
+        if (cameraViewModel.getStreaming()) {
             cameraService.startStreaming();
         }
     }
@@ -482,7 +495,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if(cameraViewModel.getStreaming()) {
+        if (cameraViewModel.getStreaming()) {
             cameraService.stopStreaming();
         }
         binding = null;

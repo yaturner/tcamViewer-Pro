@@ -28,8 +28,6 @@ import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import io.reactivex.rxjava3.disposables.Disposable;
-import timber.log.Timber;
 
 @AndroidEntryPoint
 public class WiFiSettingsFragment extends Fragment implements OnClickListener {
@@ -42,7 +40,6 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
     private Settings settings;
     private NavDirections navDirections;
     private CameraService cameraService;
-    private Disposable disposable;
     private OnBackPressedDispatcher onBackPressedDispatcher;
     private OnBackPressedCallback onBackPressedCallback;
     private View root;
@@ -68,13 +65,6 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         binding.setSettings(settings);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);
-
-        disposable = cameraService.getImageChannel().
-                subscribe(t -> {
-                            Timber.d("String is %s", t);
-                        },
-                        e -> {});
-
         return root;
     }
 

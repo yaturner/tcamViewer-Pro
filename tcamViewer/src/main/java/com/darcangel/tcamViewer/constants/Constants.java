@@ -111,6 +111,9 @@ public final class Constants {
 
     public final static int TELEMETRY_MASK_AGC = (1<<12);
     public final static int TELEMETRY_MASK_SHUTDOWN = (1<<20);
+    public final static int WIFI_MASK_CLIENT_MODE = (1<<7);
+    public final static int WIFI_MASK_STATIC_IP = (1<<4);
+    public final static int WIFI_MASK_WIFI_ENABLED = 1;
 
     private Constants() {
     }
