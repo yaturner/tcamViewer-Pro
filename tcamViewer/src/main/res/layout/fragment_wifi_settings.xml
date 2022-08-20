@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="settings"
             type="com.darcangel.tcamViewer.container.Settings" />
@@ -81,14 +80,16 @@
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/SettingsEditTextEnd"
                         android:hint="@string/password"
-                        app:endIconMode="password_toggle">
+                        app:endIconMode="password_toggle"
+                        android:maxEms="32"
+                        android:minEms="8">
 
-                        <com.google.android.material.textfield.TextInputEditText
+
+                    <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPassword"
                             style="@style/SettingsEditTextEnd"
                             android:inputType="textPassword"
                             android:text="@={settings.password}"
-                            android:minWidth="32sp"
                             android:textAlignment="textEnd" />
                     </com.google.android.material.textfield.TextInputLayout>
                 </androidx.appcompat.widget.LinearLayoutCompat>
