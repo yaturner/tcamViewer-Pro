@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
-import com.darcangel.tcamViewer.databinding.FragmentPolicyDisclosureBinding;
+import com.darcangel.tcamViewer.databinding.FragmentPrivacyDisclosureBinding;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import java.io.InputStream;
 
 public class PrivacyDisclosure extends Fragment {
     private MainActivity mainActivity;
-    private FragmentPolicyDisclosureBinding binding;
+    private FragmentPrivacyDisclosureBinding binding;
     private View root;
 
 
@@ -31,7 +31,7 @@ public class PrivacyDisclosure extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        binding = FragmentPolicyDisclosureBinding.inflate(inflater, container, false);
+        binding = FragmentPrivacyDisclosureBinding.inflate(inflater, container, false);
         String htmlString = readTxt();
         binding.wvDisclosure.loadData(htmlString, "text/html", "UTF-8");
         root = binding.getRoot();

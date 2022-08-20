@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -27,10 +28,13 @@ import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
+import java.io.IOException;
+import java.util.Locale;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class WiFiSettingsFragment extends Fragment implements OnClickListener {
+public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private FragmentWifiSettingsBinding binding;
     private ViewGroup container;
@@ -47,7 +51,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         this.container = container;
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
 
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
@@ -65,6 +69,15 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         binding.setSettings(settings);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);
+        settings.getLiveDataCameraIsAccessPoint().observe(mainActivity, checked -> {
+            if(settings.getStaticSSID() != null && settings.getApSSID() != null) {
+                if(checked) {
+                    settings.setSSID(settings.getApSSID());
+                } else {
+                    settings.setSSID(settings.getStaticSSID());
+                }
+            }
+        });
         return root;
     }
 
@@ -112,10 +125,53 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
 //            "    \"flags\": %d,\n" +
 //            "    \"sta_ssid\": \"%s\",\n" +
 //            "    \"sta_pw\": \"%s\",\n" +
-//            "  }";
+//            "    \"sta_ip_addr\": \"%s\",\n" +
+//            "    \"sta_netmask\": \"%s\",\n" +
+//            "    }"
+// If Camera is Access Point, send
+//    public final static String ARGS_SET_WIFI = "{\n" +
+//            "    \"ap_ssid\": \"%s\"\n" +
+//            "    \"ap_pw: \"%s\"\n" +
+//            "    \"flags\": 1,\n" +
+//            "    }"
+// If Camera is NOT Access Point and NOT Use static IP when Client, send
+//    public final static String ARGS_SET_WIFI = "{\n" +
+//            "    \"sta_ssid\": \"%s\",\n" +
+//            "    \"sta_pw\": \"%s\",\n" +
+//            "    \"flags\": 129,\n" +
+//            "    }"
+// If Camera is NOT Access Point and Use static IP when Client, send
+//    public final static String ARGS_SET_WIFI = "{\n" +
+//            "    \"sta_ssid\": \"%s\",\n" +
+//            "    \"sta_pw\": \"%s\",\n" +
+//            "    \"sta_ip_addr\": \"%s\",\n" +
+//            "    \"sta_netmask\": \"%s\",\n" +
+//            "    \"flags\": 145,\n" +
+//            "    }"
 
     private void setWiFi() {
-
+        String args;
+        if (settings.getCameraIsAccessPoint()) {
+            args = String.format(Locale.US, Constants.ARGS_SET_WIFI_AP,
+                    settings.getApSSID(),
+                    settings.getPassword());
+        } else if (settings.getUseStaticIPWhenClient()) {
+            args = String.format(Locale.US, Constants.ARGS_SET_WIFI_STATIC,
+                    settings.getStaticSSID(),
+                    settings.getPassword(),
+                    settings.getStaticIPAddress(),
+                    settings.getStaticNetmask());
+        } else {
+            args = String.format(Locale.US, Constants.ARGS_SET_WIFI_NOT_STATIC,
+                    settings.getStaticSSID(),
+                    settings.getPassword());
+        }
+        String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
+        try {
+            cameraService.sendCmd(cmd);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void getWifi() {
@@ -131,10 +187,10 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
             case R.id.btnSave:
                 //TODO send config settings to camera
                 createSaveDialog().show();
-                Navigation.findNavController(root).popBackStack();
                 break;
         }
     }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -152,4 +208,10 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
                 onBackPressedCallback);
     }
 
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if(isChecked) {
+
+        }
+    }
 }

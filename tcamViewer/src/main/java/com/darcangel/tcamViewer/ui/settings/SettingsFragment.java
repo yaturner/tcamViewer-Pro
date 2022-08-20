@@ -92,9 +92,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
                         .setCancelable(true)
                         .setPositiveButton(R.string.ok, (dialog, which) -> {
-                                dialog.dismiss();
-                                binding.cameraIPAddress.requestFocus();
-                            })
+                            dialog.dismiss();
+                            binding.cameraIPAddress.requestFocus();
+                        })
                         .setMessage(R.string.warning_disconnect);
                 builder.create().show();
             }
@@ -104,7 +104,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onViewCreated (@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (mainActivity.getCameraService().isConnected()) {
             binding.btnNavWiFiSettings.setEnabled(true);
@@ -122,91 +122,91 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
     }
 
-    private Dialog createSaveDialog () {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-            builder.setTitle(R.string.title_settings)
-                    .setMessage("Do you wish to save your settings")
-                    .setPositiveButton(R.string.yes, (dialog, which) -> {
-                        settings.persist();
-                        dialog.dismiss();
-                        onBackPressedCallback.setEnabled(false);
-                        Navigation.findNavController(root).popBackStack();
-                    })
-                    .setNegativeButton(R.string.no, (dialog, which) -> {
-                        dialog.dismiss();
-                        onBackPressedCallback.setEnabled(false);
-                        Navigation.findNavController(root).popBackStack();
-                    });
-            return builder.create();
-        }
-
-        @Override
-        public void onClick (View v){
-            int selectedItem;
-            AlertDialog.Builder builder;
-            AlertDialog dialog;
-            switch (v.getId()) {
-                case R.id.btn_privacy:
-                    navDirections = SettingsFragmentDirections.actionNavigationSettingsToPrivacyDisclosure();
-                    mainActivity.getNavController().navigate(navDirections);
-                    break;
-                case R.id.btnNavWiFiSettings:
-                    navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
-                    mainActivity.getNavController().navigate(navDirections);
-                    break;
-                case R.id.btnEmissivityHint:
-                    builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Select Emissivity")
-                            .setAdapter(new EmissivityDialogListAdapter(getActivity()),
-                                    (emdialog, which) -> {
-                                        settings.setEmissivity(emValues[which]);
-                                    })
-                            .setCancelable(true)
-                            .setNegativeButton(getString(R.string.cancel), null)
-                            .setPositiveButton(getString(R.string.ok), null);
-                    dialog = builder.create();
-                    dialog.show();
-                    break;
-                case R.id.btnPalette:
-                    builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle("Select Palette")
-                            .setAdapter(new PaletteDialogListAdapter(getActivity()),
-                                    (paldialog, which) -> {
-                                        String palette = mainActivity.getPaletteFactory().getPaletteName(which);
-                                        settings.setPalette(palette);
-                                    })
-                            .setCancelable(true)
-                            .setNegativeButton(getString(R.string.cancel), null)
-                            .setPositiveButton(getString(R.string.ok), null);
-                    dialog = builder.create();
-                    dialog.show();
-                    break;
-            }
-        }
-
-        @Override
-        public void onAttach(@NonNull Context context) {
-            super.onAttach(context);
-            onBackPressedCallback = new OnBackPressedCallback(
-                    true // default to enabled
-            ) {
-                @Override
-                public void handleOnBackPressed() {
+    private Dialog createSaveDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        builder.setTitle(R.string.title_settings)
+                .setMessage("Do you wish to save your settings")
+                .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    settings.persist();
+                    dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
-                    createSaveDialog().show();
-                }
-            };
-            requireActivity().getOnBackPressedDispatcher().addCallback(
-                    this, // LifecycleOwner
-                    onBackPressedCallback);
-        }
+                    Navigation.findNavController(root).popBackStack();
+                })
+                .setNegativeButton(R.string.no, (dialog, which) -> {
+                    dialog.dismiss();
+                    onBackPressedCallback.setEnabled(false);
+                    Navigation.findNavController(root).popBackStack();
+                });
+        return builder.create();
+    }
 
-        @Override
-        public void onPause () {
-            super.onPause();
-            //changing the ip address will disconnect the camera
-            if(!binding.cameraIPAddress.getText().toString().equals(settings.getCameraAddress())) {
-                cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
-            }
+    @Override
+    public void onClick(View v) {
+        int selectedItem;
+        AlertDialog.Builder builder;
+        AlertDialog dialog;
+        int id = v.getId();
+        if (id == R.id.btn_privacy) {
+            navDirections = SettingsFragmentDirections.actionNavigationSettingsToPrivacyDisclosure();
+            mainActivity.getNavController().navigate(navDirections);
+        } else if (id == R.id.btnNavWiFiSettings) {
+            navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
+            mainActivity.getNavController().navigate(navDirections);
+        } else if (id == R.id.btnEmissivityHint) {
+            builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Select Emissivity")
+                    .setAdapter(new EmissivityDialogListAdapter(getActivity()),
+                            (emdialog, which) -> {
+                                settings.setEmissivity(emValues[which]);
+                            })
+                    .setCancelable(true)
+                    .setNegativeButton(getString(R.string.cancel), null)
+                    .setPositiveButton(getString(R.string.ok), null);
+            dialog = builder.create();
+            dialog.show();
+        } else if (id == R.id.btnPalette) {
+            builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle("Select Palette")
+                    .setAdapter(new PaletteDialogListAdapter(getActivity()),
+                            (paldialog, which) -> {
+                                String palette = mainActivity.getPaletteFactory().getPaletteName(which);
+                                settings.setPalette(palette);
+                            })
+                    .setCancelable(true)
+                    .setNegativeButton(getString(R.string.cancel), null)
+                    .setPositiveButton(getString(R.string.ok), null);
+            dialog = builder.create();
+            dialog.show();
+        } else if (id == R.id.btnSave) {
+            createSaveDialog().show();
+        } else if (id == R.id.btnCancel) {
+            Navigation.findNavController(root).popBackStack();
         }
     }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        onBackPressedCallback = new OnBackPressedCallback(
+                true // default to enabled
+        ) {
+            @Override
+            public void handleOnBackPressed() {
+                onBackPressedCallback.setEnabled(false);
+                createSaveDialog().show();
+            }
+        };
+        requireActivity().getOnBackPressedDispatcher().addCallback(
+                this, // LifecycleOwner
+                onBackPressedCallback);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        //changing the ip address will disconnect the camera
+        if (!binding.cameraIPAddress.getText().toString().equals(settings.getCameraAddress())) {
+            cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
+        }
+    }
+}

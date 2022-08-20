@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="settings"
             type="com.darcangel.tcamViewer.container.Settings" />
@@ -15,7 +16,8 @@
         android:layout_margin="10dp"
         tools:context=".ui.settings.wifiSettingsFragment">
 
-        <include layout="@layout/guidelines"/>
+        <include layout="@layout/guidelines" />
+
         <include
             android:id="@+id/btnCancelSave"
             layout="@layout/btn_cancel_save"
@@ -60,28 +62,37 @@
                         android:text="@string/ssid" />
 
                     <EditText
-                        style="@style/SettingsEditTextEnd"
                         android:id="@+id/etSSID"
+                        style="@style/SettingsEditTextEnd"
                         android:inputType="text"
                         android:text="@={settings.SSID}"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Password-->
-                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    style="@style/SettingsLayout">
 
                     <TextView
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
                         android:text="@string/password" />
 
-                    <EditText
+                    <com.google.android.material.textfield.TextInputLayout
                         style="@style/SettingsEditTextEnd"
-                        android:id="@+id/etPassword"
-                        android:inputType="textPassword"
-                        android:text="@={settings.password}"
-                        android:textAlignment="textEnd" />
+                        android:hint="@string/password"
+                        app:endIconMode="password_toggle">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPassword"
+                            style="@style/SettingsEditTextEnd"
+                            android:inputType="textPassword"
+                            android:text="@={settings.password}"
+                            android:minWidth="32sp"
+                            android:textAlignment="textEnd" />
+                    </com.google.android.material.textfield.TextInputLayout>
                 </androidx.appcompat.widget.LinearLayoutCompat>
+
 
                 <!--Use Static IP when Client-->
                 <androidx.appcompat.widget.SwitchCompat
@@ -102,8 +113,8 @@
                         android:text="@string/client_static_ip_address" />
 
                     <EditText
-                        style="@style/SettingsEditTextEnd"
                         android:id="@+id/etClientIP"
+                        style="@style/SettingsEditTextEnd"
                         android:inputType="text"
                         android:text="@={settings.staticIPAddress}"
                         android:textAlignment="textEnd" />
@@ -118,8 +129,8 @@
                         android:text="@string/client_static_ip_netmask" />
 
                     <EditText
-                        style="@style/SettingsEditTextEnd"
                         android:id="@+id/etClientNetmask"
+                        style="@style/SettingsEditTextEnd"
                         android:inputType="text"
                         android:text="@={settings.staticNetmask}"
                         android:textAlignment="textEnd" />

@@ -54,16 +54,16 @@ public final class Constants {
     public final static String KEY_SELECTED_PALETTE = "pal_selected";
 
     //Camera Commands
-    public final static String CMD_GET_STATUS  = "\2{\"cmd\":\"get_status\"}\3";
-    public final static String CMD_GET_CONFIG  = "\2{\"cmd\":\"get_config\"}\3";
-    public final static String CMD_GET_WIFI    = "\2{\"cmd\":\"get_wifi\"}\3";
-    public final static String CMD_SET_TIME    = "\2{\"cmd\":\"set_time\", \"args\": %s}\3";
-    public final static String CMD_SET_CONFIG  = "\2{\"cmd\":\"set_config\", \"args\": %s}\3";
-    public final static String CMD_SET_SPOTMETER   = "\2{\"cmd\":\"set_spotmeter\", \"args\": %s\n}\3";
-    public final static String CMD_SET_STREAM_ON   = "\2{\"cmd\":\"stream_on\", \"args\": %s}\3";
+    public final static String CMD_GET_STATUS       = "\2{\"cmd\":\"get_status\"}\3";
+    public final static String CMD_GET_CONFIG       = "\2{\"cmd\":\"get_config\"}\3";
+    public final static String CMD_GET_WIFI         = "\2{\"cmd\":\"get_wifi\"}\3";
+    public final static String CMD_SET_TIME         = "\2{\"cmd\":\"set_time\", \"args\": %s}\3";
+    public final static String CMD_SET_CONFIG       = "\2{\"cmd\":\"set_config\", \"args\": %s}\3";
+    public final static String CMD_SET_SPOTMETER    = "\2{\"cmd\":\"set_spotmeter\", \"args\": %s\n}\3";
+    public final static String CMD_SET_STREAM_ON    = "\2{\"cmd\":\"stream_on\", \"args\": %s}\3";
     public final static String CMD_SET_STREAM_OFF   = "\2{\"cmd\":\"stream_off\"}\3";
-    public final static String CMD_SET_WIFI   = "\2{\"cmd\":\"set_wifi\"}\3";
-    public final static String CMD_GET_IMAGE   = "\2{\"cmd\":\"get_image\"}\3";
+    public final static String CMD_SET_WIFI         = "\2{\"cmd\":\"set_wifi\"}, \"args\": %s}\3";
+    public final static String CMD_GET_IMAGE        = "\2{\"cmd\":\"get_image\"}\3";
 
     //Camera Command args
     public final static String ARGS_SET_TIME   = "{" +
@@ -90,24 +90,26 @@ public final class Constants {
             "    \"delay_msec\":%d,\n" +
             "    \"num_frames\":%d\n" +
             "   }";
-    public final static String ARGS_SET_WIFI_STATIC = "{\n" +
+// If Camera is Access Point, send
+    public final static String ARGS_SET_WIFI_AP = "{\n" +
             "    \"ap_ssid\": \"%s\"\n" +
             "    \"ap_pw: \"%s\"\n" +
-            "    \"ap_ip_addr\": \"%s\",\n" +
-            "    \"flags\": %d,\n" +
+            "    \"flags\": 1,\n" +
+            "    }";
+// If Camera is NOT Access Point and NOT Use static IP when Client, send
+    public final static String ARGS_SET_WIFI_NOT_STATIC = "{\n" +
+            "    \"sta_ssid\": \"%s\",\n" +
+            "    \"sta_pw\": \"%s\",\n" +
+            "    \"flags\": 129,\n" +
+            "    }";
+// If Camera is NOT Access Point and Use static IP when Client, send
+    public final static String ARGS_SET_WIFI_STATIC = "{\n" +
             "    \"sta_ssid\": \"%s\",\n" +
             "    \"sta_pw\": \"%s\",\n" +
             "    \"sta_ip_addr\": \"%s\",\n" +
-            "    \"sta_netmask\": \"%s\"\n" +
-            "  }";
-    public final static String ARGS_SET_WIFI = "{\n" +
-            "    \"ap_ssid\": \"%s\"\n" +
-            "    \"ap_pw: \"%s\"\n" +
-            "    \"ap_ip_addr\": \"%s\",\n" +
-            "    \"flags\": %d,\n" +
-            "    \"sta_ssid\": \"%s\",\n" +
-            "    \"sta_pw\": \"%s\",\n" +
-            "  }";
+            "    \"sta_netmask\": \"%s\",\n" +
+            "    \"flags\": 145,\n" +
+            "    }";
 
     public final static int TELEMETRY_MASK_AGC = (1<<12);
     public final static int TELEMETRY_MASK_SHUTDOWN = (1<<20);

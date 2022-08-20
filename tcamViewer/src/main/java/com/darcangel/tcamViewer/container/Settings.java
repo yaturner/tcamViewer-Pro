@@ -725,6 +725,13 @@ public class Settings extends BaseObservable implements Parcelable {
         return cameraIsAccessPoint.getValue();
     }
 
+    public MutableLiveData<Boolean> getLiveDataCameraIsAccessPoint() {
+        if (cameraIsAccessPoint == null) {
+            cameraIsAccessPoint = new MutableLiveData<>(false);
+        }
+        return cameraIsAccessPoint;
+    }
+
     public void setCameraIsAccessPoint(Boolean value) {
         if (cameraIsAccessPoint == null) {
             cameraIsAccessPoint = new MutableLiveData<>(false);
@@ -784,6 +791,13 @@ public class Settings extends BaseObservable implements Parcelable {
             useStaticIPWhenClient = new MutableLiveData<>(false);
         }
         return useStaticIPWhenClient.getValue();
+    }
+
+    public MutableLiveData<Boolean> getLiveDataUseStaticIPWhenClient() {
+        if (useStaticIPWhenClient == null) {
+            useStaticIPWhenClient = new MutableLiveData<>(false);
+        }
+        return useStaticIPWhenClient;
     }
 
     public void setUseStaticIPWhenClient(Boolean value) {
