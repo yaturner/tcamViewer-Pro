@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -34,7 +33,7 @@ import java.util.Locale;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {
+public class WiFiSettingsFragment extends Fragment implements OnClickListener {
 
     private FragmentWifiSettingsBinding binding;
     private ViewGroup container;
@@ -206,12 +205,5 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         requireActivity().getOnBackPressedDispatcher().addCallback(
                 this, // LifecycleOwner
                 onBackPressedCallback);
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if(isChecked) {
-
-        }
     }
 }
