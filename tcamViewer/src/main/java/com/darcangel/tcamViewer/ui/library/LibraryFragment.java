@@ -23,7 +23,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
+import androidx.core.view.MenuHost;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
@@ -49,7 +52,7 @@ import java.util.Iterator;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
-public class LibraryFragment extends Fragment {
+public class LibraryFragment extends Fragment implements MenuProvider {
 
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
@@ -84,7 +87,6 @@ public class LibraryFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
@@ -108,6 +110,8 @@ public class LibraryFragment extends Fragment {
         binding = FragmentLibraryBinding.inflate(inflater, container, false);
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
 
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         // Create an instance of SectionedRecyclerViewAdapter
         sectionAdapter = new LibrarySelectionAdapter(); ///SectionedRecyclerViewAdapter
@@ -159,36 +163,10 @@ public class LibraryFragment extends Fragment {
         sectionAdapter.setSelectionTracker(selectionTracker);
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.library_menu, menu);
-        setMenuItems(menu);
-    }
-
-    //TODO use LiveData
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // command switch
-        int id = item.getItemId();
-        Selection<Long> selection = selectionTracker.getSelection();
-        if (id == R.id.action_item_delete) {
-            deleteImage(selection);
-        } else if (id == R.id.action_slideshow) {
-            Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
-        }
-        return true;
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        setMenuItems(menu);
-    }
-
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_slideshow);
-        if(selectionTracker != null && selectionTracker.hasSelection()) {
+        if (selectionTracker != null && selectionTracker.hasSelection()) {
             itemDelete.setEnabled(true);
         } else {
             itemDelete.setEnabled(false);
@@ -262,62 +240,66 @@ public class LibraryFragment extends Fragment {
         }
     }
 
-        private void deleteImage (final Selection selection) {
-            int key;
-            String filename;
-            ArrayList<String> imageFile;
-            if (!selection.isEmpty()) {
-                Iterator<Long> it = selection.iterator();
-                while (it.hasNext()) {
-                    key = it.next().intValue();
-                    int position = sectionAdapter.getPositionInSection(key);
-                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-                    imageFile = section.getImageFile();
-                    filename = imageFile.get(position);
-                    File file = new File(filename);
-                    if (file.exists()) {
-                        //file.delete();
-                    }
-                    section.deleteItem(position);
-                    sectionAdapter.notifyItemRemoved(position);
+    private void deleteImage(final Selection selection) {
+        int key;
+        String filename;
+        ArrayList<String> imageFile;
+        if (!selection.isEmpty()) {
+            Iterator<Long> it = selection.iterator();
+            while (it.hasNext()) {
+                key = it.next().intValue();
+                int position = sectionAdapter.getPositionInSection(key);
+                LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
+                imageFile = section.getImageFile();
+                filename = imageFile.get(position);
+                File file = new File(filename);
+                if (file.exists()) {
+                    //file.delete();
                 }
+                section.deleteItem(position);
+                sectionAdapter.notifyItemRemoved(position);
             }
         }
-
-        private void exportImage () {
-
-        }
-
-        @Override
-        public void onDestroyView () {
-            libraryViewModel.clearAllSelectedImages();
-            super.onDestroyView();
-            binding = null;
-        }
-
-//    @Override
-//    public void onItemRootViewClicked(@NonNull LibrarySection section, LibraryItemViewHolder holder) {
-//        SelectedItem selectedItem;
-//        LibrarySection librarySection;
-//
-//        int itemAdapterPosition = holder.getAbsoluteAdapterPosition();
-//        SectionItemInfo sectionItemInfo = SectionItemInfoFactory.create(itemAdapterPosition, sectionAdapter);
-//        SectionInfo sectionInfo = SectionInfoFactory.create(section, sectionAdapter.getAdapterForSection(section));
-//        Timber.d("C\\\\onItemRootViewClicked\\\\ AdapterPosition = %d, positionInSection = %s", sectionItemInfo.getAdapterPosition(),
-//                sectionItemInfo.getPositionInSection());
-//        Timber.d("\\\\onItemRootViewClicked\\\\ sectionPosition = %d, headerPosition = %d", sectionInfo.getSectionPosition(),
-//                sectionInfo.getSectionHeaderPosition());
-//        int sectionIndex = sectionInfo.getSectionPosition()/2;
-//        int posInSection = Integer.parseInt(sectionItemInfo.getPositionInSection());
-//        int posInAdapter = sectionItemInfo.getAdapterPosition();
-//        librarySection = librarySections.get(sectionIndex);
-//        String path = librarySection.getImageFile().get(posInSection);
-//
-//        Timber.d("\\\\onItemRootViewClicked\\\\ title = %s, position = %d, selected = %s",
-//                holder.getTitleView().getText(), posInAdapter, (holder.isSelected()?"true":"false"));
-//
-//        sectionAdapter.notifyItemChanged(posInAdapter);
-//        selectedItem = new SelectedItem(sectionIndex, posInSection, posInAdapter, holder );
-//        libraryViewModel.getSelectedImage().setValue(selectedItem);
-//    }
     }
+
+    private void exportImage() {
+
+    }
+
+    @Override
+    public void onDestroyView() {
+        libraryViewModel.clearAllSelectedImages();
+        super.onDestroyView();
+        binding = null;
+    }
+
+    @Override
+    public void onPrepareMenu(@NonNull Menu menu) {
+        MenuProvider.super.onPrepareMenu(menu);
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.library_menu, menu);
+        setMenuItems(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        // command switch
+        int id = menuItem.getItemId();
+        Selection<Long> selection = selectionTracker.getSelection();
+        if (id == R.id.action_item_delete) {
+            deleteImage(selection);
+        } else if (id == R.id.action_slideshow) {
+            Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+
+    @Override
+    public void onMenuClosed(@NonNull Menu menu) {
+        MenuProvider.super.onMenuClosed(menu);
+    }
+
+}

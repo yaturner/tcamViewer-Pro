@@ -19,7 +19,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.core.view.MenuHost;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -35,12 +38,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Iterator;
+import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
 
-public class CameraFragment extends Fragment implements View.OnTouchListener {
+public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 
     private FragmentCameraBinding binding;
     private Socket cameraSocket;
@@ -56,6 +60,93 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     private Disposable disposable;
     private MainActivity mainActivity = null;
 
+    @Override
+    public void onPrepareMenu(@NonNull Menu menu) {
+        MenuProvider.super.onPrepareMenu(menu);
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.camera_menu, menu);
+        setMenuItems(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        // command switch
+        switch (menuItem.getItemId()) {
+            case R.id.action_connect: {
+                isConnectingToCamera = true;
+                cameraViewModel.connectToCamera();
+                mainActivity.invalidateOptionsMenu();
+                break;
+            }
+            case R.id.action_disconnect:
+                cameraViewModel.disconnectFromCamera();
+                isConnectingToCamera = false;
+                mainActivity.invalidateOptionsMenu();
+                break;
+            case R.id.action_get: {
+                MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
+                mediaPlayer.start();
+                mainActivity.showProgressDialog(getString(R.string.acquiring), "");
+                cameraViewModel.getImageFromCamera();
+                mainActivity.invalidateOptionsMenu(); //enable save
+                break;
+            }
+            case R.id.action_palette: {
+                String title = ((MenuItemImpl) menuItem).getTitle().toString();
+                if (!title.equalsIgnoreCase("Palette") &&
+                        !title.equalsIgnoreCase(settings.getPalette())) {
+                    settings.setPalette(title);
+                    settings.persist();
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            int[][] palette = mainActivity.getPaletteFactory()
+                                    .getPaletteByName(settings.getPalette());
+                            if (palette != null) {
+                                binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
+                                if (cameraViewModel.getImage() != null) {
+                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
+                                    drawScreen();
+                                }
+                            }
+                        }
+                    });
+                }
+                binding.ivCamera.getRootView().setOnTouchListener(this);
+                mainActivity.invalidateOptionsMenu();
+                break;
+            }
+            case R.id.action_stream: {
+                if (cameraViewModel.getStreaming()) {
+                    cameraViewModel.startStreaming(false);
+                } else {
+                    cameraViewModel.startStreaming(true);
+                }
+                mainActivity.invalidateOptionsMenu();
+                break;
+            }
+            // file menu items
+            case R.id.action_save:
+                try {
+                    cameraUtils.saveTjsn();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    //TODO handle error
+                }
+                break;
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onMenuClosed(@NonNull Menu menu) {
+        MenuProvider.super.onMenuClosed(menu);
+    }
+
     public interface FileSelectionEntryPoint {
         Fragment fileSelectionOwner = null;
 
@@ -67,7 +158,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
         mainActivity = MainActivity.getInstance();
         paletteNames = mainActivity.getResources().getStringArray(R.array.palette_names);
@@ -204,6 +294,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                              ViewGroup container, Bundle savedInstanceState) {
         mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         binding = FragmentCameraBinding.inflate(inflater, container, false);
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
         return root;
@@ -301,7 +393,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             float scaleY = 120.0f / displayImageHeight;
             int imageViewX = (int) (event.getX() * scaleX);
             int imageViewY = (int) (event.getY() * scaleY);
-            String args = String.format(Constants.ARGS_SET_SPOTMETER,
+            String args = String.format(Locale.US, Constants.ARGS_SET_SPOTMETER,
                     imageViewX,
                     imageViewX + 1,
                     imageViewY,
@@ -328,91 +420,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             }
         }
         return true;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.camera_menu, menu);
-        setMenuItems(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        // command switch
-        switch (item.getItemId()) {
-            case R.id.action_connect: {
-                isConnectingToCamera = true;
-                cameraViewModel.connectToCamera();
-                mainActivity.invalidateOptionsMenu();
-                break;
-            }
-            case R.id.action_disconnect:
-                cameraViewModel.disconnectFromCamera();
-                isConnectingToCamera = false;
-                mainActivity.invalidateOptionsMenu();
-                break;
-            case R.id.action_get: {
-                MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
-                mediaPlayer.start();
-                mainActivity.showProgressDialog(getString(R.string.acquiring), "");
-                cameraViewModel.getImageFromCamera();
-                mainActivity.invalidateOptionsMenu(); //enable save
-                break;
-            }
-            case R.id.action_palette: {
-                String title = ((MenuItemImpl) item).getTitle().toString();
-                if (!title.equalsIgnoreCase("Palette") &&
-                        !title.equalsIgnoreCase(settings.getPalette())) {
-                    settings.setPalette(title);
-                    settings.persist();
-                    mainActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            int[][] palette = mainActivity.getPaletteFactory()
-                                    .getPaletteByName(settings.getPalette());
-                            if (palette != null) {
-                                binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
-                                if (cameraViewModel.getImage() != null) {
-                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
-                                    drawScreen();
-                                }
-                            }
-                        }
-                    });
-                }
-                binding.ivCamera.getRootView().setOnTouchListener(this);
-                mainActivity.invalidateOptionsMenu();
-                break;
-            }
-            case R.id.action_stream: {
-                if (cameraViewModel.getStreaming()) {
-                    cameraViewModel.startStreaming(false);
-                } else {
-                    cameraViewModel.startStreaming(true);
-                }
-                mainActivity.invalidateOptionsMenu();
-                break;
-            }
-            // file menu items
-            case R.id.action_save:
-                try {
-                    cameraUtils.saveTjsn();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    //TODO handle error
-                }
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-
-        return true;
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(@NonNull Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        setMenuItems(menu);
     }
 
     private void setMenuItems(Menu menu) {

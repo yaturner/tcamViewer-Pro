@@ -123,18 +123,18 @@ public class Settings extends BaseObservable implements Parcelable {
 
     private void init() {
         setAGC(sharedPreferences.getBoolean(Constants.KEY_AGC, false));
-        setEmissivity(sharedPreferences.getInt(Constants.KEY_EMISSIVITY, 45));
-        setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, false));
+        setEmissivity(sharedPreferences.getInt(Constants.KEY_EMISSIVITY, 100));
+        setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, true));
         setGainHigh(sharedPreferences.getBoolean(Constants.KEY_GAIN_HIGH, false));
-        setGainLow(sharedPreferences.getBoolean(Constants.KEY_GAIN_LOW, true));
-        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "10.0.1.74"));
+        setGainLow(sharedPreferences.getBoolean(Constants.KEY_GAIN_LOW, false));
+        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "192.168.4.2"));
         setExportOnSave(sharedPreferences.getBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, false));
         setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
         setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));
         setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, false));
         setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MAX, 100));
         setManualRangeMin(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MIN, 0));
-        setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Fusion"));
+        setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Rainbow"));
         setShutterSound(sharedPreferences.getBoolean(Constants.KEY_SHUTTER_SOUND, true));
         setDisplaySpotmeter(sharedPreferences.getBoolean(Constants.KEY_SPOTMETER, true));
         setUnitsF(sharedPreferences.getBoolean(Constants.KEY_UNITS_F, false));
