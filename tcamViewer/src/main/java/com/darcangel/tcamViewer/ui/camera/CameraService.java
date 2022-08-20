@@ -77,6 +77,10 @@ public class CameraService implements Parcelable {
         ipAddress = address;
     }
 
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
     /**
      * connect
      */

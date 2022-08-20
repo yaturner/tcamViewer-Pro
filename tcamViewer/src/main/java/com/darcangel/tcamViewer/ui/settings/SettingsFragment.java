@@ -48,6 +48,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     private OnBackPressedCallback onBackPressedCallback;
     private CameraService cameraService;
     private View root;
+    private Bundle snapshot;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -82,10 +83,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
             if (hadFocus && !hasFocus) {
                 String etAddress = binding.cameraIPAddress.getText().toString();
                 if (CameraUtils.isValidIPAddress(etAddress)) {
-                    if (mainActivity.getCameraService() != null) {
-                        settings.setCameraAddress(etAddress);
-                        hadFocus = false;
-                    }
+                    //Change the camera IP address in cameraService only if the user saves the settings
+                    settings.setCameraAddress(etAddress);
+                    hadFocus = false;
                 }
             } else {
                 hadFocus = true;
@@ -120,6 +120,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
         binding.btnCancelSave.btnSave.setOnClickListener(this);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
+
+        //Take a snapshot of the settings so that if the user selects cancel we can restore it
+        snapshot = new Bundle();
+        settings.snapshot(snapshot);
     }
 
     private Dialog createSaveDialog() {
@@ -128,12 +132,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 .setMessage("Do you wish to save your settings")
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
                     settings.persist();
+                    if(cameraService.getIpAddress() == null ||
+                            !cameraService.getIpAddress().equalsIgnoreCase(binding.cameraIPAddress.getText().toString()) ) {
+                        cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
+                    }
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
                     Navigation.findNavController(root).popBackStack();
                 })
                 .setNegativeButton(R.string.no, (dialog, which) -> {
                     dialog.dismiss();
+                    settings.restore(snapshot);
                     onBackPressedCallback.setEnabled(false);
                     Navigation.findNavController(root).popBackStack();
                 });
@@ -180,6 +189,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         } else if (id == R.id.btnSave) {
             createSaveDialog().show();
         } else if (id == R.id.btnCancel) {
+            settings.restore(snapshot);
             Navigation.findNavController(root).popBackStack();
         }
     }

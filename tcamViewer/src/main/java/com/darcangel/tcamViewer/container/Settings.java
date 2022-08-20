@@ -1,6 +1,7 @@
 package com.darcangel.tcamViewer.container;
 
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.widget.TextView;
@@ -64,23 +65,48 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     protected Settings(Parcel in) {
-        setAGC(in.readInt()==1);
-        setEmissivity(in.readInt());
-        setGainAuto(in.readInt()==1);
-        setGainHigh(in.readInt()==1);
-        setGainLow(in.readInt()==1);
-        setCameraAddress(in.readString());
-        setExportOnSave(in.readInt()==1);
-        setExportMetaData(in.readInt()==1);
-        setExportResolution(in.readInt());
-        setAutoRange(in.readInt()==1);
-        setManualRangeMax(in.readInt());
-        setManualRangeMin(in.readInt());
-        setPalette(in.readString());
-        setShutterSound(in.readInt()==1);
-        setDisplaySpotmeter(in.readInt()==1);
-        setUnitsF(in.readInt()==1);
-        setUnitsC(in.readInt()==1);
+        //restore(in);
+    }
+
+    public void restore(Bundle in) {
+        setAGC(in.getInt(Constants.KEY_AGC)==1);
+        setEmissivity(in.getInt(Constants.KEY_EMISSIVITY));
+        setGainAuto(in.getInt(Constants.KEY_GAIN_AUTO)==1);
+        setGainHigh(in.getInt(Constants.KEY_GAIN_HIGH)==1);
+        setGainLow(in.getInt(Constants.KEY_GAIN_LOW)==1);
+        setCameraAddress(in.getString(Constants.KEY_CAMERA_IP_ADDRESS));
+        setExportOnSave(in.getInt(Constants.KEY_EXPORT_PICTURE_ON_SAVE)==1);
+        setExportMetaData(in.getInt(Constants.KEY_EXPORT_METADATA)==1);
+        setExportResolution(in.getInt(Constants.KEY_EXPORT_RESOLUTION));
+        setAutoRange(in.getInt(Constants.KEY_AUTORANGE)==1);
+        setManualRangeMax(in.getInt(Constants.KEY_MANUAL_RANGE_MAX));
+        setManualRangeMin(in.getInt(Constants.KEY_MANUAL_RANGE_MIN));
+        setPalette(in.getString(Constants.KEY_PALETTE));
+        setShutterSound(in.getInt(Constants.KEY_SHUTTER_SOUND)==1);
+        setDisplaySpotmeter(in.getInt(Constants.KEY_SPOTMETER)==1);
+        setUnitsF(in.getInt(Constants.KEY_UNITS_F)==1);
+        setUnitsC(in.getInt(Constants.KEY_UNITS_C)==1);
+    }
+
+    public Bundle snapshot(Bundle dest) {
+        dest.putInt(Constants.KEY_AGC, getAGC()?1:0);
+        dest.putInt(Constants.KEY_EMISSIVITY, getEmissivity());
+        dest.putInt(Constants.KEY_GAIN_AUTO, getGainAuto()?1:0);
+        dest.putInt(Constants.KEY_GAIN_HIGH, getGainHigh()?1:0);
+        dest.putInt(Constants.KEY_GAIN_LOW, getGainLow()?1:0);
+        dest.putString(Constants.KEY_CAMERA_IP_ADDRESS, getCameraAddress());
+        dest.putInt(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave()?1:0);
+        dest.putInt(Constants.KEY_EXPORT_METADATA, getExportMetaData()?1:0);
+        dest.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution());
+        dest.putInt(Constants.KEY_AUTORANGE, getAutoRange()?1:0);
+        dest.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax());
+        dest.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin());
+        dest.putString(Constants.KEY_PALETTE, getPalette());
+        dest.putInt(Constants.KEY_SHUTTER_SOUND, getShutterSound()?1:0);
+        dest.putInt(Constants.KEY_SPOTMETER, getDisplaySpotmeter()?1:0);
+        dest.putInt(Constants.KEY_UNITS_F, getUnitsF()?1:0);
+        dest.putInt(Constants.KEY_UNITS_C, getUnitsC()?1:0);
+        return dest;
     }
 
     @Override

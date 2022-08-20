@@ -83,9 +83,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         getPermissions();
         getSettings();
 
-        getSettings().getLiveDataCameraAddress().observe(this, s -> {
-            cameraService.setIpAddress(s);
-        });
+//        getSettings().getLiveDataCameraAddress().observe(this, s -> {
+//            cameraService.setIpAddress(s);
+//        });
 
         navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
             if(navDestination.getId() == R.id.navigation_settings ||
