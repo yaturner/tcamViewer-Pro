@@ -2,17 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_file"
-        android:title="@string/file"
-        android:icon="@drawable/file_folder_30_30"
-        app:showAsAction="always|withText">
-        <!-- File submenu -->
-        <menu>
-            <item android:id="@+id/action_file_save"
-                android:title="@string/save" />
-        </menu>
-    </item>
-
+        android:id="@+id/action_save"
+        android:visible="true"
+        android:title="@string/save"
+        app:showAsAction="always|withText" />
     <item
         android:id="@+id/action_connect"
         android:title="@string/connect"

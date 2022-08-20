@@ -356,6 +356,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 mediaPlayer.start();
                 mainActivity.showProgressDialog(getString(R.string.acquiring), "");
                 cameraViewModel.getImageFromCamera();
+                mainActivity.invalidateOptionsMenu(); //enable save
                 break;
             }
             case R.id.action_palette: {
@@ -393,7 +394,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
                 break;
             }
             // file menu items
-            case R.id.action_file_save:
+            case R.id.action_save:
                 try {
                     cameraUtils.saveTjsn();
                 } catch (IOException e) {
@@ -415,8 +416,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
     }
 
     private void setMenuItems(Menu menu) {
-        MenuItem itemFile = menu.findItem(R.id.action_file);
-        // File submenu items
+        MenuItem itemSave = menu.findItem(R.id.action_save);
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         MenuItem itemGet = menu.findItem(R.id.action_get);
@@ -433,6 +433,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener {
             paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE, paletteNames[i]);
         }
         itemPalette.setEnabled(true);
+        itemSave.setVisible(true);
+        if(cameraViewModel.getImage() == null) {
+            itemSave.setEnabled(false); //only true if there is an image
+        } else {
+            itemSave.setEnabled(true); //only true if there is an image
+        }
         if (!cameraService.isConnected()) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
