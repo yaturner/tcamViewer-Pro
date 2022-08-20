@@ -40,14 +40,12 @@ android {
                     output->
                         // on below line we are specifying our app name.
                         project.ext { appName = 'tcamViewer' }
-                        // on below line we are adding the formatted date to our apk file name.
-                        def formattedDate = new Date().format('yyyy-MM-dd')
                         // on below line we are creating a new name for our apk.
                         def newName = output.outputFile.name
                         // on below line we are replacing our previous name with our app name.
-                        newName = newName.replace("app-", "$project.ext.appName-")
+                        newName = newName.replace("app_", "$project.ext.appName-")
                         // on below line we are replacing -debug with our formatted date.
-                        newName = newName.replace("-debug", "-debug-" + formattedDate + "-v" + versionName)
+                        newName = newName.replace("-debug", "_debug_" + "v" + versionName)
                         // at last we are setting our apk name to it.
                         output.outputFileName  = newName
                 }
