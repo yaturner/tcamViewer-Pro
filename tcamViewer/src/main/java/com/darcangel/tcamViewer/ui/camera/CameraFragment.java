@@ -306,7 +306,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         super.onViewCreated(view, savedInstanceState);
         settings.getLiveDataCameraAddress().observe(mainActivity, address -> {
             Timber.d("Camera ip address is now %s", address);
-            if (!address.equals(settings.getCameraAddress())) {
+            if (!address.equals(cameraService.getIpAddress())) {
                 cameraService.setIpAddress(address);
                 mainActivity.invalidateOptionsMenu();
             }
