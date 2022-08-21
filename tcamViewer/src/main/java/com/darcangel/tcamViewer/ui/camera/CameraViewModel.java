@@ -11,6 +11,7 @@ import com.darcangel.tcamViewer.container.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.util.Calendar;
+import java.util.Locale;
 
 public class CameraViewModel extends ViewModel {
 
@@ -27,7 +28,7 @@ public class CameraViewModel extends ViewModel {
         cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
         //Listen for changes in ipAddress
-        MutableLiveData<String> camera = mainActivity.getSettings().getLiveDataCameraAddress();
+        MutableLiveData<String> camera = mainActivity.getSettings().getCameraAddress();
         camera.observe(mainActivity, address -> {
             mainActivity.invalidateOptionsMenu();
         });
@@ -118,10 +119,10 @@ public class CameraViewModel extends ViewModel {
      */
     public void setConfig() {
         if (cameraService.isConnected()) {
-            String args = String.format(Constants.ARGS_SET_CONFIG,
-                    settings.getAGC() ? 1 : 0,
-                    settings.getEmissivity(),
-                    settings.getGainHigh() ? 0 : settings.getGainLow() ? 1 : 2);
+            String args = String.format(Locale.US, Constants.ARGS_SET_CONFIG,
+                    settings.getAGC().getValue() ? 1 : 0,
+                    settings.getEmissivity().getValue(),
+                    settings.getGainHigh().getValue() ? 0 : settings.getGainLow().getValue() ? 1 : 2);
             String cmd = String.format(Constants.CMD_SET_CONFIG, args);
             //isConnectingToCamera = false;
             try {

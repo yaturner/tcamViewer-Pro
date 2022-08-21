@@ -68,7 +68,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         binding.setSettings(settings);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);
-        settings.getLiveDataCameraIsAccessPoint().observe(mainActivity, checked -> {
+        settings.getCameraIsAccessPoint().observe(mainActivity, checked -> {
             if(settings.getStaticSSID() != null && settings.getApSSID() != null) {
                 if(checked) {
                     settings.setSSID(settings.getApSSID());
@@ -150,11 +150,11 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
 
     private void setWiFi() {
         String args;
-        if (settings.getCameraIsAccessPoint()) {
+        if (settings.getCameraIsAccessPoint().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_AP,
                     settings.getApSSID(),
                     settings.getPassword());
-        } else if (settings.getUseStaticIPWhenClient()) {
+        } else if (settings.getUseStaticIPWhenClient().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_STATIC,
                     settings.getStaticSSID(),
                     settings.getPassword(),

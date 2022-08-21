@@ -97,14 +97,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             case R.id.action_palette: {
                 String title = ((MenuItemImpl) menuItem).getTitle().toString();
                 if (!title.equalsIgnoreCase("Palette") &&
-                        !title.equalsIgnoreCase(settings.getPalette())) {
+                        !title.equalsIgnoreCase(settings.getPalette().getValue())) {
                     settings.setPalette(title);
                     settings.persist();
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             int[][] palette = mainActivity.getPaletteFactory()
-                                    .getPaletteByName(settings.getPalette());
+                                    .getPaletteByName(settings.getPalette().getValue());
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
@@ -256,7 +256,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE) == 0);
                                     settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
                                             Constants.WIFI_MASK_STATIC_IP);
-                                    if (settings.getCameraIsAccessPoint()) {
+                                    if (settings.getCameraIsAccessPoint().getValue()) {
                                         settings.setSSID(settings.getApSSID());
                                     } else {
                                         settings.setSSID(settings.getStaticSSID());
@@ -265,7 +265,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
                                     Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
-                                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
+                                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()));
                                     cameraViewModel.setImage(bitmap);
                                     drawScreen();
                                     mainActivity.dismissProgressDialog();
@@ -304,7 +304,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        settings.getLiveDataCameraAddress().observe(mainActivity, address -> {
+        settings.getCameraAddress().observe(mainActivity, address -> {
             Timber.d("Camera ip address is now %s", address);
             if (!address.equals(cameraService.getIpAddress())) {
                 cameraService.setIpAddress(address);
@@ -312,7 +312,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
         });
         //watch for palette changes
-        settings.getLiveDataPalette().observe(mainActivity, palette ->
+        settings.getPalette().observe(mainActivity, palette ->
         {
             isRemapNeeded = true;
         });
@@ -325,7 +325,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     }
 
     private void rotateColormap() {
-        String pal = settings.getPalette();
+        String pal = settings.getPalette().getValue();
         for (int index = 0; index < paletteNames.length; index++) {
             if (pal.equalsIgnoreCase(paletteNames[index])) {
                 if (index == paletteNames.length - 1) {
@@ -335,7 +335,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 settings.persist();
                 if (cameraViewModel.getImage() != null) {
                     cameraViewModel.setImage(cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                            getPaletteByName(settings.getPalette())));
+                            getPaletteByName(settings.getPalette().getValue())));
                 }
                 drawScreen();
                 break;
@@ -349,32 +349,32 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             if (binding != null && binding.ivColorBar.getVisibility() == View.VISIBLE) {
                 try {
                     int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
-                            settings.getPalette());
+                            settings.getPalette().getValue());
                     binding.ivColorBar.setVisibility(View.VISIBLE);
                     binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
-                        image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter());
+                        image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
                         if (isRemapNeeded) {
                             isRemapNeeded = false;
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                    getPaletteByName(settings.getPalette()));
+                                    getPaletteByName(settings.getPalette().getValue()));
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
-                        if (settings.getAGC()) {
+                        if (settings.getAGC().getValue()) {
                             binding.tvMaxTemperature.setText("AGC");
                             binding.tvMinTemperature.setText("AGC");
                         } else {
                             binding.tvMaxTemperature.setText(createTemperatureString(
-                                    cameraUtils.getMaxTemperature(settings.getUnitsC())));
+                                    cameraUtils.getMaxTemperature(settings.getUnitsC().getValue())));
                             binding.tvMinTemperature.setText(createTemperatureString(
-                                    cameraUtils.getMinTemperature(settings.getUnitsC())));
+                                    cameraUtils.getMinTemperature(settings.getUnitsC().getValue())));
                         }
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
                                 (int) getResources().getDimension(R.dimen.histogram_width)));
                         binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
-                                getMeanTemperatureAtSpotmeter(settings.getUnitsC())));
+                                getMeanTemperatureAtSpotmeter(settings.getUnitsC().getValue())));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -409,7 +409,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         imageViewY,
                         imageViewX + 1,
                         imageViewY + 1));
-                cameraViewModel.setImage(cameraUtils.drawHotspot(settings.getDisplaySpotmeter()));
+                cameraViewModel.setImage(cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue()));
                 if (cameraViewModel.getStreaming()) {
                     cameraService.startStreaming();
                 } else {
@@ -431,8 +431,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemStream = menu.findItem(R.id.action_stream);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
 
-        if (settings.getPalette() != null && !settings.getPalette().isEmpty()) {
-            itemPalette.setTitle(settings.getPalette());
+        if (settings.getPalette() != null && !settings.getPalette().getValue().isEmpty()) {
+            itemPalette.setTitle(settings.getPalette().getValue());
         }
         //since this fragment can be recreated, prevent multiple items
         paletteSubMenu.clear();
@@ -466,9 +466,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     private String createTemperatureString(float temperature) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format("%.1f", temperature));
+        stringBuilder.append(String.format(Locale.US, "%.1f", temperature));
         stringBuilder.append("\u00B0");
-        if (mainActivity.getSettings().getUnitsC()) {
+        if (mainActivity.getSettings().getUnitsC().getValue()) {
             stringBuilder.append("C");
         } else {
             stringBuilder.append("F");

@@ -89,45 +89,45 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     public Bundle snapshot(Bundle dest) {
-        dest.putInt(Constants.KEY_AGC, getAGC()?1:0);
-        dest.putInt(Constants.KEY_EMISSIVITY, getEmissivity());
-        dest.putInt(Constants.KEY_GAIN_AUTO, getGainAuto()?1:0);
-        dest.putInt(Constants.KEY_GAIN_HIGH, getGainHigh()?1:0);
-        dest.putInt(Constants.KEY_GAIN_LOW, getGainLow()?1:0);
-        dest.putString(Constants.KEY_CAMERA_IP_ADDRESS, getCameraAddress());
-        dest.putInt(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave()?1:0);
-        dest.putInt(Constants.KEY_EXPORT_METADATA, getExportMetaData()?1:0);
-        dest.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution());
-        dest.putInt(Constants.KEY_AUTORANGE, getAutoRange()?1:0);
-        dest.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax());
-        dest.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin());
-        dest.putString(Constants.KEY_PALETTE, getPalette());
-        dest.putInt(Constants.KEY_SHUTTER_SOUND, getShutterSound()?1:0);
-        dest.putInt(Constants.KEY_SPOTMETER, getDisplaySpotmeter()?1:0);
-        dest.putInt(Constants.KEY_UNITS_F, getUnitsF()?1:0);
-        dest.putInt(Constants.KEY_UNITS_C, getUnitsC()?1:0);
+        dest.putInt(Constants.KEY_AGC, getAGC().getValue()?1:0);
+        dest.putInt(Constants.KEY_EMISSIVITY, getEmissivity().getValue());
+        dest.putInt(Constants.KEY_GAIN_AUTO, getGainAuto().getValue()?1:0);
+        dest.putInt(Constants.KEY_GAIN_HIGH, getGainHigh().getValue()?1:0);
+        dest.putInt(Constants.KEY_GAIN_LOW, getGainLow().getValue()?1:0);
+        dest.putString(Constants.KEY_CAMERA_IP_ADDRESS, getCameraAddress().getValue());
+        dest.putInt(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave().getValue()?1:0);
+        dest.putInt(Constants.KEY_EXPORT_METADATA, getExportMetaData().getValue()?1:0);
+        dest.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution().getValue());
+        dest.putInt(Constants.KEY_AUTORANGE, getAutoRange().getValue()?1:0);
+        dest.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
+        dest.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
+        dest.putString(Constants.KEY_PALETTE, getPalette().getValue().toString());
+        dest.putInt(Constants.KEY_SHUTTER_SOUND, getShutterSound().getValue()?1:0);
+        dest.putInt(Constants.KEY_SPOTMETER, getDisplaySpotmeter().getValue()?1:0);
+        dest.putInt(Constants.KEY_UNITS_F, getUnitsF().getValue()?1:0);
+        dest.putInt(Constants.KEY_UNITS_C, getUnitsC().getValue()?1:0);
         return dest;
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(getAGC()?1:0);
-        dest.writeInt(getEmissivity());
-        dest.writeInt(getGainAuto()?1:0);
-        dest.writeInt(getGainHigh()?1:0);
-        dest.writeInt(getGainLow()?1:0);
-        dest.writeString(getCameraAddress());
-        dest.writeInt(getExportOnSave()?1:0);
-        dest.writeInt(getExportMetaData()?1:0);
-        dest.writeInt(getExportResolution());
-        dest.writeInt(getAutoRange()?1:0);
-        dest.writeInt(getManualRangeMax());
-        dest.writeInt(getManualRangeMin());
-        dest.writeString(getPalette());
-        dest.writeInt(getShutterSound()?1:0);
-        dest.writeInt(getDisplaySpotmeter()?1:0);
-        dest.writeInt(getUnitsF()?1:0);
-        dest.writeInt(getUnitsC()?1:0);
+        dest.writeInt(getAGC().getValue()?1:0);
+        dest.writeInt(getEmissivity().getValue());
+        dest.writeInt(getGainAuto().getValue()?1:0);
+        dest.writeInt(getGainHigh().getValue()?1:0);
+        dest.writeInt(getGainLow().getValue()?1:0);
+        dest.writeString(getCameraAddress().getValue());
+        dest.writeInt(getExportOnSave().getValue()?1:0);
+        dest.writeInt(getExportMetaData().getValue()?1:0);
+        dest.writeInt(getExportResolution().getValue());
+        dest.writeInt(getAutoRange().getValue()?1:0);
+        dest.writeInt(getManualRangeMax().getValue());
+        dest.writeInt(getManualRangeMin().getValue());
+        dest.writeString(getPalette().getValue());
+        dest.writeInt(getShutterSound().getValue()?1:0);
+        dest.writeInt(getDisplaySpotmeter().getValue()?1:0);
+        dest.writeInt(getUnitsF().getValue()?1:0);
+        dest.writeInt(getUnitsC().getValue()?1:0);
     }
 
     @Override
@@ -177,23 +177,23 @@ public class Settings extends BaseObservable implements Parcelable {
 
     public void persist() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(Constants.KEY_AGC, getAGC());
-        editor.putInt(Constants.KEY_EMISSIVITY, getEmissivity());
-        editor.putBoolean(Constants.KEY_GAIN_AUTO,getGainAuto());
-        editor.putBoolean(Constants.KEY_GAIN_HIGH,getGainHigh());
-        editor.putBoolean(Constants.KEY_GAIN_LOW,getGainLow());
-        editor.putString(Constants.KEY_CAMERA_IP_ADDRESS, getCameraAddress());
-        editor.putBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave());
-        editor.putBoolean(Constants.KEY_EXPORT_METADATA, getExportMetaData());
-        editor.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution());
-        editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange());
-        editor.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax());
-        editor.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin());
-        editor.putString(Constants.KEY_PALETTE, getPalette());
-        editor.putBoolean(Constants.KEY_SHUTTER_SOUND, getShutterSound());
-        editor.putBoolean(Constants.KEY_SPOTMETER, getDisplaySpotmeter());
-        editor.putBoolean(Constants.KEY_UNITS_F, getUnitsF());
-        editor.putBoolean(Constants.KEY_UNITS_C, getUnitsC());
+        editor.putBoolean(Constants.KEY_AGC, getAGC().getValue());
+        editor.putInt(Constants.KEY_EMISSIVITY, getEmissivity().getValue());
+        editor.putBoolean(Constants.KEY_GAIN_AUTO,getGainAuto().getValue());
+        editor.putBoolean(Constants.KEY_GAIN_HIGH,getGainHigh().getValue());
+        editor.putBoolean(Constants.KEY_GAIN_LOW,getGainLow().getValue());
+        editor.putString(Constants.KEY_CAMERA_IP_ADDRESS, getCameraAddress().getValue());
+        editor.putBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave().getValue());
+        editor.putBoolean(Constants.KEY_EXPORT_METADATA, getExportMetaData().getValue());
+        editor.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution().getValue());
+        editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange().getValue());
+        editor.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
+        editor.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
+        editor.putString(Constants.KEY_PALETTE, getPalette().getValue());
+        editor.putBoolean(Constants.KEY_SHUTTER_SOUND, getShutterSound().getValue());
+        editor.putBoolean(Constants.KEY_SPOTMETER, getDisplaySpotmeter().getValue());
+        editor.putBoolean(Constants.KEY_UNITS_F, getUnitsF().getValue());
+        editor.putBoolean(Constants.KEY_UNITS_C, getUnitsC().getValue());
         editor.apply();
     }
 
@@ -231,11 +231,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * AGC
      */
     @Bindable
-    public Boolean getAGC() {
+    public MutableLiveData<Boolean> getAGC() {
         if (AGC == null) {
-            AGC = new MutableLiveData<>();
+            AGC = new MutableLiveData<>(false);
         }
-        return AGC.getValue();
+        return AGC;
     }
 
     public void setAGC(Boolean value) {
@@ -252,11 +252,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * Gain Auto
      */
     @Bindable
-    public Boolean getGainAuto() {
+    public MutableLiveData<Boolean> getGainAuto() {
         if (gainAuto == null) {
-            gainAuto = new MutableLiveData<Boolean>();
+            gainAuto = new MutableLiveData<Boolean>(true);
         }
-        return gainAuto.getValue();
+        return gainAuto;
     }
 
     public void setGainAuto(Boolean value) {
@@ -273,11 +273,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * Gain High
      */
     @Bindable
-    public Boolean getGainHigh() {
+    public MutableLiveData<Boolean> getGainHigh() {
         if (gainHigh == null) {
-            gainHigh = new MutableLiveData<Boolean>();
+            gainHigh = new MutableLiveData<Boolean>(false);
         }
-        return gainHigh.getValue();
+        return gainHigh;
     }
 
     public void setGainHigh(Boolean value) {
@@ -294,11 +294,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * Gain Low
      */
     @Bindable
-    public Boolean getGainLow() {
+    public MutableLiveData<Boolean> getGainLow() {
         if (gainLow == null) {
-            gainLow = new MutableLiveData<Boolean>();
+            gainLow = new MutableLiveData<Boolean>(false);
         }
-        return gainLow.getValue();
+        return gainLow;
     }
 
     public void setGainLow(Boolean value) {
@@ -315,11 +315,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * CameraAddress
      */
     @Bindable
-    public String getCameraAddress() {
+    public MutableLiveData<String> getCameraAddress() {
         if (cameraAddress == null) {
-            cameraAddress = new MutableLiveData<>();
+            cameraAddress = new MutableLiveData<>("192.168.4.2");
         }
-        return cameraAddress.getValue();
+        return cameraAddress;
     }
 
     public void setCameraAddress(String address) {
@@ -332,22 +332,15 @@ public class Settings extends BaseObservable implements Parcelable {
         }
     }
 
-    public MutableLiveData<String> getLiveDataCameraAddress() {
-        if (cameraAddress == null) {
-            cameraAddress = new MutableLiveData<>();
-        }
-        return cameraAddress;
-    }
-
     /**
      * emissivity
      */
     @Bindable
-    public Integer getEmissivity() {
+    public MutableLiveData<Integer> getEmissivity() {
         if (emissivity == null) {
-            emissivity = new MutableLiveData<Integer>();
+            emissivity = new MutableLiveData<Integer>(100);
         }
-        return emissivity.getValue();
+        return emissivity;
     }
 
     public void setEmissivity(Integer value) {
@@ -364,11 +357,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * exportOnSave
      */
     @Bindable
-    public Boolean getExportOnSave() {
+    public MutableLiveData<Boolean> getExportOnSave() {
         if (exportOnSave == null) {
-            exportOnSave = new MutableLiveData<>();
+            exportOnSave = new MutableLiveData<>(false);
         }
-        return exportOnSave.getValue();
+        return exportOnSave;
     }
 
     public void setExportOnSave(Boolean value) {
@@ -385,11 +378,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * Auto Range, if manual range is selected, this is false
      */
     @Bindable
-    public Boolean getAutoRange() {
+    public MutableLiveData<Boolean> getAutoRange() {
         if (autoRange == null) {
-            autoRange = new MutableLiveData<>();
+            autoRange = new MutableLiveData<Boolean>(false);
         }
-        return autoRange.getValue();
+        return autoRange;
     }
 
     public void setAutoRange(Boolean value) {
@@ -406,11 +399,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * manual range min, max
      */
     @Bindable
-    public Integer getManualRangeMin() {
+    public MutableLiveData<Integer> getManualRangeMin() {
         if (manualRangeMin == null) {
-            manualRangeMin = new MutableLiveData<>();
+            manualRangeMin = new MutableLiveData<>(0);
         }
-        return manualRangeMin.getValue();
+        return manualRangeMin;
     }
 
     public void setManualRangeMin(Integer value) {
@@ -424,11 +417,11 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Integer getManualRangeMax() {
+    public MutableLiveData<Integer> getManualRangeMax() {
         if (manualRangeMax == null) {
-            manualRangeMax = new MutableLiveData<>();
+            manualRangeMax = new MutableLiveData<>(0);
         }
-        return manualRangeMax.getValue();
+        return manualRangeMax;
     }
 
     public void setManualRangeMax(Integer value) {
@@ -445,11 +438,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * display units in Fahrenheit
      */
     @Bindable
-    public Boolean getUnitsF() {
+    public MutableLiveData<Boolean> getUnitsF() {
         if (unitsF == null) {
-            unitsF = new MutableLiveData<>();
+            unitsF = new MutableLiveData<>(false);
         }
-        return unitsF.getValue();
+        return unitsF;
     }
 
     public void setUnitsF(Boolean value) {
@@ -466,11 +459,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * display units in Celsius
      */
     @Bindable
-    public Boolean getUnitsC() {
+    public MutableLiveData<Boolean> getUnitsC() {
         if (unitsC == null) {
-            unitsC = new MutableLiveData<>();
+            unitsC = new MutableLiveData<>(true);
         }
-        return unitsC.getValue();
+        return unitsC;
     }
 
     public void setUnitsC(Boolean value) {
@@ -487,11 +480,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * stream rate
      */
     @Bindable
-    public Float getStreamRate() {
+    public MutableLiveData<Float> getStreamRate() {
         if (streamRate == null) {
-            streamRate = new MutableLiveData<>();
+            streamRate = new MutableLiveData<>(0.0F);
         }
-        return streamRate.getValue();
+        return streamRate;
     }
 
     public void setStreamRate(Float value) {
@@ -508,11 +501,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * update camera clock
      */
     @Bindable
-    public Boolean getUpdateCameraClock() {
+    public MutableLiveData<Boolean> getUpdateCameraClock() {
         if (updateCameraClock == null) {
-            updateCameraClock = new MutableLiveData<>();
+            updateCameraClock = new MutableLiveData<>(true);
         }
-        return updateCameraClock.getValue();
+        return updateCameraClock;
     }
 
     public void setUpdateCameraClock(Boolean value) {
@@ -529,11 +522,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * scale display
      */
     @Bindable
-    public Boolean getScaleDisplay() {
+    public MutableLiveData<Boolean> getScaleDisplay() {
         if (scaleDisplay == null) {
-            scaleDisplay = new MutableLiveData<>();
+            scaleDisplay = new MutableLiveData<>(false);
         }
-        return scaleDisplay.getValue();
+        return scaleDisplay;
     }
 
     public void setScaleDisplay(Boolean value) {
@@ -550,11 +543,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * export resolution
      */
     @Bindable
-    public Integer getExportResolution() {
+    public MutableLiveData<Integer> getExportResolution() {
         if (exportResolution == null) {
-            exportResolution = new MutableLiveData<>();
+            exportResolution = new MutableLiveData<>(1);
         }
-        return exportResolution.getValue();
+        return exportResolution;
     }
 
     public void setExportResolution(Integer value) {
@@ -571,11 +564,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * download folder
      */
     @Bindable
-    public String getDownloadFolder() {
+    public MutableLiveData<String> getDownloadFolder() {
         if (downloadFolder == null) {
-            downloadFolder = new MutableLiveData<>();
+            downloadFolder = new MutableLiveData<>("");
         }
-        return downloadFolder.getValue();
+        return downloadFolder;
     }
 
     public void setDownloadFolder(String value) {
@@ -592,11 +585,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * display spot meter
      */
     @Bindable
-    public Boolean getDisplaySpotmeter() {
+    public MutableLiveData<Boolean> getDisplaySpotmeter() {
         if (displaySpotmeter == null) {
-            displaySpotmeter = new MutableLiveData<>();
+            displaySpotmeter = new MutableLiveData<>(true);
         }
-        return displaySpotmeter.getValue();
+        return displaySpotmeter;
     }
 
     public void setDisplaySpotmeter(Boolean value) {
@@ -613,11 +606,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * export metadata
      */
     @Bindable
-    public Boolean getExportMetaData() {
+    public MutableLiveData<Boolean> getExportMetaData() {
         if (exportMetaData == null) {
-            exportMetaData = new MutableLiveData<>();
+            exportMetaData = new MutableLiveData<>(true);
         }
-        return exportMetaData.getValue();
+        return exportMetaData;
     }
 
     public void setExportMetaData(Boolean value) {
@@ -634,16 +627,9 @@ public class Settings extends BaseObservable implements Parcelable {
      * palette
      */
     @Bindable
-    public String getPalette() {
+    public MutableLiveData<String> getPalette() {
         if (palette == null) {
-            palette = new MutableLiveData<>();
-        }
-        return palette.getValue();
-    }
-
-    public MutableLiveData<String> getLiveDataPalette() {
-        if (palette == null) {
-            palette = new MutableLiveData<>();
+            palette = new MutableLiveData<>("Rainbow");
         }
         return palette;
     }
@@ -662,11 +648,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * shutter sound
      */
     @Bindable
-    public Boolean getShutterSound() {
+    public MutableLiveData<Boolean> getShutterSound() {
         if (shutterSound == null) {
-            shutterSound = new MutableLiveData<>();
+            shutterSound = new MutableLiveData<>(true);
         }
-        return shutterSound.getValue();
+        return shutterSound;
     }
 
     public void setShutterSound(Boolean value) {
@@ -683,11 +669,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * stream delay
      */
     @Bindable
-    public Integer getStreamDelay() {
+    public MutableLiveData<Integer> getStreamDelay() {
         if (streamDelay == null) {
-            streamDelay = new MutableLiveData<>();
+            streamDelay = new MutableLiveData<>(0);
         }
-        return streamDelay.getValue();
+        return streamDelay;
     }
 
     public void setStreamDelay(Integer value) {
@@ -744,14 +730,7 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Boolean getCameraIsAccessPoint() {
-        if (cameraIsAccessPoint == null) {
-            cameraIsAccessPoint = new MutableLiveData<>(false);
-        }
-        return cameraIsAccessPoint.getValue();
-    }
-
-    public MutableLiveData<Boolean> getLiveDataCameraIsAccessPoint() {
+    public MutableLiveData<Boolean> getCameraIsAccessPoint() {
         if (cameraIsAccessPoint == null) {
             cameraIsAccessPoint = new MutableLiveData<>(false);
         }
@@ -769,11 +748,11 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public String getSSID() {
+    public MutableLiveData<String> getSSID() {
         if (SSID == null) {
             SSID = new MutableLiveData<>("");
         }
-        return SSID.getValue();
+        return SSID;
     }
 
     public void setSSID(String value) {
@@ -794,11 +773,11 @@ public class Settings extends BaseObservable implements Parcelable {
      * @return
      */
     @Bindable
-    public String getPassword() {
+    public MutableLiveData<String> getPassword() {
         if (password == null) {
             password = new MutableLiveData<>("");
         }
-        return password.getValue();
+        return password;
     }
 
     public void setPassword(String value) {
@@ -812,14 +791,7 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public Boolean getUseStaticIPWhenClient() {
-        if (useStaticIPWhenClient == null) {
-            useStaticIPWhenClient = new MutableLiveData<>(false);
-        }
-        return useStaticIPWhenClient.getValue();
-    }
-
-    public MutableLiveData<Boolean> getLiveDataUseStaticIPWhenClient() {
+    public MutableLiveData<Boolean> getUseStaticIPWhenClient() {
         if (useStaticIPWhenClient == null) {
             useStaticIPWhenClient = new MutableLiveData<>(false);
         }
@@ -837,11 +809,11 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public String getStaticIPAddress() {
+    public MutableLiveData<String> getStaticIPAddress() {
         if (staticIPAddress == null) {
             staticIPAddress = new MutableLiveData<>("");
         }
-        return staticIPAddress.getValue();
+        return staticIPAddress;
     }
 
     public void setStaticIPAddress(String value) {
@@ -855,11 +827,11 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public String getStaticNetmask() {
+    public MutableLiveData<String> getStaticNetmask() {
         if (staticNetmask == null) {
             staticNetmask = new MutableLiveData<>("");
         }
-        return staticNetmask.getValue();
+        return staticNetmask;
     }
 
     public void setStaticNetmask(String value) {

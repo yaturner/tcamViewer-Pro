@@ -116,7 +116,7 @@ public class LibrarySection extends Section {
             try {
                 JSONObject jsonObject = new JSONObject(json);
                 Bitmap image = cameraUtils.processImageResponse(jsonObject,
-                        mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette()));
+                        mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()));
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().
                             getDrawable(R.drawable.library_item_highlight_selector));

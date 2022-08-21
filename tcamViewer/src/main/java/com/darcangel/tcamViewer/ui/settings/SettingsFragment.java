@@ -68,7 +68,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
 
-        String address = settings.getCameraAddress();
+        String address = settings.getCameraAddress().getValue();
         if (address != null && !address.isEmpty()) {
             binding.cameraIPAddress.setText(address, TextView.BufferType.EDITABLE);
         }
