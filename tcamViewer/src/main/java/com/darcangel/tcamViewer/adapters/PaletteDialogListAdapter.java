@@ -16,13 +16,14 @@ public class PaletteDialogListAdapter extends BaseAdapter {
     private Context context;
     private String[] paletteStirng;
     private MainActivity mainActivity;
+    private String currPalette;
 
     public PaletteDialogListAdapter(Context context) {
         this.context = context;
         mainActivity = MainActivity.getInstance();
         paletteStirng = mainActivity.getResources().getStringArray(R.array.palette_names);
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
+        currPalette = mainActivity.getSettings().getPalette().getValue();
     }
 
     @Override
@@ -46,6 +47,9 @@ public class PaletteDialogListAdapter extends BaseAdapter {
         TextView tvPalette = listItem.findViewById(R.id.tvPalette);
         tvPalette.setTypeface(Typeface.MONOSPACE);
         tvPalette.setText(paletteStirng[position]);
+        if(paletteStirng[position].equalsIgnoreCase(currPalette)) {
+            tvPalette.setTypeface(null, Typeface.BOLD_ITALIC);
+        }
         return tvPalette;
 
     }
