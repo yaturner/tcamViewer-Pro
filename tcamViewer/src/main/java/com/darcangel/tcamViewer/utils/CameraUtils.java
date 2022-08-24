@@ -2,7 +2,6 @@ package com.darcangel.tcamViewer.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -385,6 +384,10 @@ public class CameraUtils implements Parcelable {
     public void setSpotmeterLocation(Rect rect) {
         spotmeterLocation = rect;
         spotmeterMean = getMeanTemperatureAtSpotmeter();
+    }
+
+    public boolean isAGC() {
+        return AGC;
     }
 
     @Override

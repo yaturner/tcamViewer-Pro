@@ -84,6 +84,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             case R.id.action_disconnect:
                 cameraViewModel.disconnectFromCamera();
                 isConnectingToCamera = false;
+                if(cameraViewModel.getStreaming()) {
+                    cameraViewModel.setStreaming(false);
+                    cameraService.stopStreaming();
+                }
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
@@ -362,7 +366,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
-                        if (settings.getAGC().getValue()) {
+                        //Always get AGC for the current image, when settings are changed it refers to the next get
+                        if (cameraUtils.isAGC()) {
                             binding.tvMaxTemperature.setText("AGC");
                             binding.tvMinTemperature.setText("AGC");
                         } else {
@@ -444,7 +449,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if(cameraViewModel.getImage() == null) {
             itemSave.setEnabled(false); //only true if there is an image
         } else {
-            itemSave.setEnabled(true); //only true if there is an image
+            itemSave.setEnabled(true);
         }
         if (!cameraService.isConnected()) {
             itemConnect.setVisible(true);
@@ -457,7 +462,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             itemGet.setEnabled(true);
             itemStream.setEnabled(true);
         }
-        if (cameraViewModel.getStreaming()) {
+        if (!cameraService.isConnected() || cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
         } else {
             itemGet.setEnabled(true);

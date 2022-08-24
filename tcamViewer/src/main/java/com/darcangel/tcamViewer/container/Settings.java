@@ -38,6 +38,8 @@ public class Settings extends BaseObservable implements Parcelable {
     private MutableLiveData<Boolean> unitsF;
     private MutableLiveData<Boolean> unitsC;
 
+    private MutableLiveData<Boolean> saveToCamera; //true if set_config is needed
+
     //WiFi Settings, never persisted
     //User settable
     private MutableLiveData<Boolean> cameraIsAccessPoint;
@@ -225,7 +227,23 @@ public class Settings extends BaseObservable implements Parcelable {
         }
     }
 
-    //Getters and Setters
+    //If this is true then a camera setting was changed and we need
+    //  to do a set_config if settings are saved
+    public MutableLiveData<Boolean> getSaveToCamera() {
+        if(saveToCamera == null) {
+            saveToCamera = new MutableLiveData<Boolean>(false);
+        }
+        return saveToCamera;
+    }
+
+    public void setSaveToCamera(Boolean value) {
+        if(saveToCamera == null) {
+            saveToCamera = new MutableLiveData<>();
+        }
+        saveToCamera.setValue(value);
+    }
+
+//Getters and Setters
 
     /**
      * AGC
@@ -243,6 +261,7 @@ public class Settings extends BaseObservable implements Parcelable {
             AGC = new MutableLiveData<>();
         }
         if (value != AGC.getValue()) {
+            setSaveToCamera(true);
             AGC.setValue(value);
             notifyPropertyChanged(BR.aGC);
         }
@@ -264,6 +283,7 @@ public class Settings extends BaseObservable implements Parcelable {
             gainAuto = new MutableLiveData<Boolean>();
         }
         if (value != gainAuto.getValue()) {
+            setSaveToCamera(true);
             gainAuto.setValue(value);
             notifyPropertyChanged(BR.gainAuto);
         }
@@ -285,6 +305,7 @@ public class Settings extends BaseObservable implements Parcelable {
             gainHigh = new MutableLiveData<Boolean>();
         }
         if (value != gainHigh.getValue()) {
+            setSaveToCamera(true);
             gainHigh.setValue(value);
             notifyPropertyChanged(BR.gainHigh);
         }
@@ -306,6 +327,7 @@ public class Settings extends BaseObservable implements Parcelable {
             gainLow = new MutableLiveData<Boolean>();
         }
         if (value != gainLow.getValue()) {
+            setSaveToCamera(true);
             gainLow.setValue(value);
             notifyPropertyChanged(BR.gainLow);
         }
@@ -348,6 +370,7 @@ public class Settings extends BaseObservable implements Parcelable {
             emissivity = new MutableLiveData<>();
         }
         if (value != emissivity.getValue()) {
+            setSaveToCamera(true);
             emissivity.setValue(value);
             notifyPropertyChanged(BR.emissivity);
         }

@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -33,7 +34,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class SettingsFragment extends Fragment implements View.OnClickListener {
+public class SettingsFragment extends Fragment implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private FragmentSettingsBinding binding;
     private ViewGroup container;
@@ -99,6 +100,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
                 builder.create().show();
             }
         });
+
+        //initially save to camera is false
+        settings.setSaveToCamera(false);
+
         root = binding.getRoot();
         return root;
     }
@@ -121,6 +126,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         binding.btnCancelSave.btnSave.setOnClickListener(this);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
 
+        binding.switchAGC.setOnCheckedChangeListener(this);
+
         //Take a snapshot of the settings so that if the user selects cancel we can restore it
         snapshot = new Bundle();
         settings.snapshot(snapshot);
@@ -131,11 +138,18 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
         builder.setTitle(R.string.title_settings)
                 .setMessage("Do you wish to save your settings")
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    settings.persist();
-                    if(cameraService.getIpAddress() == null ||
-                            !cameraService.getIpAddress().equalsIgnoreCase(binding.cameraIPAddress.getText().toString()) ) {
+                    if (cameraService.getIpAddress() == null ||
+                            (!binding.cameraIPAddress.getText().toString().
+                                    equals(settings.getCameraAddress().getValue()))) {
                         cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
+                        settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
                     }
+                    if (settings.getSaveToCamera().getValue()) {
+                        //save the config
+                        cameraViewModel.setConfig();
+                        settings.setSaveToCamera(false);
+                    }
+                    settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
                     Navigation.findNavController(root).popBackStack();
@@ -214,9 +228,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onPause() {
         super.onPause();
-        //changing the ip address will disconnect the camera
-        if (!binding.cameraIPAddress.getText().toString().equals(settings.getCameraAddress())) {
-            cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
-        }
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//        if (buttonView.getId() == R.id.switchAGC) {
+//            settings.setAGC(isChecked);
+//        }
     }
 }
