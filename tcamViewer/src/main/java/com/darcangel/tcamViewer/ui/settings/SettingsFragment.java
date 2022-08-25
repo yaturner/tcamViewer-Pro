@@ -104,6 +104,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         //initially save to camera is false
         settings.setSaveToCamera(false);
 
+        binding.switchAGC.setChecked(settings.getAGC().getValue());
+
         root = binding.getRoot();
         return root;
     }
@@ -232,8 +234,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//        if (buttonView.getId() == R.id.switchAGC) {
-//            settings.setAGC(isChecked);
-//        }
+        if (buttonView.getId() == R.id.switchAGC) {
+            settings.setAGC(isChecked);
+        }
     }
 }
