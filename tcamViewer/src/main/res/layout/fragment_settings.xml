@@ -10,6 +10,7 @@
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/llCameraSettings"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginStart="10dp"
@@ -45,8 +46,16 @@
                 app:layout_constraintStart_toStartOf="@+id/glStart"
                 app:layout_constraintTop_toTopOf="parent">
 
+                <androidx.constraintlayout.widget.Group
+                    android:id="@+id/groupCameraSettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="visible"
+                    app:constraint_referenced_ids="settingsHeading,switchAGC,emissivityHeading,etEmissivity,btnEmissivityHint,gainHeading,rgGroup"/>
+
                 <!--Heading-->
                 <TextView
+                    android:id="@+id/settingsHeading"
                     style="@style/SettingsHeading"
                     android:text="@string/camera_settings"
                     android:textAllCaps="true" />
@@ -65,6 +74,7 @@
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
+                        android:id="@+id/emissivityHeading"
                         style="@style/SettingsTextStart"
                         android:text="@string/emissivity" />
 
@@ -86,6 +96,7 @@
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
+                        android:id="@+id/gainHeading"
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
                         android:text="@string/gain" />

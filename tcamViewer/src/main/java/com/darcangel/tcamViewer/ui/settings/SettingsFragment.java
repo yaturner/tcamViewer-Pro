@@ -15,6 +15,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
@@ -66,6 +67,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         root = binding.getRoot();
 
+        //get the settings container
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
 
@@ -129,6 +131,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
 
         binding.switchAGC.setOnCheckedChangeListener(this);
+
+        //get the camera settings from the camera if the camera is connected
+        //  otherwise hide the camera settings
+        if(!cameraService.isConnected()) {
+            int refIds[] = binding.groupCameraSettings.getReferencedIds();
+            for (int index = 0; index < refIds.length; index++) {
+                root.findViewById(refIds[index]).setVisibility(ConstraintLayout.GONE);
+            }
+        } else {
+            cameraViewModel.getConfig();
+        }
 
         //Take a snapshot of the settings so that if the user selects cancel we can restore it
         snapshot = new Bundle();
