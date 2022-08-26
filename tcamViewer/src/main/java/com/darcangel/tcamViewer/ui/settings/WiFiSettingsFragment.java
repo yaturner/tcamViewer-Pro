@@ -153,17 +153,17 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         if (settings.getCameraIsAccessPoint().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_AP,
                     settings.getApSSID(),
-                    settings.getPassword());
+                    settings.getPassword().getValue());
         } else if (settings.getUseStaticIPWhenClient().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_STATIC,
                     settings.getStaticSSID(),
-                    settings.getPassword(),
-                    settings.getStaticIPAddress(),
-                    settings.getStaticNetmask());
+                    settings.getPassword().getValue(),
+                    settings.getStaticIPAddress().getValue(),
+                    settings.getStaticNetmask().getValue());
         } else {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_NOT_STATIC,
                     settings.getStaticSSID(),
-                    settings.getPassword());
+                    settings.getPassword().getValue());
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
         try {
