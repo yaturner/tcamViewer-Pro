@@ -33,17 +33,26 @@ public class CameraService implements Parcelable {
     private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
     private MainActivity mainActivity;
     private Thread streamingThread;
+    private static enum STATE
+    {
+        STATE_FIND_START,
+        STATE_FIND_END,
+        STATE_GET_NEXT_BUFFER
+    }
+    private STATE readState = STATE.STATE_GET_NEXT_BUFFER;
+    private STATE prevReadState = STATE.STATE_FIND_START;
+    private String cmd;
 
     public CameraService() {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        buffer = new byte[4096];
+        buffer = new byte[8192];
     }
 
     public CameraService(Parcel in) {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        buffer = new byte[4096];
+        buffer = new byte[32767];
     }
 
     public static final Creator<CameraService> CREATOR = new Creator<CameraService>() {
@@ -90,6 +99,9 @@ public class CameraService implements Parcelable {
             Thread thread = new Thread(connect);
             thread.start();
             thread.join();
+//            Runnable readResponse = new ReadResponse();
+//            Thread thread1 = new Thread(readResponse);
+//            thread1.start();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -266,6 +278,97 @@ public class CameraService implements Parcelable {
         }
     }
 
+    /**
+     * ReadResponse
+     * continuously read responses from the camera and pass them to the parser
+     */
+    class ReadResponse implements Runnable {
+        @Override
+        public void run() {
+            boolean eof = false;
+            int bytesRead = 0;
+            byte[] response;
+
+            response = new byte[81924];
+            int nextPos = 0;
+            int startCmd = -1;
+            int endCmd = -1;
+
+            while(isConnected()) {
+                try {
+                    int pos;
+                    bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
+                    switch (readState) {
+                        case STATE_GET_NEXT_BUFFER:
+                            Timber.d("Entered STATE_GET_NEXT_BUFFER");
+                            bytesRead = bufferedInputStream.read(buffer, nextPos, buffer.length);
+                            nextPos += bytesRead;
+                            Timber.d("Read %d bytes", bytesRead);
+//                            response = response += new String(buffer, 0, bytesRead);
+                            readState = prevReadState;
+                            break;
+                        case STATE_FIND_START:
+                            Timber.d("Entered STATE_FIND_START");
+                            pos = findByte(buffer, 0, nextPos, 3);
+                            if (pos != -1) {
+                                Timber.d("Found start at %d", pos);
+
+                                readState = STATE.STATE_FIND_END;
+                                prevReadState = readState;
+                            } else {
+                                Timber.d("Did not find start");
+                                prevReadState = STATE.STATE_FIND_START;
+                                readState = STATE.STATE_GET_NEXT_BUFFER;
+                            }
+                            break;
+                        case STATE_FIND_END:
+                            Timber.d("Entered STATE_FIND_END");
+                            Timber.d("response length = %d", response.length());
+                            if (findByte("\03")) {
+                                pos = response.indexOf('\03');
+                                Timber.d("Found end at %d", pos);
+                                cmd = response.substring(0, pos+1);
+                                nextPos = 0;
+                                startCmd = -1;
+                                endCmd = -1;
+
+                                byte[] bytes = cmd.getBytes();
+                                Timber.d("cmd starts with %01x and ends with %01x",
+                                        bytes[0], bytes[bytes.length-1]);
+                                imageChannel.onNext(parseResponse(cmd));
+                                response = response.substring(response.indexOf('\03')+1);
+                                if(response.isEmpty()) {
+                                    Timber.d("response is empty");
+                                    readState = STATE.STATE_GET_NEXT_BUFFER;
+                                    prevReadState = STATE.STATE_FIND_START;
+                                } else {
+                                    Timber.d("There are %d bytes left in respose", response.length());
+                                    readState = STATE.STATE_FIND_START;
+                                    prevReadState = readState;
+                                }
+                            } else {
+                                Timber.d("Did not find end");
+                                prevReadState = STATE.STATE_FIND_END;
+                                readState = STATE.STATE_GET_NEXT_BUFFER;
+                            }
+                            break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    imageChannel.onError(e);
+                }
+            }
+        }
+    }
+
+    private int findByte(byte[] bytes, int offset, int length, int value) {
+        for(int index = offset; index < length; index++) {
+            if(bytes[index] == value) {
+                return index;
+            }
+        }
+        return -1;
+    }
     /**
      * Stream
      * Thread to send a command and receive the response
