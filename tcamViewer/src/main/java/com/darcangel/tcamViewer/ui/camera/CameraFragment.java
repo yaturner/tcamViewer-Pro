@@ -35,6 +35,7 @@ import org.json.JSONObject;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Iterator;
@@ -280,7 +281,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         e -> {
                             e.printStackTrace();
                             mainActivity.dismissProgressDialog(); //just in case
-                            if (e instanceof SocketTimeoutException) {
+                            if (e instanceof SocketTimeoutException ||
+                                    e instanceof ConnectException) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
                                         .setCancelable(true)
                                         .setPositiveButton(R.string.ok, ((dialog, which) -> {
