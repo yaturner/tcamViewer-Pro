@@ -94,13 +94,13 @@ public final class Constants {
     public final static String ARGS_SET_WIFI_AP = "{\n" +
             "    \"ap_ssid\": \"%s\"\n" +
             "    \"ap_pw: \"%s\"\n" +
-            "    \"flags\": 1,\n" +
+            "    \"flags\": 1\n" +
             "    }";
 // If Camera is NOT Access Point and NOT Use static IP when Client, send
     public final static String ARGS_SET_WIFI_NOT_STATIC = "{\n" +
             "    \"sta_ssid\": \"%s\",\n" +
             "    \"sta_pw\": \"%s\",\n" +
-            "    \"flags\": 129,\n" +
+            "    \"flags\": 129\n" +
             "    }";
 // If Camera is NOT Access Point and Use static IP when Client, send
     public final static String ARGS_SET_WIFI_STATIC = "{\n" +
@@ -108,7 +108,7 @@ public final class Constants {
             "    \"sta_pw\": \"%s\",\n" +
             "    \"sta_ip_addr\": \"%s\",\n" +
             "    \"sta_netmask\": \"%s\",\n" +
-            "    \"flags\": 145,\n" +
+            "    \"flags\": 145\n" +
             "    }";
 
     public final static int TELEMETRY_MASK_AGC = (1<<12);
