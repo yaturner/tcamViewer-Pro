@@ -227,6 +227,7 @@
                             android:text="@string/min" />
 
                         <EditText
+                            android:id="@+id/etManualRangeMin"
                             style="@style/SettingsEditTextEnd"
                             android:inputType="number"
                             android:text="@={settings.manualRangeMin}" />
@@ -240,6 +241,7 @@
                             android:text="@string/max" />
 
                         <EditText
+                            android:id="@+id/etManualRangeMax"
                             style="@style/SettingsEditTextEnd"
                             android:inputType="number"
                             android:text="@={settings.manualRangeMax}" />

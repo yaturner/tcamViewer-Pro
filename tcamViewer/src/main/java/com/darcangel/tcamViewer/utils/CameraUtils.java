@@ -38,6 +38,7 @@ public class CameraUtils implements Parcelable {
     private float spotmeterMean;
     private Rect spotmeterLocation;
     private boolean shutterLockout;
+    private boolean isManualRange;
     private int FFCState;
     private int FFCDesired;
     private int gainMode;
@@ -46,8 +47,10 @@ public class CameraUtils implements Parcelable {
     private int[] pixels;
     private int[] imageData;
     private int diff;
-    int maxTemperature;
-    int minTemperature;
+    private int maxTemperature;
+    private int minTemperature;
+    private float manualMaxTemperature;
+    private float manualMinTemperature;
     private JSONObject response;
 
     private final static int offsetA = 0;
@@ -63,6 +66,41 @@ public class CameraUtils implements Parcelable {
     public CameraUtils() {
         Timber.d("CameraUtils default constructor");
     }
+
+    protected CameraUtils(Parcel in) {
+        AGC = in.readByte() != 0;
+        shutdown = in.readByte() != 0;
+        emissivity = in.readInt();
+        TLinearEnabled = in.readInt();
+        TLinearResolution = in.readInt();
+        spotmeterMean = in.readFloat();
+        spotmeterLocation = in.readParcelable(Rect.class.getClassLoader());
+        shutterLockout = in.readByte() != 0;
+        isManualRange = in.readByte() != 0;
+        FFCState = in.readInt();
+        FFCDesired = in.readInt();
+        gainMode = in.readInt();
+        autoGainMode = in.readInt();
+        pixels = in.createIntArray();
+        imageData = in.createIntArray();
+        diff = in.readInt();
+        maxTemperature = in.readInt();
+        minTemperature = in.readInt();
+        manualMaxTemperature = in.readFloat();
+        manualMinTemperature = in.readFloat();
+    }
+
+    public static final Creator<CameraUtils> CREATOR = new Creator<CameraUtils>() {
+        @Override
+        public CameraUtils createFromParcel(Parcel in) {
+            return new CameraUtils(in);
+        }
+
+        @Override
+        public CameraUtils[] newArray(int size) {
+            return new CameraUtils[size];
+        }
+    };
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
         this.response = response;
@@ -280,11 +318,43 @@ public class CameraUtils implements Parcelable {
     }
 
     public float getMaxTemperature(boolean celsius) {
-        return scaleTemperature(celsius, maxTemperature);
+        if (isManualRange) {
+            return manualMaxTemperature;
+        } else {
+            return scaleTemperature(celsius, maxTemperature);
+        }
     }
 
     public float getMinTemperature(boolean celsius) {
-        return scaleTemperature(celsius, minTemperature);
+        if (isManualRange) {
+            return manualMinTemperature;
+        } else {
+            return scaleTemperature(celsius, minTemperature);
+        }
+    }
+
+    public boolean isManualRange() {
+        return isManualRange;
+    }
+
+    public void setManualRange(boolean manualRange) {
+        isManualRange = manualRange;
+    }
+
+    public float getMaxManualTemperature() {
+        return manualMaxTemperature;
+    }
+
+    public void setMaxManualTemperature(float maxManualTemperature) {
+        manualMaxTemperature = maxManualTemperature;
+    }
+
+    public float getMinManualTemperature() {
+        return manualMinTemperature;
+    }
+
+    public void setMinManualTemperature(float minManualTemperature) {
+        manualMinTemperature = manualMinTemperature;
     }
 
     public float getMeanTemperatureAtSpotmeter(boolean celsius) {

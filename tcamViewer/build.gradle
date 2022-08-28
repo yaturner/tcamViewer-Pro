@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId "com.darcangel.tcamViewer"
-        minSdk 21
+        minSdk 26
         targetSdk 32
         versionName "nameExt"
 

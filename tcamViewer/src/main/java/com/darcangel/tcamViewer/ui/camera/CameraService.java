@@ -37,13 +37,13 @@ public class CameraService implements Parcelable {
     public CameraService() {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        buffer = new byte[4096];
+        buffer = new byte[65536];
     }
 
     public CameraService(Parcel in) {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        buffer = new byte[4096];
+        buffer = new byte[65536];
     }
 
     public static final Creator<CameraService> CREATOR = new Creator<CameraService>() {

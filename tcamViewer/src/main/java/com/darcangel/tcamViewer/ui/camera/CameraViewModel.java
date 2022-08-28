@@ -97,7 +97,7 @@ public class CameraViewModel extends ViewModel {
     public void setTime() {
         Calendar now = Calendar.getInstance();
 
-        String args = String.format(Constants.ARGS_SET_TIME,
+        String args = String.format(Locale.US, Constants.ARGS_SET_TIME,
                 now.get(Calendar.SECOND),
                 now.get(Calendar.MINUTE),
                 now.get(Calendar.HOUR),

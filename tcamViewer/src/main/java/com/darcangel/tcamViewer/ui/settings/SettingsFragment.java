@@ -153,17 +153,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         builder.setTitle(R.string.title_settings)
                 .setMessage("Do you wish to save your settings")
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    if (cameraService.getIpAddress() == null ||
-                            (!binding.cameraIPAddress.getText().toString().
-                                    equals(settings.getCameraAddress().getValue()))) {
-                        cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
-                        settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
-                    }
-                    if (settings.getSaveToCamera().getValue()) {
-                        //save the config
-                        cameraViewModel.setConfig();
-                        settings.setSaveToCamera(false);
-                    }
+                    saveCameraSettings();
                     settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
@@ -176,6 +166,36 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                     Navigation.findNavController(root).popBackStack();
                 });
         return builder.create();
+    }
+
+    private void saveCameraSettings() {
+        if (cameraService.getIpAddress() == null ||
+                (!binding.cameraIPAddress.getText().toString().
+                        equals(settings.getCameraAddress().getValue()))) {
+            cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
+            settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
+        }
+        if (settings.getSaveToCamera().getValue()) {
+            //save the config
+            cameraViewModel.setConfig();
+            settings.setSaveToCamera(false);
+        }
+        if(binding.switchManualRange.isChecked()) {
+            try {
+                float max = Float.parseFloat(binding.etManualRangeMax.toString());
+                float min = Float.parseFloat(binding.etManualRangeMin.toString());
+                if (min >= max) {
+                    //TODO error dialog
+                }
+                settings.setAutoRange(false);
+                settings.setManualRangeMax(max);
+                settings.setManualRangeMin(min);
+            } catch (NumberFormatException e) {
+                //TODO error dialog
+            }
+        } else {
+            settings.setAutoRange(true);
+        }
     }
 
     @Override
@@ -249,6 +269,19 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.getId() == R.id.switchAGC) {
             settings.setAGC(isChecked);
+        } else if(buttonView.getId() == R.id.switchAGC) {
+            settings.setAutoRange(!isChecked);
+            if(isChecked) {
+                binding.etManualRangeMax.setVisibility(View.VISIBLE);
+                binding.etManualRangeMin.setVisibility(View.VISIBLE);
+            } else {
+                binding.etManualRangeMax.setVisibility(View.GONE);
+                binding.etManualRangeMin.setVisibility(View.GONE);
+            }
+//            cameraUtils.setManualRange(true);
+//            cameraUtils.setMaxManualTemperature(settings.getManualRangeMax().getValue());
+//            cameraUtils.setMinManualTemperature(settings.getManualRangeMin().getValue());
+
         }
     }
 }

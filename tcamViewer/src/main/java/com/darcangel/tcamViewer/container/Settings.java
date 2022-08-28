@@ -14,6 +14,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.darcangel.tcamViewer.BR;
 import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 
 public class Settings extends BaseObservable implements Parcelable {
@@ -30,8 +31,8 @@ public class Settings extends BaseObservable implements Parcelable {
     private MutableLiveData<Boolean> exportMetaData;
     private MutableLiveData<Integer> exportResolution;  // HxW for exporting image
     private MutableLiveData<Boolean> autoRange;         //if the Manual Range btn is clicked this false
-    private MutableLiveData<Integer> manualRangeMin;
-    private MutableLiveData<Integer> manualRangeMax;
+    private MutableLiveData<Float> manualRangeMin;
+    private MutableLiveData<Float> manualRangeMax;
     private MutableLiveData<String> palette;
     private MutableLiveData<Boolean> shutterSound;
     private MutableLiveData<Boolean> displaySpotmeter;
@@ -81,8 +82,8 @@ public class Settings extends BaseObservable implements Parcelable {
         setExportMetaData(in.getInt(Constants.KEY_EXPORT_METADATA)==1);
         setExportResolution(in.getInt(Constants.KEY_EXPORT_RESOLUTION));
         setAutoRange(in.getInt(Constants.KEY_AUTORANGE)==1);
-        setManualRangeMax(in.getInt(Constants.KEY_MANUAL_RANGE_MAX));
-        setManualRangeMin(in.getInt(Constants.KEY_MANUAL_RANGE_MIN));
+        setManualRangeMax(in.getFloat(Constants.KEY_MANUAL_RANGE_MAX));
+        setManualRangeMin(in.getFloat(Constants.KEY_MANUAL_RANGE_MIN));
         setPalette(in.getString(Constants.KEY_PALETTE));
         setShutterSound(in.getInt(Constants.KEY_SHUTTER_SOUND)==1);
         setDisplaySpotmeter(in.getInt(Constants.KEY_SPOTMETER)==1);
@@ -101,8 +102,8 @@ public class Settings extends BaseObservable implements Parcelable {
         dest.putInt(Constants.KEY_EXPORT_METADATA, getExportMetaData().getValue()?1:0);
         dest.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution().getValue());
         dest.putInt(Constants.KEY_AUTORANGE, getAutoRange().getValue()?1:0);
-        dest.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
-        dest.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
+        dest.putFloat(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
+        dest.putFloat(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
         dest.putString(Constants.KEY_PALETTE, getPalette().getValue().toString());
         dest.putInt(Constants.KEY_SHUTTER_SOUND, getShutterSound().getValue()?1:0);
         dest.putInt(Constants.KEY_SPOTMETER, getDisplaySpotmeter().getValue()?1:0);
@@ -123,8 +124,8 @@ public class Settings extends BaseObservable implements Parcelable {
         dest.writeInt(getExportMetaData().getValue()?1:0);
         dest.writeInt(getExportResolution().getValue());
         dest.writeInt(getAutoRange().getValue()?1:0);
-        dest.writeInt(getManualRangeMax().getValue());
-        dest.writeInt(getManualRangeMin().getValue());
+        dest.writeFloat(getManualRangeMax().getValue());
+        dest.writeFloat(getManualRangeMin().getValue());
         dest.writeString(getPalette().getValue());
         dest.writeInt(getShutterSound().getValue()?1:0);
         dest.writeInt(getDisplaySpotmeter().getValue()?1:0);
@@ -160,8 +161,8 @@ public class Settings extends BaseObservable implements Parcelable {
         setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
         setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));
         setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, false));
-        setManualRangeMax(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MAX, 100));
-        setManualRangeMin(sharedPreferences.getInt(Constants.KEY_MANUAL_RANGE_MIN, 0));
+        setManualRangeMax(sharedPreferences.getFloat(Constants.KEY_MANUAL_RANGE_MAX, 100f));
+        setManualRangeMin(sharedPreferences.getFloat(Constants.KEY_MANUAL_RANGE_MIN, 0f));
         setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Rainbow"));
         setShutterSound(sharedPreferences.getBoolean(Constants.KEY_SHUTTER_SOUND, true));
         setDisplaySpotmeter(sharedPreferences.getBoolean(Constants.KEY_SPOTMETER, true));
@@ -189,8 +190,8 @@ public class Settings extends BaseObservable implements Parcelable {
         editor.putBoolean(Constants.KEY_EXPORT_METADATA, getExportMetaData().getValue());
         editor.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution().getValue());
         editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange().getValue());
-        editor.putInt(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
-        editor.putInt(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
+        editor.putFloat(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
+        editor.putFloat(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
         editor.putString(Constants.KEY_PALETTE, getPalette().getValue());
         editor.putBoolean(Constants.KEY_SHUTTER_SOUND, getShutterSound().getValue());
         editor.putBoolean(Constants.KEY_SPOTMETER, getDisplaySpotmeter().getValue());
@@ -218,12 +219,34 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @InverseBindingAdapter(attribute = "android:text")
-    public static int getText(TextView view) {
+    public static Object getText(TextView view) {
         try {
-            return Integer.parseInt(view.getText().toString());
+            if(view.getId() == R.id.etManualRangeMax ||
+            view.getId() == R.id.etManualRangeMin) {
+                return Float.parseFloat(view.getText().toString());
+            } else {
+                return Integer.parseInt(view.getText().toString());
+            }
         } catch (NumberFormatException e) {
             e.printStackTrace();
             return 0;
+        }
+    }
+
+    @BindingAdapter("android:text")
+    public static void setText(TextView view, Float value) {
+        try {
+            if (view.getText() != null && value != null) {
+                //If the editText is empty, just set the value
+                if (view.getText().toString().isEmpty()) {
+                    view.setText(Float.toString(value));
+                    //See if the value changed to prevent infinite loop
+                } else if (Integer.parseInt(view.getText().toString()) != value) {
+                    view.setText(Float.toString(value));
+                }
+            }
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
     }
 
@@ -422,14 +445,14 @@ public class Settings extends BaseObservable implements Parcelable {
      * manual range min, max
      */
     @Bindable
-    public MutableLiveData<Integer> getManualRangeMin() {
+    public MutableLiveData<Float> getManualRangeMin() {
         if (manualRangeMin == null) {
-            manualRangeMin = new MutableLiveData<>(0);
+            manualRangeMin = new MutableLiveData<Float>(0f);
         }
         return manualRangeMin;
     }
 
-    public void setManualRangeMin(Integer value) {
+    public void setManualRangeMin(Float value) {
         if (manualRangeMin == null) {
             manualRangeMin = new MutableLiveData<>();
         }
@@ -440,14 +463,14 @@ public class Settings extends BaseObservable implements Parcelable {
     }
 
     @Bindable
-    public MutableLiveData<Integer> getManualRangeMax() {
+    public MutableLiveData<Float> getManualRangeMax() {
         if (manualRangeMax == null) {
-            manualRangeMax = new MutableLiveData<>(0);
+            manualRangeMax = new MutableLiveData<Float>(0f);
         }
         return manualRangeMax;
     }
 
-    public void setManualRangeMax(Integer value) {
+    public void setManualRangeMax(Float value) {
         if (manualRangeMax == null) {
             manualRangeMax = new MutableLiveData<>();
         }

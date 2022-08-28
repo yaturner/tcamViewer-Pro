@@ -361,6 +361,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
+                        if(!settings.getAutoRange().getValue()) {
+////JMT                            isRemapNeeded = true;
+                        }
                         if (isRemapNeeded) {
                             isRemapNeeded = false;
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
