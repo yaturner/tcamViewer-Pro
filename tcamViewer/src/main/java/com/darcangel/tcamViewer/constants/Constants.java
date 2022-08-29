@@ -116,6 +116,9 @@ public final class Constants {
     public final static int WIFI_MASK_CLIENT_MODE = (1<<7);
     public final static int WIFI_MASK_STATIC_IP = (1<<4);
     public final static int WIFI_MASK_WIFI_ENABLED = 1;
+    public static final int READ_BUFFER_SIZE = 655536;
+    public static final int READ_SIZE = 4096;
+
 
     private Constants() {
     }
