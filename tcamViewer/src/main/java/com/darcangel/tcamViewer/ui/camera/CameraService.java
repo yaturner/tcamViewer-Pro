@@ -10,8 +10,9 @@ import com.google.gson.internal.bind.TreeTypeAdapter;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -23,9 +24,9 @@ import timber.log.Timber;
 public class CameraService implements Parcelable {
 
     private Socket cameraSocket;
-    private byte[] buffer;
+    private char[] buffer;
     private String command;
-    private BufferedInputStream bufferedInputStream;
+    private BufferedReader bufferedReader;
     private Boolean isStreaming = false;
     private TreeTypeAdapter streamThread;
     private String ipAddress;
@@ -43,15 +44,14 @@ public class CameraService implements Parcelable {
     private String cmd;
     private int lastPos = 0;
     private int nextPos = 0;
-    private int startCmd = -1;
-    private int endCmd = -1;
     private int bytesRead = 0;
+    private int endPos = -1;
     private byte[] response;
 
     public CameraService() {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        buffer = new byte[Constants.READ_BUFFER_SIZE];
+        buffer = new char[Constants.READ_BUFFER_SIZE];
         response = new byte[Constants.READ_BUFFER_SIZE];
 
 
@@ -60,7 +60,7 @@ public class CameraService implements Parcelable {
     public CameraService(Parcel in) {
         cameraSocket = new Socket();
         mainActivity = MainActivity.getInstance();
-        buffer = new byte[Constants.READ_BUFFER_SIZE];
+        buffer = new char[Constants.READ_BUFFER_SIZE];
     }
 
     public static final Creator<CameraService> CREATOR = new Creator<CameraService>() {
@@ -176,12 +176,17 @@ public class CameraService implements Parcelable {
      * startStreaming
      */
     public void startStreaming() {
-        String args = String.format(Constants.ARGS_SET_STREAM_ON, 0, 0);
+        String args = String.format(Constants.ARGS_SET_STREAM_ON, 1000, 0);
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
-        Runnable streamer = new Stream();
+        try {
+            sendCmd(command);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        Runnable streamer = new Stream();
         isStreaming = true;
-        streamingThread = new Thread(streamer);
-        streamingThread.start();
+//        streamingThread = new Thread(streamer);
+//        streamingThread.start();
     }
 
     public void stopStreaming() {
@@ -268,15 +273,9 @@ public class CameraService implements Parcelable {
             response = new byte[Constants.READ_BUFFER_SIZE];
 
             try {
-                bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
+                bufferedReader = new BufferedReader(
+                        new InputStreamReader(cameraSocket.getInputStream()));
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
-//                while (!eof) {
-//                    bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
-//                    if (response.substring(response.length() - 1).equals("\3")) {
-//                        eof = true;
-//                    }
-//                }
-//                imageChannel.onNext(parseResponse(response));
             } catch (IOException e) {
                 e.printStackTrace();
                 imageChannel.onError(e);
@@ -298,20 +297,16 @@ public class CameraService implements Parcelable {
             while(isConnected()) {
                 try {
                     int pos;
-                    bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
+                     bufferedReader = new BufferedReader(
+                             new InputStreamReader(cameraSocket.getInputStream()));
                     switch (readState) {
                         case STATE_GET_NEXT_BUFFER:
                             Timber.d("Entered STATE_GET_NEXT_BUFFER");
                             Timber.d("Before Read, lastPos = %d, nextPos = %d",
                                     lastPos, nextPos);
-                            bytesRead = bufferedInputStream.read(buffer, nextPos, 4096);
+                            bytesRead = bufferedReader.read(buffer, nextPos, 32767);
                             lastPos = nextPos;
                             nextPos += bytesRead;
-                            Timber.d("Read %d bytes, lastPos = %d, nextPos = %d",
-                                    bytesRead, lastPos, nextPos);
-                            Timber.d("bytes[%d] = %d", nextPos-1, buffer[nextPos-1]);
-                            Timber.d("bytes[%d] = %d", nextPos, buffer[nextPos]);
-//                            response = response += new String(buffer, 0, bytesRead);
                             readState = prevReadState;
                             break;
                         case STATE_FIND_START:
@@ -330,25 +325,29 @@ public class CameraService implements Parcelable {
                             break;
                         case STATE_FIND_END:
                             Timber.d("Entered STATE_FIND_END");
-                            if ((pos = findByte(buffer, lastPos, nextPos - lastPos, 3)) != -1) {
-                                Timber.d("Found end at %d", pos);
-                                cmd = new String(buffer, 0, pos+1);
+                            if ((endPos = findByte(buffer, lastPos, nextPos - lastPos, 3)) != -1) {
+                                Timber.d("Found end at %d", endPos);
+                                cmd = new String(buffer, 0, endPos+1);
                                 Timber.d("cmd = '%s'", cmd);
-                                nextPos = 0;
-                                lastPos = 0;
-                                startCmd = -1;
-                                endCmd = -1;
 
                                 imageChannel.onNext(parseResponse(cmd));
-//                                if(response.isEmpty()) {
+                                if(cmd.length() == nextPos) {
+                                    nextPos = 0;
+                                    lastPos = 0;
                                     Timber.d("response is empty");
                                     readState = STATE.STATE_GET_NEXT_BUFFER;
                                     prevReadState = STATE.STATE_FIND_START;
-//                                } else {
-//                                    Timber.d("There are %d bytes left in respose", response.length());
-//                                    readState = STATE.STATE_FIND_START;
-//                                    prevReadState = readState;
-//                                }
+                                } else {
+                                    int bytesLeft = nextPos-endPos;
+                                    Timber.d("There are %d bytes left in the buffer", bytesLeft);
+                                    for(int iPos = endPos+1, startPos = 0; iPos < nextPos; iPos++, startPos++) {
+                                        buffer[startPos] = buffer[iPos];
+                                    }
+                                    lastPos = bytesLeft;
+                                    nextPos = bytesLeft;
+                                    readState = STATE.STATE_FIND_START;
+                                    prevReadState = readState;
+                                }
                             } else {
                                 Timber.d("Did not find end");
                                 prevReadState = STATE.STATE_FIND_END;
@@ -367,7 +366,7 @@ public class CameraService implements Parcelable {
         }
     }
 
-    private int findByte(byte[] bytes, int offset, int length, int value) {
+    private int findByte(char[] bytes, int offset, int length, int value) {
         Timber.d("Searching for %d starting at %d for %d bytes", value, offset, length);
         int index;
         for(index = offset; index < offset + length; index++) {
@@ -377,8 +376,10 @@ public class CameraService implements Parcelable {
             }
         }
         Timber.d("\\\\findByte\\\\buffer pos = %d", index);
-        Timber.d("\\\\findByte\\\\bytes[%d] = %d", index-1, bytes[index-1]);
-        Timber.d("\\\\findByte\\\\bytes[%d] = %d", index, bytes[index]);
+        if(index > 0) {
+            Timber.d("\\\\findByte\\\\bytes[%d] = %c", index - 1, bytes[index - 1]);
+        }
+        Timber.d("\\\\findByte\\\\bytes[%d] = %c", index, bytes[index]);
         return -1;
     }
     /**
@@ -393,13 +394,13 @@ public class CameraService implements Parcelable {
             response = new byte[Constants.READ_BUFFER_SIZE];
 
 //            try {
-//                if (bufferedInputStream == null) {
-//                    bufferedInputStream = new BufferedInputStream(cameraSocket.getInputStream());
+//                if (bufferedReader == null) {
+//                    bufferedReader = new bufferedReader(cameraSocket.getInputStream());
 //                }
 //                cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
 //                //Timber.d("Sent cmd: '%s' to camera", command);
 //                while (isStreaming) {
-//                    bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
+//                    bytesRead = bufferedReader.read(buffer, 0, buffer.length);
 //                    //Timber.d("Read %d bytes from camera", bytesRead);
 //                    for (threePos = 0; threePos < bytesRead; threePos++) {
 //                        if (buffer[threePos] == '\3') {
@@ -431,7 +432,7 @@ public class CameraService implements Parcelable {
 //                cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
 //                //flush out any unprocessed images
 //                do {
-//                    bytesRead = bufferedInputStream.read(buffer, 0, buffer.length);
+//                    bytesRead = bufferedReader.read(buffer, 0, buffer.length);
 //                    Timber.d("Flushing %d bytes, last = %d", bytesRead, buffer[bytesRead - 1]);
 //                    if (buffer[bytesRead - 1] == 3) {
 //                        bytesRead = -1;
