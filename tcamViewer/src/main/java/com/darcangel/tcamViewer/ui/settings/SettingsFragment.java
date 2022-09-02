@@ -154,6 +154,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 .setMessage("Do you wish to save your settings")
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
                     saveCameraSettings();
+                    cameraService.setIpAddress(settings.getCameraAddress().getValue());
                     settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
