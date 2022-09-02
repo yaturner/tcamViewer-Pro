@@ -53,8 +53,6 @@ public class CameraService implements Parcelable {
         mainActivity = MainActivity.getInstance();
         buffer = new char[Constants.READ_BUFFER_SIZE];
         response = new byte[Constants.READ_BUFFER_SIZE];
-
-
     }
 
     public CameraService(Parcel in) {
@@ -176,24 +174,25 @@ public class CameraService implements Parcelable {
      * startStreaming
      */
     public void startStreaming() {
-        String args = String.format(Constants.ARGS_SET_STREAM_ON, 1000, 0);
+        String args = String.format(Constants.ARGS_SET_STREAM_ON, 125, 0);
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
         try {
+            lastPos = 0;
+            nextPos = 0; //TODO make a method out of this
             sendCmd(command);
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        Runnable streamer = new Stream();
         isStreaming = true;
-//        streamingThread = new Thread(streamer);
-//        streamingThread.start();
     }
 
     public void stopStreaming() {
         isStreaming = false;
+        lastPos = 0;
+        nextPos = 0;
         try {
-            streamingThread.join();
-        } catch (InterruptedException e) {
+            sendCmd(Constants.CMD_SET_STREAM_OFF);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -304,7 +303,7 @@ public class CameraService implements Parcelable {
                             Timber.d("Entered STATE_GET_NEXT_BUFFER");
                             Timber.d("Before Read, lastPos = %d, nextPos = %d",
                                     lastPos, nextPos);
-                            bytesRead = bufferedReader.read(buffer, nextPos, 32767);
+                            bytesRead = bufferedReader.read(buffer, nextPos, Constants.READ_SIZE);
                             lastPos = nextPos;
                             nextPos += bytesRead;
                             readState = prevReadState;

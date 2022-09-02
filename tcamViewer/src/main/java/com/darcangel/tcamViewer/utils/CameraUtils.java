@@ -12,7 +12,6 @@ import android.os.Parcelable;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -64,62 +63,66 @@ public class CameraUtils implements Parcelable {
         Timber.d("CameraUtils default constructor");
     }
 
-    public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
+    public Bitmap processImageResponse(JSONObject response, int[][] palette) {
         this.response = response;
 
-        if(pixels != null) {
+        if (pixels != null) {
             pixels = null;
         }
-        if(imageData != null) {
+        if (imageData != null) {
             imageData = null;
         }
         maxTemperature = Integer.MIN_VALUE;
         minTemperature = Integer.MAX_VALUE;
 
-        String radiometricString = response.getString("radiometric");
-        String telemetryString = response.getString("telemetry");
-        byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
+        try {
+            String radiometricString = response.getString("radiometric");
+            String telemetryString = response.getString("telemetry");
+            byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
 
-        int imageLen = imageBytes.length;
-        imageData = new int[imageLen / 2];
-        pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
-        int[] telemetryData;
+            int imageLen = imageBytes.length;
+            imageData = new int[imageLen / 2];
+            pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
+            int[] telemetryData;
 
-        telemetryData = parseTelemetryData(telemetryString);
-        int status = ((telemetryData[4] & 0xffff) << 16) | (telemetryData[3] & 0xffff);
-        AGC = ((status & Constants.TELEMETRY_MASK_AGC) == Constants.TELEMETRY_MASK_AGC);
-        shutdown = ((status & Constants.TELEMETRY_MASK_SHUTDOWN) == Constants.TELEMETRY_MASK_SHUTDOWN);
-        emissivity = telemetryData[offsetB + 19];
-        gainMode = telemetryData[offsetC + 5];
-        autoGainMode = telemetryData[offsetC + 6];
-        TLinearEnabled = telemetryData[offsetC + 48];
-        TLinearResolution = telemetryData[offsetC + 49];
-        spotmeterMean = telemetryData[offsetC + 50];
-        Integer x1 = telemetryData[offsetC+55]&0xffff;
-        Integer y1 = telemetryData[offsetC+54]&0xffff;
-        Integer x2 = telemetryData[offsetC+57]&0xffff;
-        Integer y2 = telemetryData[offsetC+56]&0xffff;
-        spotmeterLocation = new Rect(x1, y1, x2, y2);
+            telemetryData = parseTelemetryData(telemetryString);
+            int status = ((telemetryData[4] & 0xffff) << 16) | (telemetryData[3] & 0xffff);
+            AGC = ((status & Constants.TELEMETRY_MASK_AGC) == Constants.TELEMETRY_MASK_AGC);
+            shutdown = ((status & Constants.TELEMETRY_MASK_SHUTDOWN) == Constants.TELEMETRY_MASK_SHUTDOWN);
+            emissivity = telemetryData[offsetB + 19];
+            gainMode = telemetryData[offsetC + 5];
+            autoGainMode = telemetryData[offsetC + 6];
+            TLinearEnabled = telemetryData[offsetC + 48];
+            TLinearResolution = telemetryData[offsetC + 49];
+            spotmeterMean = telemetryData[offsetC + 50];
+            Integer x1 = telemetryData[offsetC + 55] & 0xffff;
+            Integer y1 = telemetryData[offsetC + 54] & 0xffff;
+            Integer x2 = telemetryData[offsetC + 57] & 0xffff;
+            Integer y2 = telemetryData[offsetC + 56] & 0xffff;
+            spotmeterLocation = new Rect(x1, y1, x2, y2);
 
-        for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
-            imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
-            minTemperature = Math.min(imageData[j], minTemperature);
-            maxTemperature = Math.max(imageData[j], maxTemperature);
-        }
-        if(AGC) {
-            for (int i = 0; i < pixels.length; i++) {
-                pixels[i] = rgbToPixel(palette[imageData[i]]);
+            for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
+                imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
+                minTemperature = Math.min(imageData[j], minTemperature);
+                maxTemperature = Math.max(imageData[j], maxTemperature);
             }
-        } else {
-            diff = maxTemperature - minTemperature;
-            for (int i = 0; i < imageData.length; i++) {
-                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255 / diff), 255)]);
+            if (AGC) {
+                for (int i = 0; i < pixels.length; i++) {
+                    pixels[i] = rgbToPixel(palette[imageData[i]]);
+                }
+            } else {
+                diff = maxTemperature - minTemperature;
+                for (int i = 0; i < imageData.length; i++) {
+                    pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255 / diff), 255)]);
+                }
             }
+            Bitmap result = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+            return result;
+        } catch (Exception e) {
+            Timber.e("\\\\processImageResponse\\\\ caught %s", e.getLocalizedMessage());
+            return null;
         }
-        Bitmap result = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
-        return result;
     }
-
 
     private int rgbToPixel(int[] rgb) {
         int r = rgb[0] & 0xFF;
