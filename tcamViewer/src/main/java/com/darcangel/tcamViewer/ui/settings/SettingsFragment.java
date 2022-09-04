@@ -3,6 +3,7 @@ package com.darcangel.tcamViewer.ui.settings;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,7 +25,6 @@ import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.EmissivityDialogListAdapter;
-import com.darcangel.tcamViewer.adapters.PaletteDialogListAdapter;
 import com.darcangel.tcamViewer.container.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
@@ -51,6 +51,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     private CameraService cameraService;
     private View root;
     private Bundle snapshot;
+    private String selectedPalette;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -207,6 +209,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         int selectedItem;
         AlertDialog.Builder builder;
         AlertDialog dialog;
+        String[] paletteList = mainActivity.getPaletteFactory().getPaletteNames();
+        int checkedItem;
         int id = v.getId();
         if (id == R.id.btn_privacy) {
             navDirections = SettingsFragmentDirections.actionNavigationSettingsToPrivacyDisclosure();
@@ -227,19 +231,33 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             dialog = builder.create();
             dialog.show();
         } else if (id == R.id.btnPalette) {
-            builder = new AlertDialog.Builder(getActivity());
-            builder.setTitle("Select Palette")
-                    .setAdapter(new PaletteDialogListAdapter(getActivity()),
-                            (paldialog, which) -> {
-                                String palette = mainActivity.getPaletteFactory().getPaletteName(which);
-                                settings.setPalette(palette);
-                            })
-                    .setCancelable(true)
-                    .setNegativeButton(getString(R.string.cancel), null)
-                    .setPositiveButton(getString(R.string.ok), null);
+            // setup the alert builder
+            builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("Select Palette");
+            for(checkedItem=0; checkedItem<paletteList.length; checkedItem++) {
+                if(settings.getPalette().getValue().equalsIgnoreCase(paletteList[checkedItem])) {
+                    break;
+                }
+            }
+            // add a radio button list
+            builder.setSingleChoiceItems(paletteList, checkedItem, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    selectedPalette = mainActivity.getPaletteFactory().getPaletteName(which);
+                }
+            });
+            // add OK and Cancel buttons
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    settings.setPalette(selectedPalette);
+                }
+            });
+            builder.setNegativeButton("Cancel", null);
+
+// create and show the alert dialog
             dialog = builder.create();
-            dialog.show();
-        } else if (id == R.id.btnSave) {
+            dialog.show();        } else if (id == R.id.btnSave) {
             createSaveDialog().show();
         } else if (id == R.id.btnCancel) {
             settings.restore(snapshot);
