@@ -115,8 +115,19 @@ public class LibrarySection extends Section {
         if (!json.isEmpty()) {
             try {
                 JSONObject jsonObject = new JSONObject(json);
-                Bitmap image = cameraUtils.processImageResponse(jsonObject,
-                        mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()));
+                Bitmap image = null;
+                if(settings.getManualRange().getValue()) {
+                    image = cameraUtils.processImageResponse(jsonObject,
+                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
+                            false, null, null);
+                } else {
+                    image = cameraUtils.processImageResponse(jsonObject,
+                            mainActivity.getPaletteFactory().
+                                    getPaletteByName(settings.getPalette().getValue()),
+                            settings.getUnitsC().getValue(),
+                            Math.round(settings.getManualRangeMin().getValue()),
+                            Math.round(settings.getManualRangeMax().getValue()));
+                }
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().
                             getDrawable(R.drawable.library_item_highlight_selector));

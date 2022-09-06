@@ -30,7 +30,7 @@ public class Settings extends BaseObservable implements Parcelable {
     private MutableLiveData<Boolean> exportOnSave;
     private MutableLiveData<Boolean> exportMetaData;
     private MutableLiveData<Integer> exportResolution;  // HxW for exporting image
-    private MutableLiveData<Boolean> autoRange;         //if the Manual Range btn is clicked this false
+    private MutableLiveData<Boolean> ManualRange;         //if the Manual Range btn is clicked this false
     private MutableLiveData<Float> manualRangeMin;
     private MutableLiveData<Float> manualRangeMax;
     private MutableLiveData<String> palette;
@@ -81,7 +81,7 @@ public class Settings extends BaseObservable implements Parcelable {
         setExportOnSave(in.getInt(Constants.KEY_EXPORT_PICTURE_ON_SAVE)==1);
         setExportMetaData(in.getInt(Constants.KEY_EXPORT_METADATA)==1);
         setExportResolution(in.getInt(Constants.KEY_EXPORT_RESOLUTION));
-        setAutoRange(in.getInt(Constants.KEY_AUTORANGE)==1);
+        setManualRange(in.getInt(Constants.KEY_MANUAL_RANGE)==1);
         setManualRangeMax(in.getFloat(Constants.KEY_MANUAL_RANGE_MAX));
         setManualRangeMin(in.getFloat(Constants.KEY_MANUAL_RANGE_MIN));
         setPalette(in.getString(Constants.KEY_PALETTE));
@@ -101,7 +101,7 @@ public class Settings extends BaseObservable implements Parcelable {
         dest.putInt(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave().getValue()?1:0);
         dest.putInt(Constants.KEY_EXPORT_METADATA, getExportMetaData().getValue()?1:0);
         dest.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution().getValue());
-        dest.putInt(Constants.KEY_AUTORANGE, getAutoRange().getValue()?1:0);
+        dest.putInt(Constants.KEY_MANUAL_RANGE, getManualRange().getValue()?1:0);
         dest.putFloat(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
         dest.putFloat(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
         dest.putString(Constants.KEY_PALETTE, getPalette().getValue().toString());
@@ -123,7 +123,7 @@ public class Settings extends BaseObservable implements Parcelable {
         dest.writeInt(getExportOnSave().getValue()?1:0);
         dest.writeInt(getExportMetaData().getValue()?1:0);
         dest.writeInt(getExportResolution().getValue());
-        dest.writeInt(getAutoRange().getValue()?1:0);
+        dest.writeInt(getManualRange().getValue()?1:0);
         dest.writeFloat(getManualRangeMax().getValue());
         dest.writeFloat(getManualRangeMin().getValue());
         dest.writeString(getPalette().getValue());
@@ -160,7 +160,7 @@ public class Settings extends BaseObservable implements Parcelable {
         setExportOnSave(sharedPreferences.getBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, false));
         setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
         setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));
-        setAutoRange(sharedPreferences.getBoolean(Constants.KEY_AUTORANGE, false));
+        setManualRange(sharedPreferences.getBoolean(Constants.KEY_MANUAL_RANGE, false));
         setManualRangeMax(sharedPreferences.getFloat(Constants.KEY_MANUAL_RANGE_MAX, 100f));
         setManualRangeMin(sharedPreferences.getFloat(Constants.KEY_MANUAL_RANGE_MIN, 0f));
         setPalette(sharedPreferences.getString(Constants.KEY_PALETTE, "Rainbow"));
@@ -189,7 +189,7 @@ public class Settings extends BaseObservable implements Parcelable {
         editor.putBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, getExportOnSave().getValue());
         editor.putBoolean(Constants.KEY_EXPORT_METADATA, getExportMetaData().getValue());
         editor.putInt(Constants.KEY_EXPORT_RESOLUTION, getExportResolution().getValue());
-        editor.putBoolean(Constants.KEY_AUTORANGE, getAutoRange().getValue());
+        editor.putBoolean(Constants.KEY_MANUAL_RANGE, getManualRange().getValue());
         editor.putFloat(Constants.KEY_MANUAL_RANGE_MAX, getManualRangeMax().getValue());
         editor.putFloat(Constants.KEY_MANUAL_RANGE_MIN, getManualRangeMin().getValue());
         editor.putString(Constants.KEY_PALETTE, getPalette().getValue());
@@ -221,15 +221,14 @@ public class Settings extends BaseObservable implements Parcelable {
     @InverseBindingAdapter(attribute = "android:text")
     public static Object getText(TextView view) {
         try {
-            if(view.getId() == R.id.etManualRangeMax ||
-            view.getId() == R.id.etManualRangeMin) {
+            if(view.getId() == R.id.etManualRangeMax || view.getId() == R.id.etManualRangeMin) {
                 return Float.parseFloat(view.getText().toString());
             } else {
                 return Integer.parseInt(view.getText().toString());
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            return 0;
+            return 0f;
         }
     }
 
@@ -424,20 +423,20 @@ public class Settings extends BaseObservable implements Parcelable {
      * Auto Range, if manual range is selected, this is false
      */
     @Bindable
-    public MutableLiveData<Boolean> getAutoRange() {
-        if (autoRange == null) {
-            autoRange = new MutableLiveData<Boolean>(false);
+    public MutableLiveData<Boolean> getManualRange() {
+        if (ManualRange == null) {
+            ManualRange = new MutableLiveData<Boolean>(false);
         }
-        return autoRange;
+        return ManualRange;
     }
 
-    public void setAutoRange(Boolean value) {
-        if (autoRange == null) {
-            autoRange = new MutableLiveData<>();
+    public void setManualRange(Boolean value) {
+        if (ManualRange == null) {
+            ManualRange = new MutableLiveData<>();
         }
-        if (value != autoRange.getValue()) {
-            autoRange.setValue(value);
-            notifyPropertyChanged(BR.autoRange);
+        if (value != ManualRange.getValue()) {
+            ManualRange.setValue(value);
+            notifyPropertyChanged(BR.manualRange);
         }
     }
 
@@ -447,7 +446,7 @@ public class Settings extends BaseObservable implements Parcelable {
     @Bindable
     public MutableLiveData<Float> getManualRangeMin() {
         if (manualRangeMin == null) {
-            manualRangeMin = new MutableLiveData<Float>(0f);
+            manualRangeMin = new MutableLiveData<Float>(Float.MAX_VALUE);
         }
         return manualRangeMin;
     }
@@ -465,7 +464,7 @@ public class Settings extends BaseObservable implements Parcelable {
     @Bindable
     public MutableLiveData<Float> getManualRangeMax() {
         if (manualRangeMax == null) {
-            manualRangeMax = new MutableLiveData<Float>(0f);
+            manualRangeMax = new MutableLiveData<Float>(Float.MIN_VALUE);
         }
         return manualRangeMax;
     }

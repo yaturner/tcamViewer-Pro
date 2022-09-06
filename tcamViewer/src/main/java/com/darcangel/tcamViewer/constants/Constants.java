@@ -31,7 +31,7 @@ public final class Constants {
     public final static String KEY_EXPORT_PICTURE_ON_SAVE = "export_on_save";
     public final static String KEY_EXPORT_METADATA = "export_metadata";
     public final static String KEY_EXPORT_RESOLUTION = "export_resolution";
-    public final static String KEY_AUTORANGE = "autorange";
+    public final static String KEY_MANUAL_RANGE = "manual_range";
     public final static String KEY_MANUAL_RANGE_MAX = "manual_range_max";
     public final static String KEY_MANUAL_RANGE_MIN = "manual_range_min";
     public final static String KEY_PALETTE = "palette";

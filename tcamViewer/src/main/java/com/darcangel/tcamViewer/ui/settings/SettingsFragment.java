@@ -32,10 +32,13 @@ import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.Locale;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class SettingsFragment extends Fragment implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+public class SettingsFragment extends Fragment implements View.OnClickListener,
+        CompoundButton.OnCheckedChangeListener {
 
     private FragmentSettingsBinding binding;
     private ViewGroup container;
@@ -49,6 +52,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     private OnBackPressedDispatcher onBackPressedDispatcher;
     private OnBackPressedCallback onBackPressedCallback;
     private CameraService cameraService;
+    private CameraUtils cameraUtils;
     private View root;
     private Bundle snapshot;
     private String selectedPalette;
@@ -63,6 +67,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             mainActivity = MainActivity.getInstance();
         }
         cameraService = mainActivity.getCameraService();
+        cameraUtils = mainActivity.getCameraUtils();
         settingsViewModel = mainActivity.getSettingsViewModel();
         cameraViewModel = mainActivity.getCameraViewModel();
 
@@ -109,6 +114,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         settings.setSaveToCamera(false);
 
         binding.switchAGC.setChecked(settings.getAGC().getValue());
+        binding.switchManualRange.setChecked(settings.getManualRange().getValue());
 
         root = binding.getRoot();
         return root;
@@ -133,8 +139,22 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
 
         binding.switchAGC.setOnCheckedChangeListener(this);
+        binding.switchManualRange.setOnCheckedChangeListener(this);
 
-        //get the camera settings from the camera if the camera is connected
+        //If Manual Range is checked show the values
+        if(settings.getManualRange().getValue()) {
+            binding.layoutManualRange.setVisibility(View.VISIBLE);
+//            if (cameraViewModel.getImage() != null) {
+//                binding.etManualRangeMax.setText(String.format(Locale.US, "%.01f",
+//                        cameraUtils.getMaxTemperature(
+//                                settings.getUnitsC().getValue() ? true : false)));
+//                binding.etManualRangeMin.setText(String.format(Locale.US, "%.01f",
+//                        cameraUtils.getMinTemperature(
+//                                settings.getUnitsC().getValue() ? true : false)));
+//            }
+        }
+
+            //get the camera settings from the camera if the camera is connected
         //  otherwise hide the camera settings
         if(!cameraService.isConnected()) {
             int refIds[] = binding.groupCameraSettings.getReferencedIds();
@@ -193,14 +213,14 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
                 if (min >= max) {
                     //TODO error dialog
                 }
-                settings.setAutoRange(false);
+                settings.setManualRange(true);
                 settings.setManualRangeMax(max);
                 settings.setManualRangeMin(min);
             } catch (NumberFormatException e) {
                 //TODO error dialog
             }
         } else {
-            settings.setAutoRange(true);
+            settings.setManualRange(false);
         }
     }
 
@@ -291,19 +311,23 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.getId() == R.id.switchAGC) {
             settings.setAGC(isChecked);
-        } else if(buttonView.getId() == R.id.switchAGC) {
-            settings.setAutoRange(!isChecked);
+        } else if(buttonView.getId() == R.id.switchManualRange) {
+            settings.setManualRange(isChecked);
             if(isChecked) {
-                binding.etManualRangeMax.setVisibility(View.VISIBLE);
-                binding.etManualRangeMin.setVisibility(View.VISIBLE);
+                binding.layoutManualRange.setVisibility(View.VISIBLE);
+                if(cameraViewModel.getImage() != null) {
+                    binding.etManualRangeMax.setText(String.format(Locale.US, "%.01f",
+                            cameraUtils.getMaxTemperature(
+                                    settings.getUnitsC().getValue() ? true : false)));
+                    binding.etManualRangeMin.setText(String.format(Locale.US, "%.01f",
+                            cameraUtils.getMinTemperature(
+                                    settings.getUnitsC().getValue() ? true : false)));
+                }
             } else {
-                binding.etManualRangeMax.setVisibility(View.GONE);
-                binding.etManualRangeMin.setVisibility(View.GONE);
+                binding.layoutManualRange.setVisibility(View.GONE);
+                settings.setManualRangeMax(Float.MIN_VALUE);
+                settings.setManualRangeMin(Float.MAX_VALUE);
             }
-//            cameraUtils.setManualRange(true);
-//            cameraUtils.setMaxManualTemperature(settings.getManualRangeMax().getValue());
-//            cameraUtils.setMinManualTemperature(settings.getManualRangeMin().getValue());
-
         }
     }
 }

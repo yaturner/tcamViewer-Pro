@@ -209,7 +209,8 @@ public class LibraryFragment extends Fragment implements MenuProvider {
                     tjsnString = cameraUtils.readTjsnFile(filename);
                     jsonObject = new JSONObject(tjsnString);
                     int[][] palette = mainActivity.getPaletteFactory().getPaletteByName("Rainbow");
-                    Bitmap bitmap = cameraUtils.processImageResponse(jsonObject, palette);
+                    Bitmap bitmap = cameraUtils.processImageResponse(jsonObject, palette,
+                            false, null, null);
                     File imagePath = mainActivity.getCacheDir();
                     File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
                     if (bitmap != null) {

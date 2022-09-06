@@ -102,7 +102,11 @@ public class CameraUtils implements Parcelable {
         }
     };
 
-    public Bitmap processImageResponse(JSONObject response, int[][] palette) throws JSONException {
+    public Bitmap processImageResponse(JSONObject response, int[][] palette,
+                                       boolean celsius,
+                                       Integer manualMinTemperature,
+                                       Integer manualMaxTemperature)
+            throws JSONException {
         this.response = response;
 
         if(pixels != null) {
@@ -139,11 +143,20 @@ public class CameraUtils implements Parcelable {
         Integer y2 = telemetryData[offsetC+56]&0xffff;
         spotmeterLocation = new Rect(x1, y1, x2, y2);
 
+        if(manualMaxTemperature != null && manualMinTemperature != null) {
+            minTemperature = descaleTemperature(true, manualMinTemperature);
+            maxTemperature = descaleTemperature(true, manualMaxTemperature);
+        }
+
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
-            minTemperature = Math.min(imageData[j], minTemperature);
-            maxTemperature = Math.max(imageData[j], maxTemperature);
+            if (manualMaxTemperature == null && manualMinTemperature == null) {
+                minTemperature = Math.min(imageData[j], minTemperature);
+                maxTemperature = Math.max(imageData[j], maxTemperature);
+            }
         }
+
+
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
@@ -151,7 +164,8 @@ public class CameraUtils implements Parcelable {
         } else {
             diff = maxTemperature - minTemperature;
             for (int i = 0; i < imageData.length; i++) {
-                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255 / diff), 255)]);
+                int value = ((imageData[i] - minTemperature) * 255) / diff;
+                pixels[i] = rgbToPixel(palette[Math.min(Math.max(value, 0), 255)]);
             }
         }
         Bitmap result = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
@@ -377,12 +391,24 @@ public class CameraUtils implements Parcelable {
         return (topLeft + topRight + bottomLeft + bottomRight)/4.0f;
     }
 
+    //Convert radiometric data to Celsius/Fahrenheit
     private float scaleTemperature(boolean celsius, float value) {
         float scale = TLinearResolution == 0 ? 0.1f : 0.01f;
         if(celsius) {
             return scale * value - 273.15f;
         } else {
             return (((scale * value - 273.15f)*9.0f)/5.0f) + 32.0f;
+        }
+    }
+
+    //Convert Celsius/Fahrenheit to radiometric data
+    public Integer descaleTemperature(boolean celsius, float value) {
+        float scale = TLinearResolution == 0 ? 10f : 100f;
+        if(celsius) {
+            return (int) ((value + 273.15f) * scale);
+        } else {
+            float c = ((value * 9.0f)/5.0f) + 32.0f;
+            return (int) ((c + 273.15f) * scale);
         }
     }
 

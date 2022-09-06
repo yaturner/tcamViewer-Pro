@@ -269,8 +269,19 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     //get image
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
-                                    Bitmap bitmap = mainActivity.getCameraUtils().processImageResponse(obj,
-                                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()));
+                                    Bitmap bitmap = null;
+                                    if(!settings.getManualRange().getValue()) {
+                                        bitmap = cameraUtils.processImageResponse(obj,
+                                                mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
+                                                false, null, null);
+                                    } else {
+                                        bitmap = cameraUtils.processImageResponse(obj,
+                                                mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
+                                                settings.getUnitsC().getValue(),
+                                                Math.round(settings.getManualRangeMin().getValue()),
+                                                Math.round(settings.getManualRangeMax().getValue()));
+                                    }
+
                                     cameraViewModel.setImage(bitmap);
                                     drawScreen();
                                     mainActivity.dismissProgressDialog();
@@ -361,8 +372,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
-                        if(!settings.getAutoRange().getValue()) {
-////JMT                            isRemapNeeded = true;
+                        if(settings.getManualRange().getValue()) {
+                            isRemapNeeded = true;
                         }
                         if (isRemapNeeded) {
                             isRemapNeeded = false;
