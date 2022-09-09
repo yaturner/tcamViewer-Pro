@@ -21,6 +21,8 @@ public class CameraViewModel extends ViewModel {
     private MainActivity mainActivity;
     private Settings settings;
     private Boolean isStreaming = false;
+    private boolean isRemapNeeded = false;
+
 
     public CameraViewModel() {
         mainActivity = MainActivity.getInstance();
@@ -187,5 +189,13 @@ public class CameraViewModel extends ViewModel {
 
     public void setStreaming(Boolean streaming) {
         isStreaming = streaming;
+    }
+
+    public boolean isRemapNeeded() {
+        return isRemapNeeded;
+    }
+
+    public void setRemapNeeded(boolean remapNeeded) {
+        isRemapNeeded = remapNeeded;
     }
 }

@@ -46,6 +46,8 @@ public class CameraUtils implements Parcelable {
 
     private int[] pixels;
     private int[] imageData;
+    private byte[] imageBytes;
+    private int imageLen;
     private int diff;
     private int maxTemperature;
     private int minTemperature;
@@ -120,9 +122,9 @@ public class CameraUtils implements Parcelable {
 
         String radiometricString = response.getString("radiometric");
         String telemetryString = response.getString("telemetry");
-        byte[] imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
+        imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
 
-        int imageLen = imageBytes.length;
+        imageLen = imageBytes.length;
         imageData = new int[imageLen / 2];
         pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
         int[] telemetryData;
@@ -143,19 +145,7 @@ public class CameraUtils implements Parcelable {
         Integer y2 = telemetryData[offsetC+56]&0xffff;
         spotmeterLocation = new Rect(x1, y1, x2, y2);
 
-        if(manualMaxTemperature != null && manualMinTemperature != null) {
-            minTemperature = descaleTemperature(true, manualMinTemperature);
-            maxTemperature = descaleTemperature(true, manualMaxTemperature);
-        }
-
-        for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
-            imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
-            if (manualMaxTemperature == null && manualMinTemperature == null) {
-                minTemperature = Math.min(imageData[j], minTemperature);
-                maxTemperature = Math.max(imageData[j], maxTemperature);
-            }
-        }
-
+        setTemperatureRange(celsius, manualMinTemperature, manualMaxTemperature);
 
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
@@ -200,6 +190,7 @@ public class CameraUtils implements Parcelable {
         for (int row = 0; row < 256; row++) {
             for (int col = 0; col < width2; col++) {
                 if (col < width) {
+                    //padding for arrow
                     pixels[row * width2 + col] = 0x00;
                 } else {
                     pixels[row * width2 + col] = rgbToPixel(palette[255 - row]);
@@ -258,17 +249,21 @@ public class CameraUtils implements Parcelable {
         Paint paint = new Paint();
         Rect fill = new Rect(0, 0, width, Constants.COLORBAR_HEIGHT);
 
-        black.setColor(0xff000000);
+        black.setColor(0xff202020);
         black.setStyle(Paint.Style.FILL);
 
         paint.setColor(0xffffffff);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1.0f);
 
-        for(int index = 0; index < imageData.length; index++) {
-            int b = Math.min(((imageData[index] - minTemperature) * 255 / diff), 255);
-            bin[255 - b]++;
-            maxBinCount = Math.max(bin[255 - b], maxBinCount);
+        try {
+            for (int index = 0; index < imageData.length; index++) {
+                int b = Math.min(Math.max(((imageData[index] - minTemperature) * 255 / diff), 0), 255);
+                bin[255 - b]++;
+                maxBinCount = Math.max(bin[255 - b], maxBinCount);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
         }
 
         //add a 5% margin
@@ -286,17 +281,45 @@ public class CameraUtils implements Parcelable {
         return image;
     }
 
-    public Bitmap remapCurrentImage(int[][] palette) {
+    /**
+     * setTemperatureRange
+     *
+     * @param manualMinTemperature - if manual range is true, the min temperature
+     * @param manualMaxTemperature - if manual range is true, the min temperature
+     *
+     * if manualMinTemperature and manualMaxTemperature are null then get the min and max
+     *  from the radiometric data
+     */
+    private void setTemperatureRange(boolean celsius,
+                                     Integer manualMinTemperature,
+                                     Integer manualMaxTemperature) {
+        if(manualMaxTemperature != null && manualMinTemperature != null) {
+            minTemperature = descaleTemperature(celsius, manualMinTemperature);
+            maxTemperature = descaleTemperature(celsius, manualMaxTemperature);
+        }
+
+        for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
+            imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
+            if (manualMaxTemperature == null && manualMinTemperature == null) {
+                minTemperature = Math.min(imageData[j], minTemperature);
+                maxTemperature = Math.max(imageData[j], maxTemperature);
+            }
+        }
+    }
+
+    public Bitmap remapCurrentImage(int[][] palette, boolean celsius, Integer manualMinTemperature,
+                                    Integer manualMaxTemperature) {
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            diff = maxTemperature - minTemperature;
+            setTemperatureRange(celsius, manualMinTemperature, manualMaxTemperature);
             for (int i = 0; i < imageData.length; i++) {
                 pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255) / diff, 255)]);
             }
         }
+
         return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
     }
 

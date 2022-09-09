@@ -48,13 +48,11 @@ import timber.log.Timber;
 public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 
     private FragmentCameraBinding binding;
-    private Socket cameraSocket;
     private CameraService cameraService;
     private CameraViewModel cameraViewModel;
     private View root = null;
     private boolean isConnectingToCamera = false;
     private final boolean isVisibleToUser = false;
-    private boolean isRemapNeeded = false;
     private String[] paletteNames = null;
     private CameraUtils cameraUtils;
     private Settings settings;
@@ -113,7 +111,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
-                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
+                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette,
+                                            settings.getUnitsC().getValue(),
+                                            Math.round(settings.getManualRangeMin().getValue()),
+                                            Math.round(settings.getManualRangeMax().getValue())));
+
                                     drawScreen();
                                 }
                             }
@@ -331,7 +333,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         //watch for palette changes
         settings.getPalette().observe(mainActivity, palette ->
         {
-            isRemapNeeded = true;
+            if(cameraViewModel.getImage() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
+                cameraViewModel.setRemapNeeded(true);
+            }
         });
         //watch for palette rotation requests
         binding.ivColorBar.setOnClickListener(v -> {
@@ -351,8 +355,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 settings.setPalette(paletteNames[index + 1]);
                 settings.persist();
                 if (cameraViewModel.getImage() != null) {
-                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                            getPaletteByName(settings.getPalette().getValue())));
+                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(
+                            mainActivity.getPaletteFactory().
+                                    getPaletteByName(settings.getPalette().getValue()),
+                            settings.getUnitsC().getValue(),
+                            Math.round(settings.getManualRangeMin().getValue()),
+                            Math.round(settings.getManualRangeMax().getValue())));
+
                 }
                 drawScreen();
                 break;
@@ -372,13 +381,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
-                        if(settings.getManualRange().getValue()) {
-                            isRemapNeeded = true;
-                        }
-                        if (isRemapNeeded) {
-                            isRemapNeeded = false;
+                        if (cameraViewModel.isRemapNeeded()) {
+                            cameraViewModel.setRemapNeeded(false);
                             cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                    getPaletteByName(settings.getPalette().getValue()));
+                                    getPaletteByName(settings.getPalette().getValue()),
+                                    settings.getUnitsC().getValue(),
+                                    Math.round(settings.getManualRangeMin().getValue()),
+                                    Math.round(settings.getManualRangeMax().getValue()));
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
@@ -487,7 +496,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     private String createTemperatureString(float temperature) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format(Locale.US, "%.1f", temperature));
+        stringBuilder.append(String.format(Locale.US, "%.01f", temperature));
         stringBuilder.append("\u00B0");
         if (mainActivity.getSettings().getUnitsC().getValue()) {
             stringBuilder.append("C");

@@ -116,6 +116,26 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         binding.switchAGC.setChecked(settings.getAGC().getValue());
         binding.switchManualRange.setChecked(settings.getManualRange().getValue());
 
+        //If the user does not save the settings, isRemapNeeded is set to false
+        settings.getManualRangeMax().observe(mainActivity, v -> {
+            if (v != null
+                    && !v.toString().isEmpty()
+                    && !binding.etManualRangeMax.getText().toString().isEmpty()
+                    && !settings.getManualRangeMax().getValue().toString()
+                    .equalsIgnoreCase(v.toString())) {
+                cameraViewModel.setRemapNeeded(true);
+            }
+        });
+        settings.getManualRangeMin().observe(mainActivity, v -> {
+            if (v != null
+                    && !v.toString().isEmpty()
+                    && !binding.etManualRangeMax.getText().toString().isEmpty()
+                    && !settings.getManualRangeMax().getValue().toString()
+                    .equalsIgnoreCase(v.toString())) {
+                cameraViewModel.setRemapNeeded(true);
+            }
+        });
+
         root = binding.getRoot();
         return root;
     }
@@ -180,6 +200,32 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                             equalsIgnoreCase(settings.getCameraAddress().getValue())) {
                         cameraService.setIpAddress(settings.getCameraAddress().getValue());
                     }
+                    //if AGC or Manual Range changed, we need a remap
+                    //we wait till now to persist these settings so we can tell if they have changed
+                    if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()
+                            || binding.switchAGC.isChecked() != settings.getAGC().getValue()
+                    ) {
+                        cameraViewModel.setRemapNeeded(true);
+                        settings.setAGC(binding.switchAGC.isChecked());
+                        settings.setManualRange(binding.switchManualRange.isChecked());
+                    }
+                    //If ManualRange is checked do the same for it's values
+                    if(settings.getManualRange().getValue()) {
+                        if (!binding.etManualRangeMax.getText().toString()
+                                .equalsIgnoreCase(settings.getManualRangeMax().getValue().toString())
+                                || !binding.etManualRangeMin.getText().toString()
+                                .equalsIgnoreCase(settings.getManualRangeMin().getValue().toString())) {
+                            cameraViewModel.setRemapNeeded(true);
+                            try {
+                                settings.setManualRangeMin(
+                                        Float.parseFloat(binding.etManualRangeMin.getText().toString()));
+                                settings.setManualRangeMax(
+                                        Float.parseFloat(binding.etManualRangeMax.getText().toString()));
+                            } catch (NumberFormatException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                     settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
@@ -188,6 +234,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 .setNegativeButton(R.string.no, (dialog, which) -> {
                     dialog.dismiss();
                     settings.restore(snapshot);
+                    cameraViewModel.setRemapNeeded(false);
                     onBackPressedCallback.setEnabled(false);
                     Navigation.findNavController(root).popBackStack();
                 });
@@ -205,22 +252,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             //save the config
             cameraViewModel.setConfig();
             settings.setSaveToCamera(false);
-        }
-        if(binding.switchManualRange.isChecked()) {
-            try {
-                float max = Float.parseFloat(binding.etManualRangeMax.toString());
-                float min = Float.parseFloat(binding.etManualRangeMin.toString());
-                if (min >= max) {
-                    //TODO error dialog
-                }
-                settings.setManualRange(true);
-                settings.setManualRangeMax(max);
-                settings.setManualRangeMin(min);
-            } catch (NumberFormatException e) {
-                //TODO error dialog
-            }
-        } else {
-            settings.setManualRange(false);
         }
     }
 
@@ -303,17 +334,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        //cameraViewModel.isRemapNeeded is set only if the user saves the settings, not here
+        //same for settings
         if (buttonView.getId() == R.id.switchAGC) {
-            settings.setAGC(isChecked);
+            //settings.setAGC(isChecked);
         } else if(buttonView.getId() == R.id.switchManualRange) {
-            settings.setManualRange(isChecked);
+            //settings.setManualRange(isChecked);
             if(isChecked) {
+                cameraViewModel.setRemapNeeded(true);
                 binding.layoutManualRange.setVisibility(View.VISIBLE);
                 if(cameraViewModel.getImage() != null) {
                     binding.etManualRangeMax.setText(String.format(Locale.US, "%.01f",
