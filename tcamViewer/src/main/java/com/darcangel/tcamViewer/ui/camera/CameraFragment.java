@@ -90,8 +90,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
-                MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
-                mediaPlayer.start();
+                if(settings.getShutterSound().getValue()) {
+                    MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
+                    mediaPlayer.start();
+                }
                 mainActivity.showProgressDialog(getString(R.string.acquiring), "");
                 cameraViewModel.getImageFromCamera();
                 mainActivity.invalidateOptionsMenu(); //enable save
@@ -137,6 +139,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             // file menu items
             case R.id.action_save:
+                if(settings.getShutterSound().getValue()) {
+                    MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
+                    mediaPlayer.start();
+                }
                 try {
                     cameraUtils.saveTjsn();
                 } catch (IOException e) {
