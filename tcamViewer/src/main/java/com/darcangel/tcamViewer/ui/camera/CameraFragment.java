@@ -81,12 +81,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 break;
             }
             case R.id.action_disconnect:
-                cameraViewModel.disconnectFromCamera();
-                isConnectingToCamera = false;
                 if(cameraViewModel.getStreaming()) {
                     cameraViewModel.setStreaming(false);
                     cameraService.stopStreaming();
                 }
+                cameraViewModel.disconnectFromCamera();
+                isConnectingToCamera = false;
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
