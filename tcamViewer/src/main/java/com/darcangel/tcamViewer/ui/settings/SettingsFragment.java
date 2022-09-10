@@ -91,12 +91,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
          */
         binding.cameraIPAddress.setOnFocusChangeListener((v, hasFocus) -> {
             if (hadFocus && !hasFocus) {
-                String etAddress = binding.cameraIPAddress.getText().toString();
-                if (CameraUtils.isValidIPAddress(etAddress)) {
-                    //Change the camera IP address in cameraService only if the user saves the settings
-                    settings.setCameraAddress(etAddress);
-                    hadFocus = false;
-                }
+                hadFocus = false;
             } else {
                 hadFocus = true;
                 MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
@@ -164,14 +159,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         //If Manual Range is checked show the values
         if(settings.getManualRange().getValue()) {
             binding.layoutManualRange.setVisibility(View.VISIBLE);
-//            if (cameraViewModel.getImage() != null) {
-//                binding.etManualRangeMax.setText(String.format(Locale.US, "%.01f",
-//                        cameraUtils.getMaxTemperature(
-//                                settings.getUnitsC().getValue() ? true : false)));
-//                binding.etManualRangeMin.setText(String.format(Locale.US, "%.01f",
-//                        cameraUtils.getMinTemperature(
-//                                settings.getUnitsC().getValue() ? true : false)));
-//            }
         }
 
             //get the camera settings from the camera if the camera is connected
