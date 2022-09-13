@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -26,6 +27,7 @@ import com.darcangel.tcamViewer.container.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -33,7 +35,7 @@ import java.util.Locale;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class WiFiSettingsFragment extends Fragment implements OnClickListener {
+public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private FragmentWifiSettingsBinding binding;
     private ViewGroup container;
@@ -97,12 +99,21 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         }
 
         getWifi();
+
+//        settings.getCameraIsAccessPoint().observe(mainActivity, v ->
+//                binding.swCameraIsAccessPoint.setChecked(v));
+//        settings.getUseStaticIPWhenClient().observe(mainActivity, v ->
+//                binding.swUseStaticIP.setChecked(v));
+//
+//        binding.swUseStaticIP.setOnCheckedChangeListener(this);
+//        binding.swCameraIsAccessPoint.setOnCheckedChangeListener(this);
+
     }
 
     private Dialog createSaveDialog () {
         AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
         builder.setTitle(R.string.title_settings)
-                .setMessage("Do you wish to save your settings")
+                .setMessage(R.string.save_settings_with_warning)
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
                     setWiFi();
                     dialog.dismiss();
@@ -152,22 +163,26 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
         String args;
         if (settings.getCameraIsAccessPoint().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_AP,
-                    settings.getApSSID(),
+                    settings.getSSID().getValue(),
                     settings.getPassword().getValue());
         } else if (settings.getUseStaticIPWhenClient().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_STATIC,
-                    settings.getStaticSSID(),
+                    settings.getSSID().getValue(),
                     settings.getPassword().getValue(),
                     settings.getStaticIPAddress().getValue(),
                     settings.getStaticNetmask().getValue());
         } else {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_NOT_STATIC,
-                    settings.getStaticSSID(),
+                    settings.getSSID().getValue(),
                     settings.getPassword().getValue());
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
         try {
             cameraService.sendCmd(cmd);
+            //Set_wifi disconnects the camera
+            cameraService.disconnect();
+            mainActivity.invalidateOptionsMenu();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -184,8 +199,20 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
                 Navigation.findNavController(root).popBackStack();
                 break;
             case R.id.btnSave:
-                //TODO send config settings to camera
-                createSaveDialog().show();
+                //TODO send config settings to camera, password is required
+                String password = binding.etPassword.getText().toString();
+                if(password == null || password.isEmpty()) {
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
+                            .setCancelable(true)
+                            .setTitle(R.string.title_error)
+                            .setPositiveButton(R.string.ok, (dialog, which) -> {
+                                dialog.dismiss();
+                            })
+                            .setMessage(R.string.warning_password);
+                    builder.create().show();
+                } else {
+                    createSaveDialog().show();
+                }
                 break;
         }
     }
@@ -200,10 +227,29 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener {
             public void handleOnBackPressed() {
                 onBackPressedCallback.setEnabled(false);
                 createSaveDialog().show();
+                if(!cameraService.isConnected()) {
+                    //navigate back to camera
+                    NavDirections navDirections = WiFiSettingsFragmentDirections
+                            .actionWiFiSettingsFragmentToNavigationCamera();
+                    mainActivity.getNavController().navigate(navDirections);
+                }
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(
                 this, // LifecycleOwner
                 onBackPressedCallback);
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
+                .setCancelable(true)
+                .setTitle(R.string.title_warning)
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .setMessage(R.string.warning_disconnect);
+        builder.create().show();
+
     }
 }

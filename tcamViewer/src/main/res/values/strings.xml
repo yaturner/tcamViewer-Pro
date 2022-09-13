@@ -66,8 +66,11 @@
     <string name="footer_pos">"Footer position:</string>
     <string name="section_info_title">[Section Info]</string>
     <string name="close">CLOSE</string>
-    <string name="warning_disconnect">Changing the camera address will disconnect the camera</string>
+    <string name="warning_disconnect">Changing this setting will disconnect the camera when the settings are saved</string>
     <string name="error_can_not_connect">Failed to connect to camera, please check that the camera is turned on and the camera ip address is correct</string>
     <string name="title_error">Error</string>
     <string name="file">File</string>
+    <string name="warning_password">Invalid or missing password</string>
+    <string name="title_warning">Warning</string>
+    <string name="save_settings_with_warning">Do you wish to save your settings?\nChanging these settings will disconnect the camera</string>
 </resources>

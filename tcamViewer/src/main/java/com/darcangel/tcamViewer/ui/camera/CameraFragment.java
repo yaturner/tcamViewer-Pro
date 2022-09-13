@@ -36,7 +36,6 @@ import org.json.JSONObject;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.Iterator;
 import java.util.Locale;
@@ -205,7 +204,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     } else {
                                         mainActivity.invalidateOptionsMenu();
                                     }
-                                    //camera settings commands
+                                //camera settings commands
                                 } else if (response.equalsIgnoreCase("cam_info")) {
                                     //multiple response have "cam_info"
                                     JSONObject info = obj.getJSONObject("cam_info");
@@ -266,7 +265,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                         settings.setFlags(flags);
                                     }
                                     //parse flags and set values
-                                    settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE) == 0);
+                                    settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
+                                            == Constants.WIFI_MASK_CLIENT_MODE);
                                     settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
                                             Constants.WIFI_MASK_STATIC_IP);
                                     if (settings.getCameraIsAccessPoint().getValue()) {

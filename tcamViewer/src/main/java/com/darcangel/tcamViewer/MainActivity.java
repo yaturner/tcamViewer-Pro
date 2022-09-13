@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
             if(navDestination.getId() == R.id.navigation_settings ||
-                    navDestination.getId() == R.id.wiFiSettingsFragment) {
+                    navDestination.getId() == R.id.wifiSettingsFragment) {
                 getNavView().setVisibility(View.GONE);
             } else {
                 getNavView().setVisibility(View.VISIBLE);

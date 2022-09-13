@@ -79,7 +79,6 @@
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/SettingsEditTextEnd"
-                        android:hint="@string/password"
                         app:endIconMode="password_toggle"
                         android:maxEms="32"
                         android:minEms="8">

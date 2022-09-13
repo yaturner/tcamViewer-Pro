@@ -292,10 +292,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 }
             });
             builder.setNegativeButton("Cancel", null);
-
-// create and show the alert dialog
+            // create and show the alert dialog
             dialog = builder.create();
-            dialog.show();        } else if (id == R.id.btnSave) {
+            dialog.show();
+        } else if (id == R.id.btnSave) {
             createSaveDialog().show();
         } else if (id == R.id.btnCancel) {
             settings.restore(snapshot);

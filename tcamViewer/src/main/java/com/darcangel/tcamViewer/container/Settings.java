@@ -240,7 +240,7 @@ public class Settings extends BaseObservable implements Parcelable {
                 if (view.getText().toString().isEmpty()) {
                     view.setText(Float.toString(value));
                     //See if the value changed to prevent infinite loop
-                } else if (Integer.parseInt(view.getText().toString()) != value) {
+                } else if (Float.parseFloat(view.getText().toString()) != value) {
                     view.setText(Float.toString(value));
                 }
             }
