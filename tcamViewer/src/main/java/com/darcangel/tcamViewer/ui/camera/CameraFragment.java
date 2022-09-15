@@ -112,11 +112,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
-                                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette,
-                                            settings.getUnitsC().getValue(),
-                                            Math.round(settings.getManualRangeMin().getValue()),
-                                            Math.round(settings.getManualRangeMax().getValue())));
-
+                                    if(settings.getManualRange().getValue()) {
+                                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette,
+                                                settings.getUnitsC().getValue(),
+                                                settings.getManualRangeMin().getValue(),
+                                                settings.getManualRangeMax().getValue()));
+                                    } else {
+                                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette,
+                                                settings.getUnitsC().getValue(),
+                                                null,
+                                                null));
+                                    }
                                     drawScreen();
                                 }
                             }
@@ -286,8 +292,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                         bitmap = cameraUtils.processImageResponse(obj,
                                                 mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
                                                 settings.getUnitsC().getValue(),
-                                                Math.round(settings.getManualRangeMin().getValue()),
-                                                Math.round(settings.getManualRangeMax().getValue()));
+                                                settings.getManualRangeMin().getValue(),
+                                                settings.getManualRangeMax().getValue());
                                     }
 
                                     cameraViewModel.setImage(bitmap);
@@ -361,13 +367,21 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 settings.setPalette(paletteNames[index + 1]);
                 settings.persist();
                 if (cameraViewModel.getImage() != null) {
-                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(
-                            mainActivity.getPaletteFactory().
-                                    getPaletteByName(settings.getPalette().getValue()),
-                            settings.getUnitsC().getValue(),
-                            Math.round(settings.getManualRangeMin().getValue()),
-                            Math.round(settings.getManualRangeMax().getValue())));
-
+                    if(settings.getManualRange().getValue()) {
+                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(
+                                mainActivity.getPaletteFactory().
+                                        getPaletteByName(settings.getPalette().getValue()),
+                                settings.getUnitsC().getValue(),
+                                settings.getManualRangeMin().getValue(),
+                                settings.getManualRangeMax().getValue()));
+                    } else {
+                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(
+                                mainActivity.getPaletteFactory().
+                                        getPaletteByName(settings.getPalette().getValue()),
+                                settings.getUnitsC().getValue(),
+                                null,
+                                null));
+                    }
                 }
                 drawScreen();
                 break;
@@ -389,11 +403,19 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
                         if (cameraViewModel.isRemapNeeded()) {
                             cameraViewModel.setRemapNeeded(false);
-                            cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                    getPaletteByName(settings.getPalette().getValue()),
-                                    settings.getUnitsC().getValue(),
-                                    Math.round(settings.getManualRangeMin().getValue()),
-                                    Math.round(settings.getManualRangeMax().getValue()));
+                            if (settings.getManualRange().getValue()) {
+                                cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
+                                                getPaletteByName(settings.getPalette().getValue()),
+                                        settings.getUnitsC().getValue(),
+                                        settings.getManualRangeMin().getValue(),
+                                        settings.getManualRangeMax().getValue());
+                            } else {
+                                cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
+                                                getPaletteByName(settings.getPalette().getValue()),
+                                        settings.getUnitsC().getValue(),
+                                        null,
+                                        null);
+                            }
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);

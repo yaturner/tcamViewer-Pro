@@ -106,8 +106,8 @@ public class CameraUtils implements Parcelable {
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette,
                                        boolean celsius,
-                                       Integer manualMinTemperature,
-                                       Integer manualMaxTemperature)
+                                       Float manualMinTemperature,
+                                       Float manualMaxTemperature)
             throws JSONException {
         this.response = response;
 
@@ -287,12 +287,14 @@ public class CameraUtils implements Parcelable {
      * @param manualMinTemperature - if manual range is true, the min temperature
      * @param manualMaxTemperature - if manual range is true, the min temperature
      *
+     * returns an inter value that is the temperature in radiometric
+     *
      * if manualMinTemperature and manualMaxTemperature are null then get the min and max
      *  from the radiometric data
      */
     private void setTemperatureRange(boolean celsius,
-                                     Integer manualMinTemperature,
-                                     Integer manualMaxTemperature) {
+                                     Float manualMinTemperature,
+                                     Float manualMaxTemperature) {
         if(manualMaxTemperature != null && manualMinTemperature != null) {
             minTemperature = descaleTemperature(celsius, manualMinTemperature);
             maxTemperature = descaleTemperature(celsius, manualMaxTemperature);
@@ -307,8 +309,8 @@ public class CameraUtils implements Parcelable {
         }
     }
 
-    public Bitmap remapCurrentImage(int[][] palette, boolean celsius, Integer manualMinTemperature,
-                                    Integer manualMaxTemperature) {
+    public Bitmap remapCurrentImage(int[][] palette, boolean celsius, Float manualMinTemperature,
+                                    Float manualMaxTemperature) {
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
@@ -425,13 +427,13 @@ public class CameraUtils implements Parcelable {
     }
 
     //Convert Celsius/Fahrenheit to radiometric data
-    public Integer descaleTemperature(boolean celsius, float value) {
+    public int descaleTemperature(boolean celsius, float value) {
         float scale = TLinearResolution == 0 ? 10f : 100f;
         if(celsius) {
-            return (int) ((value + 273.15f) * scale);
+            return Math.round((value + 273.15f) * scale);
         } else {
-            float c = ((value * 9.0f)/5.0f) + 32.0f;
-            return (int) ((c + 273.15f) * scale);
+            float c = (value - 32f) * .5556f;
+            return Math.round((c + 273.15f) * scale);
         }
     }
 

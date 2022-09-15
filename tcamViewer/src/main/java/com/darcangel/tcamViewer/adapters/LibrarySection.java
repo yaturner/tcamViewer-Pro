@@ -125,8 +125,8 @@ public class LibrarySection extends Section {
                             mainActivity.getPaletteFactory().
                                     getPaletteByName(settings.getPalette().getValue()),
                             settings.getUnitsC().getValue(),
-                            Math.round(settings.getManualRangeMin().getValue()),
-                            Math.round(settings.getManualRangeMax().getValue()));
+                            settings.getManualRangeMin().getValue(),
+                            settings.getManualRangeMax().getValue());
                 }
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().
