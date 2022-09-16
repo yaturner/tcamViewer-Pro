@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import timber.log.Timber;
 
 @AndroidEntryPoint
 public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -115,9 +116,10 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         builder.setTitle(R.string.title_settings)
                 .setMessage(R.string.save_settings_with_warning)
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    setWiFi();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
+                    //this will disconnect the camera, so do it last
+                    setWiFi();
                     Navigation.findNavController(root).popBackStack();
                 })
                 .setNegativeButton(R.string.no, (dialog, which) -> {
@@ -145,13 +147,13 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
 //            "    \"flags\": 1,\n" +
 //            "    }"
 // If Camera is NOT Access Point and NOT Use static IP when Client, send
-//    public final static String ARGS_SET_WIFI = "{\n" +
+//    public final static String ARGS_SET_WIFI_NOT_STATIC = "{\n" +
 //            "    \"sta_ssid\": \"%s\",\n" +
 //            "    \"sta_pw\": \"%s\",\n" +
 //            "    \"flags\": 129,\n" +
 //            "    }"
 // If Camera is NOT Access Point and Use static IP when Client, send
-//    public final static String ARGS_SET_WIFI = "{\n" +
+//    public final static String ARGS_SET_WIFI_STATIC = "{\n" +
 //            "    \"sta_ssid\": \"%s\",\n" +
 //            "    \"sta_pw\": \"%s\",\n" +
 //            "    \"sta_ip_addr\": \"%s\",\n" +
@@ -159,26 +161,40 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
 //            "    \"flags\": 145,\n" +
 //            "    }"
 
+//    Flag Bit	Description
+//            7	Client Mode - Set to 1 for Client Mode, 0 for AP mode.
+//            6:5	Unused, will be set to 0.
+//            4	Static IP - Set to 1 to use a Static IP, 0 to request an IP via DHCP.
+//            3	Bit 3: Wifi Connected - Set to 1 when connected to another device.
+//            2	Wifi Client Running - Set to 1 when the client has been started, 0 when disabled (obviously this bit will never be 0).
+//            1	Wifi Initialized - Set to 1 when the WiFi subsystem has been successfully initialized (obviously this bit will never be 0).
+//            0	Bit 0: Wifi Enabled - Set to 1 when Wifi has been enabled, 0 when Wifi has been disabled.
+
     private void setWiFi() {
-        String args;
+        String args = "";
         if (settings.getCameraIsAccessPoint().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_AP,
                     settings.getSSID().getValue(),
                     settings.getPassword().getValue());
-        } else if (settings.getUseStaticIPWhenClient().getValue()) {
+        } else if (!settings.getCameraIsAccessPoint().getValue() &&
+                settings.getUseStaticIPWhenClient().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_STATIC,
                     settings.getSSID().getValue(),
                     settings.getPassword().getValue(),
                     settings.getStaticIPAddress().getValue(),
                     settings.getStaticNetmask().getValue());
-        } else {
+        } else if (!settings.getCameraIsAccessPoint().getValue() &&
+                !settings.getUseStaticIPWhenClient().getValue()) {
             args = String.format(Locale.US, Constants.ARGS_SET_WIFI_NOT_STATIC,
                     settings.getSSID().getValue(),
                     settings.getPassword().getValue());
+        } else {
+            Timber.d("Unknown or unrecognized wifi settings");
+            throw new IllegalArgumentException();
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
         try {
-            cameraService.sendCmd(cmd);
+            cameraService.sendCmdNoResponse(cmd);
             //Set_wifi disconnects the camera
             cameraService.disconnect();
             mainActivity.invalidateOptionsMenu();

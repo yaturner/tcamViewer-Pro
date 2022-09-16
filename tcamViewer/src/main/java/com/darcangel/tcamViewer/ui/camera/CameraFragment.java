@@ -272,9 +272,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     }
                                     //parse flags and set values
                                     settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
-                                            == Constants.WIFI_MASK_CLIENT_MODE);
+                                            == 0);
                                     settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
-                                            Constants.WIFI_MASK_STATIC_IP);
+                                            1);
                                     if (settings.getCameraIsAccessPoint().getValue()) {
                                         settings.setSSID(settings.getApSSID());
                                     } else {
