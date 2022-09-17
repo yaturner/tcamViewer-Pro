@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 
 import io.reactivex.rxjava3.subjects.PublishSubject;
@@ -192,6 +193,7 @@ public class CameraService implements Parcelable {
                 SocketAddress socketAddress = new InetSocketAddress(ipAddress,5001);
                 cameraSocket.connect(socketAddress, 5000);
                 cameraSocket.setKeepAlive(true);
+                cameraSocket.setSoTimeout(5 * 1000);
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -260,6 +262,9 @@ public class CameraService implements Parcelable {
                 }
                 imageChannel.onNext(parseResponse(response));
             } catch (IOException e) {
+                if(e instanceof SocketTimeoutException) {
+                    disconnect();
+                }
                 e.printStackTrace();
                 imageChannel.onError(e);
             }
