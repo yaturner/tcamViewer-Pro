@@ -112,17 +112,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImage() != null) {
-                                    if(settings.getManualRange().getValue()) {
-                                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette,
-                                                settings.getUnitsC().getValue(),
-                                                settings.getManualRangeMin().getValue(),
-                                                settings.getManualRangeMax().getValue()));
-                                    } else {
-                                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette,
-                                                settings.getUnitsC().getValue(),
-                                                null,
-                                                null));
-                                    }
+                                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
                                     drawScreen();
                                 }
                             }
@@ -284,18 +274,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
                                     Bitmap bitmap = null;
-                                    if(!settings.getManualRange().getValue()) {
-                                        bitmap = cameraUtils.processImageResponse(obj,
-                                                mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
-                                                false, null, null);
-                                    } else {
-                                        bitmap = cameraUtils.processImageResponse(obj,
-                                                mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
-                                                settings.getUnitsC().getValue(),
-                                                settings.getManualRangeMin().getValue(),
-                                                settings.getManualRangeMax().getValue());
-                                    }
-
+                                    bitmap = cameraUtils.processImageResponse(obj,
+                                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
+                                            false);
                                     cameraViewModel.setImage(bitmap);
                                     drawScreen();
                                     mainActivity.dismissProgressDialog();
@@ -367,23 +348,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 settings.setPalette(paletteNames[index + 1]);
                 settings.persist();
                 if (cameraViewModel.getImage() != null) {
-                    if(settings.getManualRange().getValue()) {
-                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(
-                                mainActivity.getPaletteFactory().
-                                        getPaletteByName(settings.getPalette().getValue()),
-                                settings.getUnitsC().getValue(),
-                                settings.getManualRangeMin().getValue(),
-                                settings.getManualRangeMax().getValue()));
-                    } else {
-                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(
-                                mainActivity.getPaletteFactory().
-                                        getPaletteByName(settings.getPalette().getValue()),
-                                settings.getUnitsC().getValue(),
-                                null,
-                                null));
-                    }
+                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(
+                            mainActivity.getPaletteFactory().
+                                    getPaletteByName(settings.getPalette().getValue())));
+
+                    drawScreen();
                 }
-                drawScreen();
                 break;
             }
         }
@@ -401,21 +371,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             palette, Constants.COLORBAR_WIDTH));
                     if (cameraViewModel.getImage() != null) {
                         image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
+                        //Do we need to recreate the image
                         if (cameraViewModel.isRemapNeeded()) {
                             cameraViewModel.setRemapNeeded(false);
-                            if (settings.getManualRange().getValue()) {
-                                cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                                getPaletteByName(settings.getPalette().getValue()),
-                                        settings.getUnitsC().getValue(),
-                                        settings.getManualRangeMin().getValue(),
-                                        settings.getManualRangeMax().getValue());
-                            } else {
-                                cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                                getPaletteByName(settings.getPalette().getValue()),
-                                        settings.getUnitsC().getValue(),
-                                        null,
-                                        null);
-                            }
+                            cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
+                                            getPaletteByName(settings.getPalette().getValue()));
                         }
                         cameraViewModel.setImage(image);
                         binding.ivCamera.setImageBitmap(image);
@@ -425,14 +385,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             binding.tvMinTemperature.setText("AGC");
                         } else {
                             binding.tvMaxTemperature.setText(createTemperatureString(
-                                    cameraUtils.getMaxTemperature(settings.getUnitsC().getValue())));
+                                    cameraUtils.getMaxTemperature()));
                             binding.tvMinTemperature.setText(createTemperatureString(
-                                    cameraUtils.getMinTemperature(settings.getUnitsC().getValue())));
+                                    cameraUtils.getMinTemperature()));
                         }
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
                                 (int) getResources().getDimension(R.dimen.histogram_width)));
                         binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
-                                getMeanTemperatureAtSpotmeter(settings.getUnitsC().getValue())));
+                                getMeanTemperatureAtSpotmeter()));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

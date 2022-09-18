@@ -302,13 +302,11 @@
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbUnitsF"
                             style="@style/SettingsRadioButton"
-                            android:checked="@={settings.unitsF}"
                             android:text="&#xb0;F" />
 
                         <androidx.appcompat.widget.AppCompatRadioButton
                             android:id="@+id/rbUnitsC"
                             style="@style/SettingsRadioButton"
-                            android:checked="@={settings.unitsC}"
                             android:text="&#xb0;C" />
 
                     </RadioGroup>

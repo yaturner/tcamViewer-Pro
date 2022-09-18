@@ -51,9 +51,10 @@ public class CameraUtils implements Parcelable {
     private int diff;
     private int maxTemperature;
     private int minTemperature;
-    private float manualMaxTemperature;
-    private float manualMinTemperature;
+    private int manualMaxTemperature;
+    private int manualMinTemperature;
     private JSONObject response;
+    private boolean unitsCelsius;
 
     private final static int offsetA = 0;
     private final static int offsetB = 80;
@@ -88,8 +89,8 @@ public class CameraUtils implements Parcelable {
         diff = in.readInt();
         maxTemperature = in.readInt();
         minTemperature = in.readInt();
-        manualMaxTemperature = in.readFloat();
-        manualMinTemperature = in.readFloat();
+        manualMaxTemperature = in.readInt();
+        manualMinTemperature = in.readInt();
     }
 
     public static final Creator<CameraUtils> CREATOR = new Creator<CameraUtils>() {
@@ -105,9 +106,7 @@ public class CameraUtils implements Parcelable {
     };
 
     public Bitmap processImageResponse(JSONObject response, int[][] palette,
-                                       boolean celsius,
-                                       Float manualMinTemperature,
-                                       Float manualMaxTemperature)
+                                       boolean celsius)
             throws JSONException {
         this.response = response;
 
@@ -145,7 +144,11 @@ public class CameraUtils implements Parcelable {
         Integer y2 = telemetryData[offsetC+56]&0xffff;
         spotmeterLocation = new Rect(x1, y1, x2, y2);
 
-        setTemperatureRange(celsius, manualMinTemperature, manualMaxTemperature);
+        for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
+            imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
+        }
+
+        setTemperatureRange();
 
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
@@ -258,9 +261,14 @@ public class CameraUtils implements Parcelable {
 
         try {
             for (int index = 0; index < imageData.length; index++) {
-                int b = Math.min(Math.max(((imageData[index] - minTemperature) * 255 / diff), 0), 255);
-                bin[255 - b]++;
-                maxBinCount = Math.max(bin[255 - b], maxBinCount);
+                //if Manual Range was specified, only include values min < v < max
+                int v = imageData[index];
+                if (!isManualRange || (v >= getMinManualTemperatureAsRadiometric()
+                        && v <= getMaxManualTemperatureAsRadiometric())) {
+                    int b = Math.min(Math.max(((v - minTemperature) * 255 / diff), 0), 255);
+                    bin[255 - b] = bin[255 - b] + 1;
+                    maxBinCount = Math.max(bin[255 - b], maxBinCount);
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -284,39 +292,30 @@ public class CameraUtils implements Parcelable {
     /**
      * setTemperatureRange
      *
-     * @param manualMinTemperature - if manual range is true, the min temperature
-     * @param manualMaxTemperature - if manual range is true, the min temperature
-     *
-     * returns an inter value that is the temperature in radiometric
+     * returns an integer value that is the temperature in radiometric
      *
      * if manualMinTemperature and manualMaxTemperature are null then get the min and max
      *  from the radiometric data
      */
-    private void setTemperatureRange(boolean celsius,
-                                     Float manualMinTemperature,
-                                     Float manualMaxTemperature) {
-        if(manualMaxTemperature != null && manualMinTemperature != null) {
-            minTemperature = descaleTemperature(celsius, manualMinTemperature);
-            maxTemperature = descaleTemperature(celsius, manualMaxTemperature);
-        }
-
-        for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
-            imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
-            if (manualMaxTemperature == null && manualMinTemperature == null) {
+    private void setTemperatureRange() {
+        if(isManualRange()) {
+            minTemperature = getMinManualTemperatureAsRadiometric();
+            maxTemperature = getMaxManualTemperatureAsRadiometric();
+        } else {
+            for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
                 minTemperature = Math.min(imageData[j], minTemperature);
                 maxTemperature = Math.max(imageData[j], maxTemperature);
             }
         }
     }
 
-    public Bitmap remapCurrentImage(int[][] palette, boolean celsius, Float manualMinTemperature,
-                                    Float manualMaxTemperature) {
+    public Bitmap remapCurrentImage(int[][] palette) {
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            setTemperatureRange(celsius, manualMinTemperature, manualMaxTemperature);
+            setTemperatureRange();
             for (int i = 0; i < imageData.length; i++) {
                 pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255) / diff, 255)]);
             }
@@ -356,19 +355,27 @@ public class CameraUtils implements Parcelable {
         return tempBitmap;
     }
 
-    public float getMaxTemperature(boolean celsius) {
+    public boolean isUnitsCelsius() {
+        return unitsCelsius;
+    }
+
+    public void setUnitsCelsius(boolean unitsCelsius) {
+        this.unitsCelsius = unitsCelsius;
+    }
+
+    public float getMaxTemperature() {
         if (isManualRange) {
-            return manualMaxTemperature;
+            return scaleTemperature(manualMaxTemperature);
         } else {
-            return scaleTemperature(celsius, maxTemperature);
+            return scaleTemperature(maxTemperature);
         }
     }
 
-    public float getMinTemperature(boolean celsius) {
+    public float getMinTemperature() {
         if (isManualRange) {
-            return manualMinTemperature;
+            return scaleTemperature(manualMinTemperature);
         } else {
-            return scaleTemperature(celsius, minTemperature);
+            return scaleTemperature(minTemperature);
         }
     }
 
@@ -380,30 +387,52 @@ public class CameraUtils implements Parcelable {
         isManualRange = manualRange;
     }
 
-    public float getMaxManualTemperature() {
+    /**
+     *
+     * @return - max manual temperature in radiometric scale
+     */
+    public int getMaxManualTemperatureAsRadiometric() {
         return manualMaxTemperature;
     }
 
-    public void setMaxManualTemperature(float maxManualTemperature) {
-        manualMaxTemperature = maxManualTemperature;
+    /**
+     *
+     * @return - max manual temperature
+     */
+    public float getMaxManualTemperature() {
+        return scaleTemperature(manualMaxTemperature);
     }
 
-    public float getMinManualTemperature() {
+    /**
+     *
+     * @param maxManualTemperature - the max manual temperature in F or C
+     */
+    public void setMaxManualTemperature(float value) {
+        manualMaxTemperature = descaleTemperature(value);
+    }
+
+    /**
+     *
+     * @return - min manual temperature in radiometric scale
+     */
+    public int getMinManualTemperatureAsRadiometric() {
         return manualMinTemperature;
     }
 
-    public void setMinManualTemperature(float minManualTemperature) {
-        manualMinTemperature = manualMinTemperature;
+    /**
+     *
+     * @return - min manual temperature in radiometric scale
+     */
+    public float getMinManualTemperature() {
+        return scaleTemperature(manualMinTemperature);
     }
 
-    public float getMeanTemperatureAtSpotmeter(boolean celsius) {
-        float mean = 0f;
-        Rect spotmeter = getSpotmeterLocation();
-        float topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
-        float topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
-        float bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
-        float bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
-        return scaleTemperature(celsius, (topLeft + topRight + bottomLeft + bottomRight)/4.0f);
+    /**
+     *
+     * @param minManualTemperature - the min manual temperature in F or C
+     */
+    public void setMinManualTemperature(float value) {
+        manualMinTemperature = descaleTemperature(value);
     }
 
     public float getMeanTemperatureAtSpotmeter() {
@@ -413,13 +442,13 @@ public class CameraUtils implements Parcelable {
         float topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
         float bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
         float bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
-        return (topLeft + topRight + bottomLeft + bottomRight)/4.0f;
+        return scaleTemperature((topLeft + topRight + bottomLeft + bottomRight)/4.0f);
     }
 
     //Convert radiometric data to Celsius/Fahrenheit
-    private float scaleTemperature(boolean celsius, float value) {
+    private float scaleTemperature(float value) {
         float scale = TLinearResolution == 0 ? 0.1f : 0.01f;
-        if(celsius) {
+        if(isUnitsCelsius()) {
             return scale * value - 273.15f;
         } else {
             return (((scale * value - 273.15f)*9.0f)/5.0f) + 32.0f;
@@ -427,9 +456,9 @@ public class CameraUtils implements Parcelable {
     }
 
     //Convert Celsius/Fahrenheit to radiometric data
-    public int descaleTemperature(boolean celsius, float value) {
+    public int descaleTemperature( float value) {
         float scale = TLinearResolution == 0 ? 10f : 100f;
-        if(celsius) {
+        if(isUnitsCelsius()) {
             return Math.round((value + 273.15f) * scale);
         } else {
             float c = (value - 32f) * .5556f;

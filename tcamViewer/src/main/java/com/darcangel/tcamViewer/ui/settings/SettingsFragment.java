@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -38,7 +39,9 @@ import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener,
-        CompoundButton.OnCheckedChangeListener {
+        RadioGroup.OnCheckedChangeListener,
+        CompoundButton.OnCheckedChangeListener
+{
 
     private FragmentSettingsBinding binding;
     private ViewGroup container;
@@ -110,6 +113,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
 
         binding.switchAGC.setChecked(settings.getAGC().getValue());
         binding.switchManualRange.setChecked(settings.getManualRange().getValue());
+        binding.rbUnitsF.setChecked(settings.getUnitsF().getValue());
+        binding.rbUnitsC.setChecked(settings.getUnitsC().getValue());
 
         //If the user does not save the settings, isRemapNeeded is set to false
         settings.getManualRangeMax().observe(mainActivity, v -> {
@@ -130,6 +135,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 cameraViewModel.setRemapNeeded(true);
             }
         });
+
+        cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
+        cameraUtils.setManualRange(settings.getManualRange().getValue());
+        cameraUtils.setMinManualTemperature(settings.getManualRangeMin().getValue());
+        cameraUtils.setMaxManualTemperature(settings.getManualRangeMax().getValue());
 
         root = binding.getRoot();
         return root;
@@ -155,6 +165,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
 
         binding.switchAGC.setOnCheckedChangeListener(this);
         binding.switchManualRange.setOnCheckedChangeListener(this);
+        binding.rgUnits.setOnCheckedChangeListener(this);
 
         //If Manual Range is checked show the values
         if(settings.getManualRange().getValue()) {
@@ -195,6 +206,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         cameraViewModel.setRemapNeeded(true);
                         settings.setAGC(binding.switchAGC.isChecked());
                         settings.setManualRange(binding.switchManualRange.isChecked());
+                        cameraUtils.setManualRange(binding.switchManualRange.isChecked());
                     }
                     //If ManualRange is checked do the same for it's values
                     if(settings.getManualRange().getValue()) {
@@ -206,13 +218,18 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                             try {
                                 settings.setManualRangeMin(
                                         Float.parseFloat(binding.etManualRangeMin.getText().toString()));
+                                cameraUtils.setMinManualTemperature(
+                                        Float.parseFloat(binding.etManualRangeMin.getText().toString()));
                                 settings.setManualRangeMax(
+                                        Float.parseFloat(binding.etManualRangeMax.getText().toString()));
+                                cameraUtils.setMaxManualTemperature(
                                         Float.parseFloat(binding.etManualRangeMax.getText().toString()));
                             } catch (NumberFormatException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
+                    cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
                     settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
@@ -272,8 +289,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             // setup the alert builder
             builder = new AlertDialog.Builder(getContext());
             builder.setTitle("Select Palette");
-            for(checkedItem=0; checkedItem<paletteList.length; checkedItem++) {
-                if(settings.getPalette().getValue().equalsIgnoreCase(paletteList[checkedItem])) {
+            for (checkedItem = 0; checkedItem < paletteList.length; checkedItem++) {
+                if (settings.getPalette().getValue().equalsIgnoreCase(paletteList[checkedItem])) {
                     break;
                 }
             }
@@ -324,20 +341,19 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         //cameraViewModel.isRemapNeeded is set only if the user saves the settings, not here
         //same for settings
-        if (buttonView.getId() == R.id.switchAGC) {
+        int id = buttonView.getId();
+        if (id == R.id.switchAGC) {
             //settings.setAGC(isChecked);
-        } else if(buttonView.getId() == R.id.switchManualRange) {
+        } else if(id == R.id.switchManualRange) {
             //settings.setManualRange(isChecked);
             if(isChecked) {
                 cameraViewModel.setRemapNeeded(true);
                 binding.layoutManualRange.setVisibility(View.VISIBLE);
                 if(cameraViewModel.getImage() != null) {
                     binding.etManualRangeMax.setText(String.format(Locale.US, "%.01f",
-                            cameraUtils.getMaxTemperature(
-                                    settings.getUnitsC().getValue() ? true : false)));
+                            cameraUtils.getMaxTemperature()));
                     binding.etManualRangeMin.setText(String.format(Locale.US, "%.01f",
-                            cameraUtils.getMinTemperature(
-                                    settings.getUnitsC().getValue() ? true : false)));
+                            cameraUtils.getMinTemperature()));
                 }
             } else {
                 binding.layoutManualRange.setVisibility(View.GONE);
@@ -345,5 +361,55 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 settings.setManualRangeMin(Float.MAX_VALUE);
             }
         }
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        String min;
+        String max;
+        if(group.getId() == R.id.rgUnits) {
+            if(checkedId == R.id.rbUnitsC) {
+                //convert from F to C
+                if(settings.getUnitsF().getValue()) {
+                    settings.setUnitsC(true);
+                    settings.setUnitsF(false);
+                    if(settings.getManualRange().getValue()) {
+                        min = convertFtoC(settings.getManualRangeMin().getValue());
+                        max = convertFtoC(settings.getManualRangeMax().getValue());
+                        binding.etManualRangeMin.setText(min);
+                        binding.etManualRangeMax.setText(max);
+                        settings.setManualRangeMin(Float.parseFloat(min));
+                        settings.setManualRangeMax(Float.parseFloat(max));
+                    }
+                }
+            }
+            if(checkedId == R.id.rbUnitsF) {
+                if(settings.getUnitsC().getValue()) {
+                    settings.setUnitsC(false);
+                    settings.setUnitsF(true);
+                    if(settings.getManualRange().getValue()) {
+                        min = convertCtoF(settings.getManualRangeMin().getValue());
+                        max = convertCtoF(settings.getManualRangeMax().getValue());
+                        binding.etManualRangeMin.setText(min);
+                        binding.etManualRangeMax.setText(max);
+                        settings.setManualRangeMin(Float.parseFloat(min));
+                        settings.setManualRangeMax(Float.parseFloat(max));
+                    }
+                }
+            }
+            cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
+        }
+    }
+
+    public String convertFtoC(float value) {
+        float c = (value - 32f) * (5f/9f);
+        String s = String.format("%3.1f", c);
+        return s;
+    }
+
+    public String convertCtoF(float value) {
+        float c = (value * (9f/5f)) + 32f;
+        String s = String.format("%3.1f", c);
+        return s;
     }
 }
