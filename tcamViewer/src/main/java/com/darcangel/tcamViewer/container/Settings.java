@@ -17,6 +17,8 @@ import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 
+import java.util.Locale;
+
 public class Settings extends BaseObservable implements Parcelable {
     private final SharedPreferences sharedPreferences = MainActivity.getInstance().getSharedPreferences();
 
@@ -241,7 +243,7 @@ public class Settings extends BaseObservable implements Parcelable {
                     view.setText(Float.toString(value));
                     //See if the value changed to prevent infinite loop
                 } else if (Float.parseFloat(view.getText().toString()) != value) {
-                    view.setText(Float.toString(value));
+                    view.setText(String.format(Locale.US, "%3.1f",value));
                 }
             }
         } catch (NumberFormatException e) {

@@ -9,8 +9,11 @@ import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.databinding.BaseObservable;
+
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
+import com.darcangel.tcamViewer.container.Settings;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +32,7 @@ import java.util.regex.Pattern;
 import timber.log.Timber;
 
 
-public class CameraUtils implements Parcelable {
+public class CameraUtils extends BaseObservable implements Parcelable {
     private boolean AGC;
     private boolean shutdown;
     private int emissivity;
@@ -56,6 +59,8 @@ public class CameraUtils implements Parcelable {
     private JSONObject response;
     private boolean unitsCelsius;
 
+    private Settings settings;
+
     private final static int offsetA = 0;
     private final static int offsetB = 80;
     private final static int offsetC = 160;
@@ -67,6 +72,19 @@ public class CameraUtils implements Parcelable {
 
     //default constructor
     public CameraUtils() {
+        settings = MainActivity.getInstance().getSettings();
+        settings.getManualRange().observeForever(v -> {
+            isManualRange = v;
+        });
+        settings.getManualRangeMin().observeForever(v -> {
+            manualMinTemperature = descaleTemperature(v);
+        });
+        settings.getManualRangeMax().observeForever(v -> {
+            manualMaxTemperature = descaleTemperature(v);
+        });
+        settings.getUnitsC().observeForever(v -> {
+            unitsCelsius = v;
+        });
         Timber.d("CameraUtils default constructor");
     }
 
@@ -359,10 +377,6 @@ public class CameraUtils implements Parcelable {
         return unitsCelsius;
     }
 
-    public void setUnitsCelsius(boolean unitsCelsius) {
-        this.unitsCelsius = unitsCelsius;
-    }
-
     public float getMaxTemperature() {
         if (isManualRange) {
             return scaleTemperature(manualMaxTemperature);
@@ -405,14 +419,6 @@ public class CameraUtils implements Parcelable {
 
     /**
      *
-     * @param maxManualTemperature - the max manual temperature in F or C
-     */
-    public void setMaxManualTemperature(float value) {
-        manualMaxTemperature = descaleTemperature(value);
-    }
-
-    /**
-     *
      * @return - min manual temperature in radiometric scale
      */
     public int getMinManualTemperatureAsRadiometric() {
@@ -425,14 +431,6 @@ public class CameraUtils implements Parcelable {
      */
     public float getMinManualTemperature() {
         return scaleTemperature(manualMinTemperature);
-    }
-
-    /**
-     *
-     * @param minManualTemperature - the min manual temperature in F or C
-     */
-    public void setMinManualTemperature(float value) {
-        manualMinTemperature = descaleTemperature(value);
     }
 
     public float getMeanTemperatureAtSpotmeter() {
@@ -451,7 +449,7 @@ public class CameraUtils implements Parcelable {
         if(isUnitsCelsius()) {
             return scale * value - 273.15f;
         } else {
-            return (((scale * value - 273.15f)*9.0f)/5.0f) + 32.0f;
+            return ((scale * value) - 273.15f)*(9.0f/5.0f) + 32.0f;
         }
     }
 

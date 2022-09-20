@@ -33,8 +33,6 @@ import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.util.Locale;
-
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -136,10 +134,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             }
         });
 
-        cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
         cameraUtils.setManualRange(settings.getManualRange().getValue());
-        cameraUtils.setMinManualTemperature(settings.getManualRangeMin().getValue());
-        cameraUtils.setMaxManualTemperature(settings.getManualRangeMax().getValue());
 
         root = binding.getRoot();
         return root;
@@ -218,18 +213,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                             try {
                                 settings.setManualRangeMin(
                                         Float.parseFloat(binding.etManualRangeMin.getText().toString()));
-                                cameraUtils.setMinManualTemperature(
-                                        Float.parseFloat(binding.etManualRangeMin.getText().toString()));
                                 settings.setManualRangeMax(
-                                        Float.parseFloat(binding.etManualRangeMax.getText().toString()));
-                                cameraUtils.setMaxManualTemperature(
                                         Float.parseFloat(binding.etManualRangeMax.getText().toString()));
                             } catch (NumberFormatException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
-                    cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
                     settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
@@ -345,20 +335,21 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         if (id == R.id.switchAGC) {
             //settings.setAGC(isChecked);
         } else if(id == R.id.switchManualRange) {
-            //settings.setManualRange(isChecked);
+            settings.setManualRange(isChecked);
             if(isChecked) {
                 cameraViewModel.setRemapNeeded(true);
                 binding.layoutManualRange.setVisibility(View.VISIBLE);
                 if(cameraViewModel.getImage() != null) {
-                    binding.etManualRangeMax.setText(String.format(Locale.US, "%.01f",
-                            cameraUtils.getMaxTemperature()));
-                    binding.etManualRangeMin.setText(String.format(Locale.US, "%.01f",
-                            cameraUtils.getMinTemperature()));
+                    settings.setManualRangeMax(cameraUtils.getMaxTemperature());
+                    settings.setManualRangeMin(cameraUtils.getMinTemperature());
+                } else {
+                    settings.setManualRangeMax(100.0f);
+                    settings.setManualRangeMin(0f);
                 }
             } else {
                 binding.layoutManualRange.setVisibility(View.GONE);
-                settings.setManualRangeMax(Float.MIN_VALUE);
-                settings.setManualRangeMin(Float.MAX_VALUE);
+                settings.setManualRangeMax(100.0f);
+                settings.setManualRangeMin(0f);
             }
         }
     }
@@ -397,7 +388,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     }
                 }
             }
-            cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
+//            cameraUtils.setUnitsCelsius(settings.getUnitsC().getValue());
         }
     }
 
