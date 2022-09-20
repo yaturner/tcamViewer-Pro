@@ -46,10 +46,11 @@
 
     <ImageView
         android:id="@+id/ivColorBar"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/colorbar_width"
         android:layout_height="0dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginEnd="5dp"
+        android:layout_marginStart="5dp"
         android:gravity="center_horizontal"
         android:scaleType="fitXY"
         android:clickable="true"
@@ -75,6 +76,8 @@
         android:layout_width="@dimen/histogram_width"
         android:layout_height="0dp"
         android:scaleType="fitXY"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="5dp"
         android:paddingEnd="10dp"
         android:cropToPadding="true"
         app:layout_constraintStart_toEndOf="@+id/ivColorBar"

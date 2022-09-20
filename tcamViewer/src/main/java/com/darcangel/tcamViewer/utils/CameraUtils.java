@@ -175,7 +175,21 @@ public class CameraUtils extends BaseObservable implements Parcelable {
         } else {
             diff = maxTemperature - minTemperature;
             for (int i = 0; i < imageData.length; i++) {
-                int value = ((imageData[i] - minTemperature) * 255) / diff;
+                int v = imageData[i];
+                int value;
+                int min = getMinManualTemperatureAsRadiometric();
+                int max = getMaxManualTemperatureAsRadiometric();
+                if (isManualRange) {
+                    if(v < min) {
+                        v = min;
+                    } else if(v > max) {
+                        v = max;
+                    }
+                    value = ((v - min) * 255) / diff;
+                } else {
+                    value = ((v - minTemperature) * 255) / diff;
+                }
+
                 pixels[i] = rgbToPixel(palette[Math.min(Math.max(value, 0), 255)]);
             }
         }
@@ -201,12 +215,13 @@ public class CameraUtils extends BaseObservable implements Parcelable {
         for (int i = 0, j = 0; i < len; i = i + 2, j++) {
             telemetryData[j] = ((telemetryBytes[i + 1] & 0xff) << 8) | (telemetryBytes[i] & 0xff);
         }
+
         return telemetryData;
     }
 
     public Bitmap createColorBar(int[][] palette, int width) {
         //double the size. half black for the arrow
-        int width2 = width*2;
+        int width2 = 2*width;
         int[] pixels = new int[width2 * 256];
         for (int row = 0; row < 256; row++) {
             for (int col = 0; col < width2; col++) {
@@ -281,12 +296,21 @@ public class CameraUtils extends BaseObservable implements Parcelable {
             for (int index = 0; index < imageData.length; index++) {
                 //if Manual Range was specified, only include values min < v < max
                 int v = imageData[index];
-                if (!isManualRange || (v >= getMinManualTemperatureAsRadiometric()
-                        && v <= getMaxManualTemperatureAsRadiometric())) {
-                    int b = Math.min(Math.max(((v - minTemperature) * 255 / diff), 0), 255);
-                    bin[255 - b] = bin[255 - b] + 1;
-                    maxBinCount = Math.max(bin[255 - b], maxBinCount);
+                int b;
+                int min = getMinManualTemperatureAsRadiometric();
+                int max = getMaxManualTemperatureAsRadiometric();
+                if (isManualRange) {
+                    if(v < min) {
+                        v = min;
+                    } else if(v > max) {
+                        v = max;
+                    }
+                    b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
+                } else {
+                    b = Math.min(Math.max(((v - minTemperature) * 255 / diff), 0), 255);
                 }
+                bin[255 - b] = bin[255 - b] + 1;
+                maxBinCount = Math.max(bin[255 - b], maxBinCount);
             }
         } catch(Exception e) {
             e.printStackTrace();
