@@ -1,0 +1,3 @@
+/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/x86_64/CMakeFiles/rebuild_cache.dir
+/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/x86_64/CMakeFiles/edit_cache.dir
+/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/x86_64/CMakeFiles/camera.dir

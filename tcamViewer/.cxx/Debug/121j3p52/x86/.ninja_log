@@ -1,0 +1,4 @@
+# ninja log v5
+0	13	0	clean	51e55b0379b2f0bc
+0	35	1664125167	CMakeFiles/camera.dir/camera.cpp.o	39b0afe5efd6ffa0
+35	42	1664125167	/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/build/intermediates/cxx/Debug/121j3p52/obj/x86/libcamera.so	acc2cfe68c7330ed

@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/armeabi-v7a",
+  "command": "/home/ahjim/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ --target=armv7-none-linux-androideabi26 --gcc-toolchain=/home/ahjim/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64 --sysroot=/home/ahjim/Android/Sdk/ndk/21.4.7075529/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dcamera_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -march=armv7-a -mthumb -Wformat -Werror=format-security   -O0 -fno-limit-debug-info  -fPIC -o CMakeFiles/camera.dir/camera.cpp.o -c /home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/src/main/cpp/camera.cpp",
+  "file": "/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/src/main/cpp/camera.cpp"
+}
+]

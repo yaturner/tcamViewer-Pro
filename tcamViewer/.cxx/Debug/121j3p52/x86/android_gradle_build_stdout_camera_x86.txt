@@ -1,0 +1,12 @@
+ninja: Entering directory `/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/x86'
+[1/2] Building CXX object CMakeFiles/camera.dir/camera.cpp.o
+/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/src/main/cpp/camera.cpp:72:34: warning: format specifies type 'unsigned long' but the argument has type 'int' [-Wformat]
+                printf("found start at %lx\n", p-buffer);
+                                       ~~~     ^~~~~~~~
+                                       %x
+/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/src/main/cpp/camera.cpp:78:43: warning: format specifies type 'unsigned long' but the argument has type 'int' [-Wformat]
+                printf("found end at %lx, len = %ld\n", p-buffer, responseLen);
+                                     ~~~                ^~~~~~~~
+                                     %x
+2 warnings generated.
+[2/2] Linking CXX shared library /home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/build/intermediates/cxx/Debug/121j3p52/obj/x86/libcamera.so
