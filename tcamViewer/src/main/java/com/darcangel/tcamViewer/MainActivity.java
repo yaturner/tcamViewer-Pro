@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         super.onCreate(savedInstanceState);
         _instance = this;
 
+        System.loadLibrary("camera");
+
         if(savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
             cameraService = savedInstanceState.getParcelable(Constants.KEY_CAMERASERVICE);
