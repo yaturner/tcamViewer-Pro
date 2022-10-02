@@ -34,6 +34,7 @@ public class CameraService implements Parcelable {
     private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
     private MainActivity mainActivity;
     private Thread streamingThread;
+    String jsonString = "{\"error\":{\"message\":\"%s\"}}";
 
     public CameraService() {
         cameraSocket = new Socket();
@@ -62,7 +63,7 @@ public class CameraService implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(ipAddress);
-        dest.writeInt(isStreaming?1:0);
+        dest.writeInt(isStreaming ? 1 : 0);
     }
 
     /***************User APi methods***************/
@@ -190,14 +191,13 @@ public class CameraService implements Parcelable {
                 if (cameraSocket != null && (cameraSocket.isClosed() || !cameraSocket.isConnected())) {
                     cameraSocket = new Socket();
                 }
-                SocketAddress socketAddress = new InetSocketAddress(ipAddress,5001);
+                SocketAddress socketAddress = new InetSocketAddress(ipAddress, 5001);
                 cameraSocket.connect(socketAddress, 5000);
                 cameraSocket.setKeepAlive(true);
                 cameraSocket.setSoTimeout(5 * 1000);
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"true\"}\3"));
             } catch (IOException e) {
-                e.printStackTrace();
-                imageChannel.onError(e);
+                handleError(e);
             }
         }
     }
@@ -213,9 +213,7 @@ public class CameraService implements Parcelable {
                 cameraSocket.close();
                 imageChannel.onNext(parseResponse("\2{\"connected\":\"false\"}\3"));
             } catch (IOException e) {
-                e.printStackTrace();
-                imageChannel.onError(e);
-                return;
+                handleError(e);
             }
         }
     }
@@ -234,7 +232,7 @@ public class CameraService implements Parcelable {
             try {
                 cameraSocket.getOutputStream().write(command.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                e.printStackTrace();
+                handleError(e);
             }
         }
     }
@@ -262,11 +260,10 @@ public class CameraService implements Parcelable {
                 }
                 imageChannel.onNext(parseResponse(response));
             } catch (IOException e) {
-                if(e instanceof SocketTimeoutException) {
+                if (e instanceof SocketTimeoutException) {
                     disconnect();
                 }
-                e.printStackTrace();
-                imageChannel.onError(e);
+                handleError(e);
             }
         }
     }
@@ -307,7 +304,7 @@ public class CameraService implements Parcelable {
                         if (bytesLeft > 0) {
                             //Timber.d("There were %d bytes left in the buffer", bytesLeft);
                             Timber.d("buffer is %s null, threePos = %d, bytesLeft = %d",
-                                    (buffer==null?"":"not"), threePos, bytesLeft);
+                                    (buffer == null ? "" : "not"), threePos, bytesLeft);
                             response = new String(buffer, threePos + 1, bytesLeft - 1);
                             //Timber.d("New Response is '%s'", response);
                         } else {
@@ -329,8 +326,7 @@ public class CameraService implements Parcelable {
                 } while (bytesRead > 0);
                 //Timber.d("Buffer flushed");
             } catch (IOException e) {
-                e.printStackTrace();
-                imageChannel.onError(e);
+                handleError(e);
             }
         }
     }
@@ -350,8 +346,7 @@ public class CameraService implements Parcelable {
                 return new JSONObject(response);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
-            imageChannel.onError(e);
+            handleError(e);
         }
         return new JSONObject();
     }
@@ -363,13 +358,22 @@ public class CameraService implements Parcelable {
         try {
             cameraSocket.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            handleError(e);
         }
         cameraSocket = null;
+    }
+
+    private void handleError(Exception e) {
+        e.printStackTrace();
+        try {
+            imageChannel.onNext(new JSONObject(String.format(jsonString, e.toString())));
+        } catch (JSONException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public PublishSubject<JSONObject> getImageChannel() {
         return imageChannel;
     }
 }
+

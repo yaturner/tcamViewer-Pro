@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -133,9 +134,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 cameraViewModel.setRemapNeeded(true);
             }
         });
-
-        cameraUtils.setManualRange(settings.getManualRange().getValue());
-
         root = binding.getRoot();
         return root;
     }
@@ -201,7 +199,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         cameraViewModel.setRemapNeeded(true);
                         settings.setAGC(binding.switchAGC.isChecked());
                         settings.setManualRange(binding.switchManualRange.isChecked());
-                        cameraUtils.setManualRange(binding.switchManualRange.isChecked());
                     }
                     //If ManualRange is checked do the same for it's values
                     if(settings.getManualRange().getValue()) {
@@ -340,8 +337,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 cameraViewModel.setRemapNeeded(true);
                 binding.layoutManualRange.setVisibility(View.VISIBLE);
                 if(cameraViewModel.getImage() != null) {
-                    settings.setManualRangeMax(cameraUtils.getMaxTemperature());
-                    settings.setManualRangeMin(cameraUtils.getMinTemperature());
+                    Pair<Float, Float> temps = cameraUtils.getTemperatures();
+                    settings.setManualRangeMin(temps.first);
+                    settings.setManualRangeMax(temps.second);
                 } else {
                     settings.setManualRangeMax(100.0f);
                     settings.setManualRangeMin(0f);

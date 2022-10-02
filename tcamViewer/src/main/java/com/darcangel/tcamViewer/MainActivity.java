@@ -85,10 +85,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         getPermissions();
         getSettings();
 
-//        getSettings().getLiveDataCameraAddress().observe(this, s -> {
-//            cameraService.setIpAddress(s);
-//        });
-
         navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
             if(navDestination.getId() == R.id.navigation_settings ||
                     navDestination.getId() == R.id.wifiSettingsFragment) {
@@ -158,16 +154,16 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public void showProgressDialog(final String title, final String msg) {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(this);
-        }
-        if (!progressDialog.isShowing()) {
-            progressDialog.setMessage(msg);
-            progressDialog.setTitle(title);
-            progressDialog.setIndeterminate(true);
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
+//        if (progressDialog == null) {
+//            progressDialog = new ProgressDialog(this);
+//        }
+//        if (!progressDialog.isShowing()) {
+//            progressDialog.setMessage(msg);
+//            progressDialog.setTitle(title);
+//            progressDialog.setIndeterminate(true);
+//            progressDialog.setCancelable(false);
+//            progressDialog.show();
+//        }
     }
 
     public void dismissProgressDialog()

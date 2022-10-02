@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -189,8 +190,23 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             if (it.hasNext()) {
                                 String response = it.next();
                                 Timber.d("Response String is %s", response);
-                                //connect/disconnect
-                                if (response.equalsIgnoreCase("connected")) {
+                                //error handling
+                                if(response.equalsIgnoreCase("error")) {
+                                    String msg = new JSONObject(obj.getString("error")).getString("message");
+                                    mainActivity.dismissProgressDialog(); //just in case
+                                    if (msg.startsWith("java.net.SocketTimeoutException") ||
+                                            msg.startsWith("java.net.ConnectException")) {
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
+                                                .setCancelable(true)
+                                                .setPositiveButton(R.string.ok, ((dialog, which) -> {
+                                                    dialog.dismiss();
+                                                }))
+                                                .setTitle(R.string.title_error)
+                                                .setMessage(R.string.error_can_not_connect);
+                                        builder.create().show();
+                                    }
+                                    //connect/disconnect
+                                } else if (response.equalsIgnoreCase("connected")) {
                                     String value = obj.getString("connected");
                                     if (value.equalsIgnoreCase("true")) {
                                         if (isConnectingToCamera) {
@@ -198,6 +214,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                         }
                                         mainActivity.invalidateOptionsMenu();
                                     } else {
+                                        //TODO JMT ERROR
                                         mainActivity.invalidateOptionsMenu();
                                     }
                                 //camera settings commands
@@ -211,7 +228,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                                 cameraViewModel.getConfig();
                                             }
                                         } else if (infoType.equalsIgnoreCase("set_config success")) {
-
+                                            //do nothing
                                         }
                                     }
                                     //get_config
@@ -281,22 +298,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     drawScreen();
                                     mainActivity.dismissProgressDialog();
                                 }
-                            }
-                        },
-                        //Error handling
-                        e -> {
-                            e.printStackTrace();
-                            mainActivity.dismissProgressDialog(); //just in case
-                            if (e instanceof SocketTimeoutException ||
-                                    e instanceof ConnectException) {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
-                                        .setCancelable(true)
-                                        .setPositiveButton(R.string.ok, ((dialog, which) -> {
-                                            dialog.dismiss();
-                                        }))
-                                        .setTitle(R.string.title_error)
-                                        .setMessage(R.string.error_can_not_connect);
-                                builder.create().show();
                             }
                         });
     }
@@ -384,10 +385,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             binding.tvMaxTemperature.setText("AGC");
                             binding.tvMinTemperature.setText("AGC");
                         } else {
-                            binding.tvMaxTemperature.setText(createTemperatureString(
-                                    cameraUtils.getMaxTemperature()));
-                            binding.tvMinTemperature.setText(createTemperatureString(
-                                    cameraUtils.getMinTemperature()));
+                            Pair<Float, Float> temps = cameraUtils.getTemperatures();
+                            binding.tvMinTemperature.setText(createTemperatureString(temps.first));
+                            binding.tvMaxTemperature.setText(createTemperatureString(temps.second));
                         }
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
                                 (int) getResources().getDimension(R.dimen.histogram_width)));
