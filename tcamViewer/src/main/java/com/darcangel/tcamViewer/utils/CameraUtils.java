@@ -439,12 +439,12 @@ public class CameraUtils extends BaseObservable implements Parcelable {
     }
 
     public float getMeanTemperatureAtSpotmeter() {
-//        Rect spotmeter = getSpotmeterLocation();
-//        int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
-//        int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
-//        int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
-//        int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
-        return convertToDisplayUnits(spotmeterMean);
+        Rect spotmeter = getSpotmeterLocation();
+        int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
+        int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
+        int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
+        int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
+        return convertToDisplayUnits((topLeft + topRight + bottomLeft + bottomRight)/4);
     }
 
     //Convert radiometric data to Celsius/Fahrenheit

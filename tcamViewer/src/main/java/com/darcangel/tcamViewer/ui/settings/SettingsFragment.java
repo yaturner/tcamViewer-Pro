@@ -333,21 +333,19 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             //settings.setAGC(isChecked);
         } else if(id == R.id.switchManualRange) {
             settings.setManualRange(isChecked);
+            cameraViewModel.setRemapNeeded(true);
+            if(cameraViewModel.getImage() != null) {
+                Pair<Float, Float> temps = cameraUtils.getTemperatures();
+                settings.setManualRangeMin(temps.first);
+                settings.setManualRangeMax(temps.second);
+//            } else {
+//                settings.setManualRangeMax(100.0f);
+//                settings.setManualRangeMin(0f);
+            }
             if(isChecked) {
-                cameraViewModel.setRemapNeeded(true);
                 binding.layoutManualRange.setVisibility(View.VISIBLE);
-                if(cameraViewModel.getImage() != null) {
-                    Pair<Float, Float> temps = cameraUtils.getTemperatures();
-                    settings.setManualRangeMin(temps.first);
-                    settings.setManualRangeMax(temps.second);
-                } else {
-                    settings.setManualRangeMax(100.0f);
-                    settings.setManualRangeMin(0f);
-                }
             } else {
                 binding.layoutManualRange.setVisibility(View.GONE);
-                settings.setManualRangeMax(100.0f);
-                settings.setManualRangeMin(0f);
             }
         }
     }

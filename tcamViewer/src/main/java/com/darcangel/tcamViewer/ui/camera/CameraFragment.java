@@ -391,8 +391,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         }
                         binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
                                 (int) getResources().getDimension(R.dimen.histogram_width)));
-                        binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
-                                getMeanTemperatureAtSpotmeter()));
+                        if(settings.getDisplaySpotmeter().getValue()) {
+                            binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
+                                    getMeanTemperatureAtSpotmeter()));
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
