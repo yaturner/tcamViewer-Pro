@@ -1,3 +1,0 @@
-/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/armeabi-v7a/CMakeFiles/rebuild_cache.dir
-/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/armeabi-v7a/CMakeFiles/edit_cache.dir
-/home/ahjim/AndroidStudioProjects/tcamViewer/tcamViewer/.cxx/Debug/121j3p52/armeabi-v7a/CMakeFiles/camera.dir
