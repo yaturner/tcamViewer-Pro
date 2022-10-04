@@ -65,6 +65,8 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
+    private ArrayList<String> selectedFilename = new ArrayList<>();
+
     private int nFolders = 0;
 
     private SelectionTracker<Long> selectionTracker;
@@ -298,7 +300,6 @@ public class LibraryFragment extends Fragment implements MenuProvider {
                 int key, position;
                 String filename;
                 ArrayList<String> imageFile;
-                ArrayList<String> selectedFile = new ArrayList<>();
                 Iterator<Long> it = selection.iterator();
                 while (it.hasNext()) {
                     key = it.next().intValue();
@@ -306,7 +307,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
                     LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
                     imageFile = section.getImageFile();
                     filename = imageFile.get(position);
-                    selectedFile.add(filename);
+                    selectedFilename.add(filename);
                 }
             }
         }
