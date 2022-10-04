@@ -294,6 +294,21 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             deleteImage(selection);
         } else if (id == R.id.action_slideshow) {
             Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
+            if (!selection.isEmpty()) {
+                int key, position;
+                String filename;
+                ArrayList<String> imageFile;
+                ArrayList<String> selectedFile = new ArrayList<>();
+                Iterator<Long> it = selection.iterator();
+                while (it.hasNext()) {
+                    key = it.next().intValue();
+                    position = sectionAdapter.getPositionInSection(key);
+                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
+                    imageFile = section.getImageFile();
+                    filename = imageFile.get(position);
+                    selectedFile.add(filename);
+                }
+            }
         }
         return true;
     }
