@@ -31,6 +31,7 @@ import timber.log.Timber;
 
 public class LibrarySection extends Section {
     private ArrayList<String> imageFile;
+    private ArrayList<Bitmap> images;
     private String imageFolder;
     private SelectionTracker<Long> selectionTracker;
 
@@ -56,6 +57,8 @@ public class LibrarySection extends Section {
         cameraUtils = mainActivity.getCameraUtils();
         assetManager = mainActivity.getAssets();
         settings = mainActivity.getSettings();
+
+        images = new ArrayList<Bitmap>();
 
         try {
             imageFile = new ArrayList<>();
@@ -119,6 +122,7 @@ public class LibrarySection extends Section {
                 image = cameraUtils.processImageResponse(jsonObject,
                         mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
                         false);
+                images.add(position, image);
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().
                             getDrawable(R.drawable.library_item_highlight_selector));
@@ -180,5 +184,9 @@ public class LibrarySection extends Section {
 
     public String getImageFolder() {
         return imageFolder;
+    }
+
+    public ArrayList<Bitmap> getImages() {
+        return images;
     }
 }

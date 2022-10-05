@@ -27,6 +27,7 @@ import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.navigation.NavDirections;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
@@ -39,6 +40,7 @@ import com.darcangel.tcamViewer.adapters.LibrarySection;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
+import com.darcangel.tcamViewer.ui.settings.SettingsFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import org.json.JSONException;
@@ -65,7 +67,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
-    private ArrayList<String> selectedFilename = new ArrayList<>();
+    private ArrayList<Bitmap> selectedImages;
 
     private int nFolders = 0;
 
@@ -99,6 +101,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         libraryViewModel = mainActivity.getLibraryViewModel();
         cameraUtils = mainActivity.getCameraUtils();
         librarySections = new ArrayList<>();
+        selectedImages  = new ArrayList<>();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -298,17 +301,18 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
             if (!selection.isEmpty()) {
                 int key, position;
-                String filename;
                 ArrayList<String> imageFile;
                 Iterator<Long> it = selection.iterator();
                 while (it.hasNext()) {
                     key = it.next().intValue();
                     position = sectionAdapter.getPositionInSection(key);
                     LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-                    imageFile = section.getImageFile();
-                    filename = imageFile.get(position);
-                    selectedFilename.add(filename);
+                    Bitmap image = section.getImages().get(position);
+                    selectedImages.add(image);
                 }
+                libraryViewModel.setSelectedImages(selectedImages);
+                NavDirections navDirections = LibraryFragmentDirections.actionNavigationLibraryToNavigationLibrarySlideShowFragment();
+                mainActivity.getNavController().navigate(navDirections);
             }
         }
         return true;

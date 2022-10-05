@@ -1,38 +1,31 @@
 package com.darcangel.tcamViewer.ui.library;
 
+import android.graphics.Bitmap;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.darcangel.tcamViewer.container.SelectedItem;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class LibraryViewModel extends ViewModel {
-    private MutableLiveData<SelectedItem> selectedImage;
-    private MutableLiveData<Map<String, SelectedItem>> selectedImageMap;
+    private MutableLiveData<ArrayList<Bitmap>> selectedImages;
 
     public LibraryViewModel() {
         clearAllSelectedImages();
     }
 
      public void clearAllSelectedImages() {
-        selectedImage = new MutableLiveData<SelectedItem>();
-        selectedImageMap = new MutableLiveData<Map<String, SelectedItem>>();
+        selectedImages = new MutableLiveData<ArrayList<Bitmap>>(new ArrayList<>());
     }
 
-    public MutableLiveData<SelectedItem> getSelectedImage() {
-        return selectedImage;
+    public MutableLiveData<ArrayList<Bitmap>> getSelectedImages() {
+        return selectedImages;
     }
 
-    public void setSelectedImage(MutableLiveData<SelectedItem> selectedImage) {
-        this.selectedImage = selectedImage;
-    }
-
-    public MutableLiveData<Map<String, SelectedItem>> getSelectedImageMap() {
-        return selectedImageMap;
-    }
-
-    public void setSelectedImageMap(MutableLiveData<Map<String, SelectedItem>> selectedImageMap) {
-        this.selectedImageMap = selectedImageMap;
+    public void setSelectedImages(ArrayList<Bitmap> selectedImages) {
+        this.selectedImages.setValue(selectedImages);
     }
 }
