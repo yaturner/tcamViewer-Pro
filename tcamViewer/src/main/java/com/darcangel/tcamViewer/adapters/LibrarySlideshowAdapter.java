@@ -59,7 +59,7 @@ public class LibrarySlideshowAdapter
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivImageView = itemView.findViewById(R.id.ivSlideshowItem);
+            ivImageView = itemView.findViewById(R.id.ivCamera);
         }
     }
 }

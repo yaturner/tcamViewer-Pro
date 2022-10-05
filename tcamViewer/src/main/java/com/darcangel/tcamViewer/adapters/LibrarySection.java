@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
-import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.viewholders.LibraryHeaderViewHolder;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;

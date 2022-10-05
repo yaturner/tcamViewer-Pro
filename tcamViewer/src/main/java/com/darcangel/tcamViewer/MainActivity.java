@@ -21,7 +21,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
 import com.darcangel.tcamViewer.ui.camera.CameraService;

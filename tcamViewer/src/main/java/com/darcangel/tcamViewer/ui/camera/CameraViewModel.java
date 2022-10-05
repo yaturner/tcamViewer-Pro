@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.util.Calendar;

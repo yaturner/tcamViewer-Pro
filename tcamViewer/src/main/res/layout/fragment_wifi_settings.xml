@@ -6,7 +6,7 @@
     <data>
         <variable
             name="settings"
-            type="com.darcangel.tcamViewer.container.Settings" />
+            type="com.darcangel.tcamViewer.model.Settings" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

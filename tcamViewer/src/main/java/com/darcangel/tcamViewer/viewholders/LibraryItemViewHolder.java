@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
-import com.darcangel.tcamViewer.container.LibraryItemDetails;
+import com.darcangel.tcamViewer.model.LibraryItemDetails;
 
 public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView imageView;

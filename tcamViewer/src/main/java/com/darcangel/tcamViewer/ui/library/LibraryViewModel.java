@@ -5,10 +5,7 @@ import android.graphics.Bitmap;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.darcangel.tcamViewer.container.SelectedItem;
-
 import java.util.ArrayList;
-import java.util.Map;
 
 public class LibraryViewModel extends ViewModel {
     private MutableLiveData<ArrayList<Bitmap>> selectedImages;

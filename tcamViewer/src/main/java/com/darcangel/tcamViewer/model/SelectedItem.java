@@ -1,4 +1,4 @@
-package com.darcangel.tcamViewer.container;
+package com.darcangel.tcamViewer.model;
 
 import androidx.annotation.NonNull;
 

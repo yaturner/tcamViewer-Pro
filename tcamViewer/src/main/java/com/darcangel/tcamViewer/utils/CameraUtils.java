@@ -15,7 +15,7 @@ import androidx.databinding.BaseObservable;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.model.Settings;
 
 import org.json.JSONException;
 import org.json.JSONObject;

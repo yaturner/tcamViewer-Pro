@@ -28,7 +28,7 @@ import androidx.lifecycle.Lifecycle;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentCameraBinding;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
@@ -36,8 +36,6 @@ import org.json.JSONObject;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.SocketTimeoutException;
 import java.util.Iterator;
 import java.util.Locale;
 

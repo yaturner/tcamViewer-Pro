@@ -27,7 +27,7 @@ import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.EmissivityDialogListAdapter;
-import com.darcangel.tcamViewer.container.Settings;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
@@ -76,7 +76,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         root = binding.getRoot();
 
-        //get the settings container
+        //get the settings model
         settings = mainActivity.getSettings();
         binding.setSettings(settings);
 
