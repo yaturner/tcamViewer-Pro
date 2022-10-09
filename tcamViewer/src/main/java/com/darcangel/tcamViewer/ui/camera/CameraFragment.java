@@ -112,7 +112,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
                                 if (cameraViewModel.getImageDto().getValue() != null) {
-                                        cameraUtils.remapImage(cameraViewModel.getImageDto().getValue()));
+                                        cameraUtils.remapImage(cameraViewModel.getImageDto().getValue());
                                     drawScreen();
                                 }
                             }

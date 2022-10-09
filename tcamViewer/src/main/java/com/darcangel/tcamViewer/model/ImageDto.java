@@ -9,6 +9,11 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 public class ImageDto {
 
     private boolean AGC;
@@ -24,17 +29,57 @@ public class ImageDto {
     private int gainMode;
     private int autoGainMode;
     private JSONObject jsonObject;
+    private String filename;
     private int[][] palette;
     private String paletteName;
     private Bitmap bitmap;
 
     private CameraUtils cameraUtils;
 
+    //Constructor from camera response
     public ImageDto(JSONObject jsonObject, String paletteName) {
         this.jsonObject = jsonObject;
         this.paletteName = paletteName;
+        init();
+    }
+
+    //Constructor from file
+    public ImageDto(String filename, String paletteName) {
+        this.filename = filename;
+        this.paletteName = paletteName;
+        String line = "";
+        String json = "";
+        String imageName = filename.substring(filename.lastIndexOf(File.separatorChar)+1);
+        try {
+            BufferedReader bufferedReader = new BufferedReader(
+                    new FileReader(new File(filename)));
+            do {
+                line = bufferedReader.readLine();
+                if (line != null) {
+                    json = json + line;
+                }
+            } while (line != null);
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            json = "";
+        }
+        if (!json.isEmpty()) {
+            try {
+                jsonObject = new JSONObject(json);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        init();
+    }
+
+    private void init() {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         palette = MainActivity.getInstance().getPaletteFactory().getPaletteByName(paletteName);
+
         try {
             cameraUtils.processImageResponse(this);
         } catch (JSONException e) {
@@ -156,5 +201,13 @@ public class ImageDto {
 
     public void setPalette(int[][] palette) {
         this.palette = palette;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 }
