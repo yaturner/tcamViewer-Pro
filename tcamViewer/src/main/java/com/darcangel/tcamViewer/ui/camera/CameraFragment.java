@@ -28,6 +28,7 @@ import androidx.lifecycle.Lifecycle;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentCameraBinding;
 import com.darcangel.tcamViewer.utils.CameraUtils;
@@ -110,8 +111,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     .getPaletteByName(settings.getPalette().getValue());
                             if (palette != null) {
                                 binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
-                                if (cameraViewModel.getImage() != null) {
-                                        cameraViewModel.setImage(cameraUtils.remapCurrentImage(palette));
+                                if (cameraViewModel.getImageDto().getValue() != null) {
+                                        cameraUtils.remapImage(cameraViewModel.getImageDto().getValue()));
                                     drawScreen();
                                 }
                             }
@@ -288,11 +289,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     //get image
                                 } else if (response.equalsIgnoreCase("metadata")) {
                                     //Timber.d("Received onNext");
-                                    Bitmap bitmap = null;
-                                    bitmap = cameraUtils.processImageResponse(obj,
-                                            mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
-                                            false);
-                                    cameraViewModel.setImage(bitmap);
+                                    cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                                     drawScreen();
                                     mainActivity.dismissProgressDialog();
                                 }

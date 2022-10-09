@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
@@ -15,12 +16,12 @@ import java.util.Locale;
 
 public class CameraViewModel extends ViewModel {
 
-    private MutableLiveData<Bitmap> image;
+    private MutableLiveData<ImageDto> imageDto;
     private CameraService cameraService;
     private CameraUtils cameraUtils;
     private MainActivity mainActivity;
     private Settings settings;
-    private Boolean isStreaming = false;
+    private boolean isStreaming = false;
     private boolean isRemapNeeded = false;
 
 
@@ -29,35 +30,26 @@ public class CameraViewModel extends ViewModel {
         cameraService = mainActivity.getCameraService();
         cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
+
         //Listen for changes in ipAddress
         MutableLiveData<String> camera = mainActivity.getSettings().getCameraAddress();
         camera.observe(mainActivity, address -> {
             mainActivity.invalidateOptionsMenu();
         });
-
     }
 
-    public Bitmap getImage() {
-        if(image == null) {
-            image = new MutableLiveData<Bitmap>(null);
+    public MutableLiveData<ImageDto> getImageDto() {
+        if(imageDto == null) {
+            imageDto = new MutableLiveData<ImageDto>(null);
         }
-        return image.getValue();
+        return imageDto;
     }
 
-    public MutableLiveData<Bitmap> getImageLiveData() {
-        if(image == null) {
-            image = new MutableLiveData<Bitmap>(null);
+    public void setImageDto(ImageDto imageDto) {
+        if(this.imageDto == null) {
+            this.imageDto = new MutableLiveData<ImageDto>(null);
         }
-        return image;
-    }
-
-    public void setImage(Bitmap newImage) {
-        if(image == null) {
-            image = new MutableLiveData<Bitmap>(null);
-        }
-        if(image.getValue() == null || !image.getValue().sameAs(newImage)) {
-            image.setValue(newImage);
-        }
+        this.imageDto.setValue(imageDto);
     }
 
     //Camera operations

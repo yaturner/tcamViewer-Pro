@@ -15,6 +15,7 @@ import androidx.databinding.BaseObservable;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 
 import org.json.JSONException;
@@ -34,20 +35,9 @@ import java.util.regex.Pattern;
 import timber.log.Timber;
 
 
-public class CameraUtils extends BaseObservable implements Parcelable {
-    private boolean AGC;
-    private boolean shutdown;
-    private int emissivity;
-    private int TLinearEnabled;
-    private int TLinearResolution; // 0 = 0.1, 1 = 0.01
-    private int spotmeterMean;
-    private Rect spotmeterLocation;
-    private boolean shutterLockout;
+public class CameraUtils extends BaseObservable {
+
     private boolean isManualRange;
-    private int FFCState;
-    private int FFCDesired;
-    private int gainMode;
-    private int autoGainMode;
 
     private int[] pixels;
     private int[] imageData;
@@ -58,7 +48,6 @@ public class CameraUtils extends BaseObservable implements Parcelable {
     private int minTemperature;
     private int manualMaxTemperature;
     private int manualMinTemperature;
-    private JSONObject response;
     private boolean unitsCelsius;
 
     private Settings settings;
@@ -91,45 +80,8 @@ public class CameraUtils extends BaseObservable implements Parcelable {
         Timber.d("CameraUtils default constructor");
     }
 
-    protected CameraUtils(Parcel in) {
-        AGC = in.readByte() != 0;
-        shutdown = in.readByte() != 0;
-        emissivity = in.readInt();
-        TLinearEnabled = in.readInt();
-        TLinearResolution = in.readInt();
-        spotmeterMean = in.readInt();
-        spotmeterLocation = in.readParcelable(Rect.class.getClassLoader());
-        shutterLockout = in.readByte() != 0;
-        isManualRange = in.readByte() != 0;
-        FFCState = in.readInt();
-        FFCDesired = in.readInt();
-        gainMode = in.readInt();
-        autoGainMode = in.readInt();
-        pixels = in.createIntArray();
-        imageData = in.createIntArray();
-        diff = in.readInt();
-        maxTemperature = in.readInt();
-        minTemperature = in.readInt();
-        manualMaxTemperature = in.readInt();
-        manualMinTemperature = in.readInt();
-    }
-
-    public static final Creator<CameraUtils> CREATOR = new Creator<CameraUtils>() {
-        @Override
-        public CameraUtils createFromParcel(Parcel in) {
-            return new CameraUtils(in);
-        }
-
-        @Override
-        public CameraUtils[] newArray(int size) {
-            return new CameraUtils[size];
-        }
-    };
-
-    public Bitmap processImageResponse(JSONObject response, int[][] palette,
-                                       boolean celsius)
-            throws JSONException {
-        this.response = response;
+    public void processImageResponse(ImageDto imageDto) throws JSONException {
+        int[][] palette = imageDto.getPalette();
 
         if(pixels != null) {
             pixels = null;
@@ -140,8 +92,8 @@ public class CameraUtils extends BaseObservable implements Parcelable {
         maxTemperature = Integer.MIN_VALUE;
         minTemperature = Integer.MAX_VALUE;
 
-        String radiometricString = response.getString("radiometric");
-        String telemetryString = response.getString("telemetry");
+        String radiometricString = imageDto.getJsonObject().getString("radiometric");
+        String telemetryString = imageDto.getJsonObject().getString("telemetry");
         imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
 
         imageLen = imageBytes.length;
@@ -151,19 +103,19 @@ public class CameraUtils extends BaseObservable implements Parcelable {
 
         telemetryData = parseTelemetryData(telemetryString);
         int status = ((telemetryData[4] & 0xffff) << 16) | (telemetryData[3] & 0xffff);
-        AGC = ((status & Constants.TELEMETRY_MASK_AGC) == Constants.TELEMETRY_MASK_AGC);
-        shutdown = ((status & Constants.TELEMETRY_MASK_SHUTDOWN) == Constants.TELEMETRY_MASK_SHUTDOWN);
-        emissivity = telemetryData[offsetB + 19];
-        gainMode = telemetryData[offsetC + 5];
-        autoGainMode = telemetryData[offsetC + 6];
-        TLinearEnabled = telemetryData[offsetC + 48];
-        TLinearResolution = telemetryData[offsetC + 49];
-        spotmeterMean = telemetryData[offsetC + 50];
+        imageDto.setAGC((status & Constants.TELEMETRY_MASK_AGC) == Constants.TELEMETRY_MASK_AGC);
+        imageDto.setShutdown((status & Constants.TELEMETRY_MASK_SHUTDOWN) == Constants.TELEMETRY_MASK_SHUTDOWN);
+        imageDto.setEmissivity(telemetryData[offsetB + 19]);
+        imageDto.setGainMode(telemetryData[offsetC + 5]);
+        imageDto.setAutoGainMode(telemetryData[offsetC + 6]);
+        imageDto.setTLinearEnabled(telemetryData[offsetC + 48]);
+        imageDto.setTLinearResolution(telemetryData[offsetC + 49]);
+        imageDto.setSpotmeterMean(telemetryData[offsetC + 50]);
         Integer x1 = telemetryData[offsetC+55]&0xffff;
         Integer y1 = telemetryData[offsetC+54]&0xffff;
         Integer x2 = telemetryData[offsetC+57]&0xffff;
         Integer y2 = telemetryData[offsetC+56]&0xffff;
-        spotmeterLocation = new Rect(x1, y1, x2, y2);
+        imageDto.setSpotmeterLocation(new Rect(x1, y1, x2, y2));
 
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
@@ -171,7 +123,7 @@ public class CameraUtils extends BaseObservable implements Parcelable {
 
         setTemperatureRange();
 
-        if(AGC) {
+        if(imageDto.isAGC()) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
@@ -198,8 +150,7 @@ public class CameraUtils extends BaseObservable implements Parcelable {
                 pixels[i] = rgbToPixel(palette[Math.min(Math.max(value, 0), 255)]);
             }
         }
-        Bitmap result = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
-        return result;
+        imageDto.setBitmap(Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888));
     }
 
 
@@ -359,7 +310,8 @@ public class CameraUtils extends BaseObservable implements Parcelable {
         }
     }
 
-    public Bitmap remapCurrentImage(int[][] palette) {
+    public void remapImage(ImageDto imageDto) {
+        int[][] palette = imageDto.getPalette();
         if(AGC) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
@@ -371,7 +323,7 @@ public class CameraUtils extends BaseObservable implements Parcelable {
             }
         }
 
-        return Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+        imageDto.setBitmap(Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888));
     }
 
     public static Boolean isValidIPAddress(String address) {
