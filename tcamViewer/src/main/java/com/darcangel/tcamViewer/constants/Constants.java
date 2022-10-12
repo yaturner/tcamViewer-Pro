@@ -3,6 +3,7 @@ package com.darcangel.tcamViewer.constants;
 public final class Constants {
     public final static int COLORBAR_WIDTH = 48;
     public final static int COLORBAR_HEIGHT = 256;
+    public final static int HISTOGRAM_WIDTH = 256;
 
     public final static String SHARED_IMAGE_FILENAME = "sharedImage.png";
 

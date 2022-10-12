@@ -2,8 +2,11 @@ package com.darcangel.tcamViewer.model;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.util.Pair;
 
 import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import org.json.JSONException;
@@ -13,6 +16,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+
+import manifold.ext.rt.api.Extension;
+import manifold.ext.rt.api.This;
 
 public class ImageDto {
 
@@ -28,8 +34,12 @@ public class ImageDto {
     private int FFCDesired;
     private int gainMode;
     private int autoGainMode;
+    private int maxTemperature;
+    private int minTemperature;
+
     private JSONObject jsonObject;
     private String filename;
+    private String tjsnString;
     private int[][] palette;
     private String paletteName;
     private Bitmap bitmap;
@@ -48,15 +58,15 @@ public class ImageDto {
         this.filename = filename;
         this.paletteName = paletteName;
         String line = "";
-        String json = "";
-        String imageName = filename.substring(filename.lastIndexOf(File.separatorChar)+1);
+        tjsnString = "";
+        String imageName = filename.substring(filename.lastIndexOf(File.separatorChar) + 1);
         try {
             BufferedReader bufferedReader = new BufferedReader(
                     new FileReader(new File(filename)));
             do {
                 line = bufferedReader.readLine();
                 if (line != null) {
-                    json = json + line;
+                    tjsnString = tjsnString + line;
                 }
             } while (line != null);
             if (bufferedReader != null) {
@@ -64,11 +74,11 @@ public class ImageDto {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            json = "";
+            tjsnString = "";
         }
-        if (!json.isEmpty()) {
+        if (!tjsnString.isEmpty()) {
             try {
-                jsonObject = new JSONObject(json);
+                jsonObject = new JSONObject(tjsnString);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -209,5 +219,63 @@ public class ImageDto {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public int getMaxTemperature() {
+        return maxTemperature;
+    }
+
+    public void setMaxTemperature(int maxTemperature) {
+        this.maxTemperature = maxTemperature;
+    }
+
+    public int getMinTemperature() {
+        return minTemperature;
+    }
+
+    public void setMinTemperature(int minTemperature) {
+        this.minTemperature = minTemperature;
+    }
+
+    /*********************************************************************/
+    /*                                                                   */
+    /*                      Extenstions                                  */
+    /*                                                                   */
+
+    /*********************************************************************/
+    public int convertToRadiometric(float value) {
+        return cameraUtils.convertToRadiometric(this, value);
+    }
+
+    public Bitmap createColorBar() {
+        return cameraUtils.createColorBar(this, Constants.COLORBAR_WIDTH);
+    }
+
+    public void remapImage() {
+        cameraUtils.remapImage(this);
+    }
+
+    public Bitmap drawHotspot() {
+        return cameraUtils.drawHotspot(this);
+    }
+
+    public Pair<Integer, Integer> getRadiometricTemperatures() {
+        return cameraUtils.getRadiometricTemperatures(this);
+    }
+
+    public Pair<Float, Float> getTemperatures() {
+        return cameraUtils.getTemperatures(this);
+    }
+
+    public float getMeanTemperatureAtSpotmeter() {
+        return cameraUtils.getMeanTemperatureAtSpotmeter(this);
+    }
+
+    public Bitmap createHistogram() {
+        return cameraUtils.createHistogram(this);
+    }
+
+    public Boolean saveTjsn() throws IOException {
+        return cameraUtils.saveTjsn(this);
     }
 }

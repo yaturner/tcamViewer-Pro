@@ -93,6 +93,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.9.0'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
     implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
+    implementation 'systems.manifold:manifold-ext:2022.1.21'
     annotationProcessor 'com.google.dagger:hilt-compiler:2.42'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.5.1'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'

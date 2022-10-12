@@ -1,5 +1,6 @@
 package com.darcangel.tcamViewer.utils;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -8,7 +9,9 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -44,10 +47,8 @@ public class CameraUtils extends BaseObservable {
     private byte[] imageBytes;
     private int imageLen;
     private int diff;
-    private int maxTemperature;
-    private int minTemperature;
-    private int manualMaxTemperature;
-    private int manualMinTemperature;
+    private float manualMaxTemperature;
+    private float manualMinTemperature;
     private boolean unitsCelsius;
 
     private Settings settings;
@@ -69,15 +70,14 @@ public class CameraUtils extends BaseObservable {
             isManualRange = v;
         });
         settings.getManualRangeMin().observeForever(v -> {
-            manualMinTemperature = convertToRadiometric(v);
+            manualMinTemperature = v; //convertToRadiometric(v);
         });
         settings.getManualRangeMax().observeForever(v -> {
-            manualMaxTemperature = convertToRadiometric(v);
+            manualMaxTemperature = v; //convertToRadiometric(v);
         });
         settings.getUnitsC().observeForever(v -> {
             unitsCelsius = v;
         });
-        Timber.d("CameraUtils default constructor");
     }
 
     public void processImageResponse(ImageDto imageDto) throws JSONException {
@@ -89,8 +89,8 @@ public class CameraUtils extends BaseObservable {
         if(imageData != null) {
             imageData = null;
         }
-        maxTemperature = Integer.MIN_VALUE;
-        minTemperature = Integer.MAX_VALUE;
+        imageDto.setMaxTemperature(Integer.MIN_VALUE);
+        imageDto.setMinTemperature(Integer.MAX_VALUE);
 
         String radiometricString = imageDto.getJsonObject().getString("radiometric");
         String telemetryString = imageDto.getJsonObject().getString("telemetry");
@@ -121,7 +121,7 @@ public class CameraUtils extends BaseObservable {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
         }
 
-        setTemperatureRange();
+        setTemperatureRange(imageDto);
 
         if(imageDto.isAGC()) {
             for (int i = 0; i < pixels.length; i++) {
@@ -129,7 +129,7 @@ public class CameraUtils extends BaseObservable {
             }
         } else {
             int min, max;
-            Pair<Integer, Integer> temps = getRadiometricTemperatures();
+            Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
             min = temps.first;
             max = temps.second;
             diff = max - min;
@@ -144,7 +144,7 @@ public class CameraUtils extends BaseObservable {
                     }
                     value = ((v - min) * 255) / diff;
                 } else {
-                    value = ((v - minTemperature) * 255) / diff;
+                    value = ((v - imageDto.getMinTemperature()) * 255) / diff;
                 }
 
                 pixels[i] = rgbToPixel(palette[Math.min(Math.max(value, 0), 255)]);
@@ -176,7 +176,8 @@ public class CameraUtils extends BaseObservable {
         return telemetryData;
     }
 
-    public Bitmap createColorBar(int[][] palette, int width) {
+    public Bitmap createColorBar(ImageDto imageDto, int width) {
+        int[][] palette = imageDto.getPalette();
         //double the size. half black for the arrow
         int width2 = 2*width;
         int[] pixels = new int[width2 * 256];
@@ -192,17 +193,17 @@ public class CameraUtils extends BaseObservable {
         }
 
         Bitmap bitmap = Bitmap.createBitmap(pixels, width2, Constants.COLORBAR_HEIGHT, Bitmap.Config.ARGB_8888);
-        return drawHotspotArrow(bitmap);
+        return drawHotspotArrow(imageDto, bitmap);
     }
 
-    public Bitmap drawHotspotArrow(Bitmap colorBar) {
+    public Bitmap drawHotspotArrow(ImageDto imageDto, Bitmap colorBar) {
         //if there is no camera image, no arrow
-        if(minTemperature == 0 && maxTemperature == 0) {
+        if(imageDto.getMinTemperature() == 0 && imageDto.getMaxTemperature() == 0) {
             return colorBar;
         }
 
         float offset = (float)Constants.COLORBAR_HEIGHT -
-                ((((float)(spotmeterMean-minTemperature))/(float)diff) * (float)Constants.COLORBAR_HEIGHT);
+                ((((float)(imageDto.getSpotmeterMean()-imageDto.getMinTemperature()))/(float)diff) * (float)Constants.COLORBAR_HEIGHT);
 
         Paint paint = new Paint();
         paint.setColor(0xffffffff);
@@ -229,13 +230,14 @@ public class CameraUtils extends BaseObservable {
 
     /**
      *
-     * @param palette
-     * @param width
+     * @param imageDto
      * @return bitmap of histogram
      *
      * the indices for the colors are all 255-value to match the color bar
      */
-    public Bitmap createHistogram(int[][] palette, int width) {
+    public Bitmap createHistogram(ImageDto imageDto) {
+        int width = Constants.HISTOGRAM_WIDTH;
+        int[][] palette = imageDto.getPalette();
         int[] bin = new int[256];
         int maxBinCount = -1;
         Paint black = new Paint();
@@ -298,28 +300,34 @@ public class CameraUtils extends BaseObservable {
      * there is an edge condition where if Manual Range is set in Prefs but there is no image yet,
      * the radiometric data for the min/max is useless, so we always recalculate it from settings
      */
-    private void setTemperatureRange() {
+    private void setTemperatureRange(ImageDto imageDto) {
         if(isManualRange()) {
-            minTemperature = manualMinTemperature = convertToRadiometric(settings.getManualRangeMin().getValue());
-            maxTemperature = manualMaxTemperature = convertToRadiometric(settings.getManualRangeMax().getValue());
+            imageDto.setMinTemperature(convertToRadiometric(imageDto, settings.getManualRangeMin().getValue()));
+            imageDto.setMaxTemperature(convertToRadiometric(imageDto, settings.getManualRangeMax().getValue()));
+            manualMinTemperature = settings.getManualRangeMin().getValue();
+            manualMaxTemperature = settings.getManualRangeMax().getValue();
         } else {
+            int minTemperature = Integer.MAX_VALUE;
+            int maxTemperature = Integer.MIN_VALUE;
             for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
                 minTemperature = Math.min(imageData[j], minTemperature);
                 maxTemperature = Math.max(imageData[j], maxTemperature);
             }
+            imageDto.setMinTemperature(minTemperature);
+            imageDto.setMaxTemperature(maxTemperature);
         }
     }
 
     public void remapImage(ImageDto imageDto) {
         int[][] palette = imageDto.getPalette();
-        if(AGC) {
+        if(imageDto.isAGC()) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            setTemperatureRange();
+            setTemperatureRange(imageDto);
             for (int i = 0; i < imageData.length; i++) {
-                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - minTemperature) * 255) / diff, 255)]);
+                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - imageDto.getMinTemperature()) * 255) / diff, 255)]);
             }
         }
 
@@ -330,7 +338,7 @@ public class CameraUtils extends BaseObservable {
         return IP_PATTERN.matcher(address).matches();
     }
 
-    public Bitmap drawHotspot(boolean draw) {
+    public Bitmap drawHotspot(ImageDto imageDto) {
         Paint paintWhite = new Paint();
         Paint paintBlack = new Paint();
         paintWhite.setColor(0xffffffff);
@@ -340,8 +348,8 @@ public class CameraUtils extends BaseObservable {
         paintBlack.setStyle(Paint.Style.STROKE);
         paintBlack.setStrokeWidth(1f);
 
-        int imageX = spotmeterLocation.left;
-        int imageY = spotmeterLocation.top;
+        int imageX = imageDto.getSpotmeterLocation().left;
+        int imageY = imageDto.getSpotmeterLocation().top;
         //Create a new image bitmap and attach a brand new canvas to it
         Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
         Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.ARGB_8888);
@@ -349,10 +357,8 @@ public class CameraUtils extends BaseObservable {
 
         //Draw the image bitmap into the canvas
         tempCanvas.drawBitmap(cameraBitmap, 0, 0, null);
-        if(draw) {
-            tempCanvas.drawRect(new Rect(imageX - 2, imageY - 2, imageX + 2, imageY + 2), paintWhite);
-            tempCanvas.drawRect(new Rect(imageX - 3, imageY - 3, imageX + 3, imageY + 3), paintBlack);
-        }
+        tempCanvas.drawRect(new Rect(imageX - 2, imageY - 2, imageX + 2, imageY + 2), paintWhite);
+        tempCanvas.drawRect(new Rect(imageX - 3, imageY - 3, imageX + 3, imageY + 3), paintBlack);
 
         return tempBitmap;
     }
@@ -374,34 +380,32 @@ public class CameraUtils extends BaseObservable {
      *
      * @return min, max temperatures in radiometric values
      */
-    public Pair<Integer, Integer> getRadiometricTemperatures() {
+    public Pair<Integer, Integer> getRadiometricTemperatures(ImageDto imageDto) {
         if(isManualRange) {
-            return new Pair<>(manualMinTemperature, manualMaxTemperature);
+            return new Pair<>(convertToRadiometric(imageDto, manualMinTemperature),
+                    convertToRadiometric(imageDto,manualMaxTemperature));
         } else {
-            return new Pair<>(minTemperature, maxTemperature);
+            return new Pair<>(imageDto.getMinTemperature(), imageDto.getMaxTemperature());
         }
     }
 
-    public Pair<Float, Float> getTemperatures() {
-        if(isManualRange) {
-            return new Pair<>(convertToDisplayUnits(manualMinTemperature), convertToDisplayUnits(manualMaxTemperature));
-        } else {
-            return new Pair<>(convertToDisplayUnits(minTemperature), convertToDisplayUnits(maxTemperature));
-        }
+    public Pair<Float, Float> getTemperatures(ImageDto imageDto) {
+        Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
+        return new Pair<>(convertToDisplayUnits(imageDto, temps.first), convertToDisplayUnits(imageDto, temps.second));
     }
 
-    public float getMeanTemperatureAtSpotmeter() {
+    public float getMeanTemperatureAtSpotmeter(ImageDto imageDto) {
         Rect spotmeter = getSpotmeterLocation();
         int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
         int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
         int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
         int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
-        return convertToDisplayUnits((topLeft + topRight + bottomLeft + bottomRight)/4);
+        return convertToDisplayUnits(imageDto, (topLeft + topRight + bottomLeft + bottomRight)/4);
     }
 
     //Convert radiometric data to Celsius/Fahrenheit
-    private float convertToDisplayUnits(Integer value) {
-        float scale = TLinearResolution == 0 ? 0.1f : 0.01f;
+    private float convertToDisplayUnits(ImageDto imageDto, Integer value) {
+        float scale = imageDto.getTLinearResolution() == 0 ? 0.1f : 0.01f;
         if(isUnitsCelsius()) {
             return scale * (float)value - 273.15f;
         } else {
@@ -410,8 +414,8 @@ public class CameraUtils extends BaseObservable {
     }
 
     //Convert Celsius/Fahrenheit to radiometric data
-    public int convertToRadiometric( float value) {
-        float scale = TLinearResolution == 0 ? 10f : 100f;
+    public int convertToRadiometric( ImageDto imageDto, float value) {
+        float scale = imageDto.getTLinearResolution() == 0 ? 10f : 100f;
         if(isUnitsCelsius()) {
             return Math.round((value + 273.15f) * scale);
         } else {
@@ -420,7 +424,7 @@ public class CameraUtils extends BaseObservable {
         }
     }
 
-    public Boolean saveTjsn() throws IOException{
+    public Boolean saveTjsn(ImageDto imageDto) throws IOException {
 
         File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         String file = generateNewFilename() + ".tjsn";
@@ -433,7 +437,7 @@ public class CameraUtils extends BaseObservable {
         if(!tjsn.exists()) {
             tjsn.createNewFile();
         }
-        fileOutputStream.write(response.toString().getBytes(StandardCharsets.UTF_8));
+        fileOutputStream.write(.toString().getBytes(StandardCharsets.UTF_8));
         fileOutputStream.flush();
         fileOutputStream.close();
 

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -107,10 +108,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
                             int[][] palette = mainActivity.getPaletteFactory()
                                     .getPaletteByName(settings.getPalette().getValue());
                             if (palette != null) {
-                                binding.ivColorBar.setImageBitmap(mainActivity.getCameraUtils().createColorBar(palette, Constants.COLORBAR_WIDTH));
+                                imageDto.setPalette(palette);
+                                binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
                                 if (cameraViewModel.getImageDto().getValue() != null) {
                                         cameraUtils.remapImage(cameraViewModel.getImageDto().getValue());
                                     drawScreen();
@@ -322,7 +325,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         //watch for palette changes
         settings.getPalette().observe(mainActivity, palette ->
         {
-            if(cameraViewModel.getImage() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
+            if(cameraViewModel.getImageDto().getValue().getBitmap() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
                 cameraViewModel.setRemapNeeded(true);
             }
         });
@@ -336,6 +339,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     private void rotateColormap() {
         String pal = settings.getPalette().getValue();
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
         for (int index = 0; index < paletteNames.length; index++) {
             if (pal.equalsIgnoreCase(paletteNames[index])) {
                 if (index == paletteNames.length - 1) {
@@ -343,11 +347,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 settings.setPalette(paletteNames[index + 1]);
                 settings.persist();
-                if (cameraViewModel.getImage() != null) {
-                    cameraViewModel.setImage(cameraUtils.remapCurrentImage(
-                            mainActivity.getPaletteFactory().
-                                    getPaletteByName(settings.getPalette().getValue())));
-
+                if (imageDto.getBitmap() != null) {
+                    imageDto.remapImage();
                     drawScreen();
                 }
                 break;
@@ -360,20 +361,23 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             Bitmap image = null;
             if (binding != null && binding.ivColorBar.getVisibility() == View.VISIBLE) {
                 try {
-                    int[][] palette = mainActivity.getPaletteFactory().getPaletteByName(
-                            settings.getPalette().getValue());
+                    ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+                    int[][] palette = imageDto.getPalette();
                     binding.ivColorBar.setVisibility(View.VISIBLE);
-                    binding.ivColorBar.setImageBitmap(cameraUtils.createColorBar(
-                            palette, Constants.COLORBAR_WIDTH));
-                    if (cameraViewModel.getImage() != null) {
-                        image = cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue());
+                    binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
+                    if (imageDto.getBitmap() != null) {
+                        if(settings.getDisplaySpotmeter().getValue()) {
+                            image = imageDto.drawHotspot();
+                            binding.tvSpotmeter.setText(createTemperatureString(imageDto.
+                                    getMeanTemperatureAtSpotmeter()));
+                            imageDto.setBitmap(image);
+                        }
                         //Do we need to recreate the image
                         if (cameraViewModel.isRemapNeeded()) {
                             cameraViewModel.setRemapNeeded(false);
-                            cameraUtils.remapCurrentImage(mainActivity.getPaletteFactory().
-                                            getPaletteByName(settings.getPalette().getValue()));
+                            imageDto.remapImage();
                         }
-                        cameraViewModel.setImage(image);
+                        //TODO JMT do I need this? cameraViewModel.setImageDto(imageDto);
                         binding.ivCamera.setImageBitmap(image);
                         //Always get AGC for the current image, when settings are changed it refers to the next get
                         if (cameraUtils.isAGC()) {
@@ -384,12 +388,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             binding.tvMinTemperature.setText(createTemperatureString(temps.first));
                             binding.tvMaxTemperature.setText(createTemperatureString(temps.second));
                         }
-                        binding.ivHistogram.setImageBitmap(cameraUtils.createHistogram(palette,
-                                (int) getResources().getDimension(R.dimen.histogram_width)));
-                        if(settings.getDisplaySpotmeter().getValue()) {
-                            binding.tvSpotmeter.setText(createTemperatureString(cameraUtils.
-                                    getMeanTemperatureAtSpotmeter()));
-                        }
+                        binding.ivHistogram.setImageBitmap(imageDto.createHistogram());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -401,6 +400,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
         if (event.getAction() == MotionEvent.ACTION_UP) {
             float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
             float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
@@ -424,7 +424,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         imageViewY,
                         imageViewX + 1,
                         imageViewY + 1));
-                cameraViewModel.setImage(cameraUtils.drawHotspot(settings.getDisplaySpotmeter().getValue()));
+                if(settings.getDisplaySpotmeter().getValue()) {
+                    imageDto.setBitmap(imageDto.drawHotspot());
+                }
                 if (cameraViewModel.getStreaming()) {
                     cameraService.startStreaming();
                 } else {
@@ -445,6 +447,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
 
         if (settings.getPalette() != null && !settings.getPalette().getValue().isEmpty()) {
             itemPalette.setTitle(settings.getPalette().getValue());
@@ -456,7 +459,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         }
         itemPalette.setEnabled(true);
         itemSave.setVisible(true);
-        if(cameraViewModel.getImage() == null) {
+        if(imageDto.getBitmap() == null) {
             itemSave.setEnabled(false); //only true if there is an image
         } else {
             itemSave.setEnabled(true);
