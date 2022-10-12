@@ -72,6 +72,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
         // command switch
         switch (menuItem.getItemId()) {
             case R.id.action_connect: {
@@ -142,7 +143,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     mediaPlayer.start();
                 }
                 try {
-                    cameraUtils.saveTjsn();
+                    imageDto.saveTjsn();
                 } catch (IOException e) {
                     e.printStackTrace();
                     //TODO handle error
@@ -325,7 +326,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         //watch for palette changes
         settings.getPalette().observe(mainActivity, palette ->
         {
-            if(cameraViewModel.getImageDto().getValue().getBitmap() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
+            if(cameraViewModel.getImageDto() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
                 cameraViewModel.setRemapNeeded(true);
             }
         });
@@ -380,11 +381,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         //TODO JMT do I need this? cameraViewModel.setImageDto(imageDto);
                         binding.ivCamera.setImageBitmap(image);
                         //Always get AGC for the current image, when settings are changed it refers to the next get
-                        if (cameraUtils.isAGC()) {
+                        if (imageDto.isAGC()) {
                             binding.tvMaxTemperature.setText("AGC");
                             binding.tvMinTemperature.setText("AGC");
                         } else {
-                            Pair<Float, Float> temps = cameraUtils.getTemperatures();
+                            Pair<Float, Float> temps = imageDto.getTemperatures();
                             binding.tvMinTemperature.setText(createTemperatureString(temps.first));
                             binding.tvMaxTemperature.setText(createTemperatureString(temps.second));
                         }
@@ -419,7 +420,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     cameraService.stopStreaming();
                 }
                 cameraService.sendCmd(cmd);
-                cameraUtils.setSpotmeterLocation(new Rect(
+                imageDto.setSpotmeterLocation(new Rect(
                         imageViewX,
                         imageViewY,
                         imageViewX + 1,
@@ -459,7 +460,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         }
         itemPalette.setEnabled(true);
         itemSave.setVisible(true);
-        if(imageDto.getBitmap() == null) {
+        if(imageDto == null || imageDto.getBitmap() == null) {
             itemSave.setEnabled(false); //only true if there is an image
         } else {
             itemSave.setEnabled(true);

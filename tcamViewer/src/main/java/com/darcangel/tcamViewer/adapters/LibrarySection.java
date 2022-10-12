@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.viewholders.LibraryHeaderViewHolder;
@@ -97,6 +98,7 @@ public class LibrarySection extends Section {
         String line;
         String  imageName;
         String path = imageFile.get(position);
+        ImageDto imageDto;
 
         imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
         try {
@@ -119,9 +121,7 @@ public class LibrarySection extends Section {
             try {
                 JSONObject jsonObject = new JSONObject(json);
                 Bitmap image = null;
-                image = cameraUtils.processImageResponse(jsonObject,
-                        mainActivity.getPaletteFactory().getPaletteByName(settings.getPalette().getValue()),
-                        false);
+                imageDto = new ImageDto(jsonObject, settings.getPalette().getValue());
                 images.add(position, image);
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().

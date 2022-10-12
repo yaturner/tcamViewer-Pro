@@ -40,6 +40,7 @@ import com.darcangel.tcamViewer.adapters.LibrarySection;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.ui.settings.SettingsFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
@@ -199,6 +200,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         String filename = "";
         String tjsnString = "";
         JSONObject jsonObject = null;
+        ImageDto imageDto;
         int key;
         ArrayList<String> imageFile;
         try {
@@ -213,9 +215,8 @@ public class LibraryFragment extends Fragment implements MenuProvider {
                     Intent shareIntent = new Intent();
                     tjsnString = cameraUtils.readTjsnFile(filename);
                     jsonObject = new JSONObject(tjsnString);
-                    int[][] palette = mainActivity.getPaletteFactory().getPaletteByName("Rainbow");
-                    Bitmap bitmap = cameraUtils.processImageResponse(jsonObject, palette,
-                            false);
+                    imageDto = new ImageDto(jsonObject, "Rainbow");
+                    Bitmap bitmap = imageDto.getBitmap();
                     File imagePath = mainActivity.getCacheDir();
                     File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
                     if (bitmap != null) {

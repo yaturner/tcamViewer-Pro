@@ -278,4 +278,5 @@ public class ImageDto {
     public Boolean saveTjsn() throws IOException {
         return cameraUtils.saveTjsn(this);
     }
+
 }

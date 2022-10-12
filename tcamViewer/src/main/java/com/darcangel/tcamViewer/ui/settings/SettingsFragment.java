@@ -334,8 +334,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         } else if(id == R.id.switchManualRange) {
             settings.setManualRange(isChecked);
             cameraViewModel.setRemapNeeded(true);
-            if(cameraViewModel.getImage() != null) {
-                Pair<Float, Float> temps = cameraUtils.getTemperatures();
+            if(cameraViewModel.getImageDto().getValue().getBitmap() != null) {
+                Pair<Float, Float> temps = cameraViewModel.getImageDto().getValue().getTemperatures();
                 settings.setManualRangeMin(temps.first);
                 settings.setManualRangeMax(temps.second);
 //            } else {

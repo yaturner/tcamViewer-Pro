@@ -256,7 +256,7 @@ public class CameraUtils extends BaseObservable {
                 //if Manual Range was specified, only include values min < v < max
                 int v = imageData[index];
                 int b = -1;
-                Pair<Integer, Integer> temps = getRadiometricTemperatures();
+                Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
                 int min = temps.first;
                 int max = temps.second;
                 if (isManualRange) {
@@ -395,7 +395,7 @@ public class CameraUtils extends BaseObservable {
     }
 
     public float getMeanTemperatureAtSpotmeter(ImageDto imageDto) {
-        Rect spotmeter = getSpotmeterLocation();
+        Rect spotmeter = imageDto.getSpotmeterLocation();
         int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
         int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
         int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
@@ -437,7 +437,7 @@ public class CameraUtils extends BaseObservable {
         if(!tjsn.exists()) {
             tjsn.createNewFile();
         }
-        fileOutputStream.write(.toString().getBytes(StandardCharsets.UTF_8));
+        fileOutputStream.write(imageDto.getJsonObject().toString().getBytes(StandardCharsets.UTF_8));
         fileOutputStream.flush();
         fileOutputStream.close();
 
@@ -485,27 +485,16 @@ public class CameraUtils extends BaseObservable {
         return json;
     }
 
-    public Rect getSpotmeterLocation() {
-        return spotmeterLocation;
+    public Rect getSpotmeterLocation(ImageDto imageDto) {
+        return imageDto.getSpotmeterLocation();
     }
 
-    public void setSpotmeterLocation(Rect rect) {
-        spotmeterLocation = rect;
+    public void setSpotmeterLocation(ImageDto imageDto, Rect rect) {
+        imageDto.setSpotmeterLocation(rect);
     }
 
-    public boolean isAGC() {
-        return AGC;
-    }
+//    public boolean isAGC(ImageDto imageDto) {
+//        return AGC;
+//    }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        if(response != null) {
-            dest.writeString(response.toString());
-        }
-    }
 }

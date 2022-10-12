@@ -97,7 +97,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelable(Constants.KEY_CAMERAUTILS, cameraUtils);
         outState.putParcelable(Constants.KEY_SETTINGS, settings);
         outState.putParcelable(Constants.KEY_CAMERASERVICE, cameraService);
         super.onSaveInstanceState(outState);
