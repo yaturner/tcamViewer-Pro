@@ -113,10 +113,12 @@ public class CameraViewModel extends ViewModel {
      */
     public void setConfig() {
         if (cameraService.isConnected()) {
+
             String args = String.format(Locale.US, Constants.ARGS_SET_CONFIG,
-                    settings.getAGC().getValue() ? 1 : 0,
+                    Boolean.TRUE.equals(settings.getAGC().getValue()) ? 1 : 0,
                     settings.getEmissivity().getValue(),
-                    settings.getGainHigh().getValue() ? 0 : settings.getGainLow().getValue() ? 1 : 2);
+                    Boolean.TRUE.equals(settings.getGainHigh().getValue()) ? 0 :
+                            Boolean.TRUE.equals(settings.getGainLow().getValue()) ? 1 : 2);
             String cmd = String.format(Constants.CMD_SET_CONFIG, args);
             //isConnectingToCamera = false;
             try {

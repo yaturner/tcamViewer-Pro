@@ -120,9 +120,9 @@ public class LibrarySection extends Section {
         if (!json.isEmpty()) {
             try {
                 JSONObject jsonObject = new JSONObject(json);
-                Bitmap image = null;
                 imageDto = new ImageDto(jsonObject, settings.getPalette().getValue());
                 imageDtos.add(position, imageDto);
+                Bitmap image = imageDto.getBitmap();
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().
                             getDrawable(R.drawable.library_item_highlight_selector, null));
