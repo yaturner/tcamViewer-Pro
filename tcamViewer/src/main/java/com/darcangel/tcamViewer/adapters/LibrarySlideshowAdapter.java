@@ -2,12 +2,14 @@ package com.darcangel.tcamViewer.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Pair;
 import android.view.LayoutInflater;
         import android.view.View;
         import android.view.ViewGroup;
         import android.widget.ImageView;
+import android.widget.TextView;
 
-        import androidx.annotation.NonNull;
+import androidx.annotation.NonNull;
         import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -17,6 +19,7 @@ import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragment;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
@@ -44,7 +47,18 @@ public class LibrarySlideshowAdapter
     // This method binds the screen with the view
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.ivImageView.setImageBitmap(imageDtos.get(position).getBitmap());
+        ImageDto imageDto = imageDtos.get(position);
+        assert imageDto != null;
+        holder.ivImageView.setImageBitmap(imageDto.getBitmap());
+        holder.tvFilename.setText(imageDto.getFilename());
+        holder.tvSpotmeterTemperature.setText(String.format("%.2f", imageDto.getMeanTemperatureAtSpotmeter()));
+        holder.tvSpotmeterTemperature.setTextColor(MainActivity.getInstance().getResources().getColor(R.color.white, null));
+        Bitmap colorbar = imageDto.createColorBar();
+        holder.ivColorBar.setImageBitmap(colorbar);
+        Pair<Float, Float> temps = imageDto.getTemperatures();
+        holder.tvMaxTemperature.setText(String.format("%.2f", temps.second));
+        holder.tvMinTemperature.setText(String.format("%.2f", temps.first));
+        imageDto.getTemperatures();
     }
 
     // This Method returns the size of the Array
@@ -57,10 +71,20 @@ public class LibrarySlideshowAdapter
     public static class ViewHolder extends RecyclerView.ViewHolder {
         String imageFilename;
         ImageView ivImageView;
+        TextView tvSpotmeterTemperature;
+        TextView tvMaxTemperature;
+        ImageView ivColorBar;
+        TextView tvMinTemperature;
+        TextView tvFilename;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             ivImageView = itemView.findViewById(R.id.ivCamera);
+            tvSpotmeterTemperature = itemView.findViewById(R.id.tvSpotmeterTemperature);
+            tvMaxTemperature = itemView.findViewById(R.id.tvMaxTemperature);
+            ivColorBar = itemView.findViewById(R.id.ivColorBar);
+            tvMinTemperature = itemView.findViewById(R.id.tvMinTemperature);
+            tvFilename = itemView.findViewById(R.id.tvFilename);
         }
     }
 }
