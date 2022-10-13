@@ -68,7 +68,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
-    private ArrayList<Bitmap> selectedImages;
+    private ArrayList<ImageDto> selectedImages;
 
     private int nFolders = 0;
 
@@ -129,8 +129,9 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             public int getSpanSize(final int position) {
                 if (sectionAdapter.getSectionItemViewType(position) == SectionedRecyclerViewAdapter.VIEW_TYPE_HEADER) {
                     return 2;
+                } else {
+                    return 1;
                 }
-                return 1;
             }
         });
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
@@ -154,9 +155,9 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         // Add your Sections only if the directory is not empty
         //  or in the free version only movie files
         try {
-            for (int i = 0; i < imageFolder.size(); i++) {
-                if (hasImages(imageFolder.get(i).toString())) {
-                    LibrarySection section = new LibrarySection(imageFolder.get(i).toString(), selectionTracker);
+            for (int iFolder = 0; iFolder < imageFolder.size(); iFolder++) {
+                if (hasImages(imageFolder.get(iFolder).toString())) {
+                    LibrarySection section = new LibrarySection(imageFolder.get(iFolder).toString(), selectionTracker);
                     librarySections.add(section);
                     sectionAdapter.addSection(section);
                 }
@@ -186,8 +187,8 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         //For free version, filter out movies
         String file;
         int count = 0;
-        for (int i = 0; i < files.length; i++) {
-            file = files[i];
+        for (int iFile = 0; iFile < files.length; iFile++) {
+            file = files[iFile];
             if (file.substring(file.lastIndexOf(".")).equals(".tjsn")) {
                 count++;
             }
@@ -308,8 +309,8 @@ public class LibraryFragment extends Fragment implements MenuProvider {
                     key = it.next().intValue();
                     position = sectionAdapter.getPositionInSection(key);
                     LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-                    Bitmap image = section.getImages().get(position);
-                    selectedImages.add(image);
+                    ImageDto imageDto = section.getImages().get(position);
+                    selectedImages.add(imageDto);
                 }
                 libraryViewModel.setSelectedImages(selectedImages);
                 NavDirections navDirections = LibraryFragmentDirections.actionNavigationLibraryToNavigationLibrarySlideShowFragment();

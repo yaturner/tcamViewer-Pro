@@ -18,11 +18,12 @@ import java.util.ArrayList;
 
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.databinding.FragmentLibrarySlideshowBinding;
+import com.darcangel.tcamViewer.model.ImageDto;
 
 
 public class LibrarySlideShowFragment extends Fragment {
     private ViewPager2 viewPager;
-    private ArrayList<Bitmap> images;
+    private ArrayList<ImageDto> imageDtos;
     private LibrarySlideshowAdapter slideshowAdapter;
     private FragmentLibrarySlideshowBinding binding;
     private LibraryViewModel libraryViewModel;
@@ -34,8 +35,8 @@ public class LibrarySlideShowFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         libraryViewModel = MainActivity.getInstance().getLibraryViewModel();
-        this.images = libraryViewModel.getSelectedImages().getValue();
-        slideshowAdapter = new LibrarySlideshowAdapter(getContext(), images);
+        this.imageDtos = libraryViewModel.getSelectedImages().getValue();
+        slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,

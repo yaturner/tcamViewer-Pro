@@ -32,14 +32,14 @@ import timber.log.Timber;
 
 public class LibrarySection extends Section {
     private ArrayList<String> imageFile;
-    private ArrayList<Bitmap> images;
-    private String imageFolder;
-    private SelectionTracker<Long> selectionTracker;
+    private ArrayList<ImageDto> imageDtos;
+    private final String imageFolder;
+    private final SelectionTracker<Long> selectionTracker;
 
-    private AssetManager assetManager;
-    private MainActivity mainActivity;
-    private CameraUtils cameraUtils;
-    private Settings settings;
+    private final AssetManager assetManager;
+    private final MainActivity mainActivity;
+    private final CameraUtils cameraUtils;
+    private final Settings settings;
     private int itemCount;
 
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
@@ -59,12 +59,12 @@ public class LibrarySection extends Section {
         assetManager = mainActivity.getAssets();
         settings = mainActivity.getSettings();
 
-        images = new ArrayList<Bitmap>();
+        imageDtos = new ArrayList<ImageDto>();
 
         try {
             imageFile = new ArrayList<>();
             File folder = new File(imageFolder);
-            String files[] = folder.list();
+            String[] files = folder.list();
             //For free version, filter out movies
             String file;
             for(int i = 0; i < files.length; i++) {
@@ -94,7 +94,7 @@ public class LibrarySection extends Section {
     public void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position) {
         LibraryItemViewHolder itemHolder = (LibraryItemViewHolder) holder;
         //////details.position = position;
-        String json = new String();
+        String json = "";
         String line;
         String  imageName;
         String path = imageFile.get(position);
@@ -122,10 +122,10 @@ public class LibrarySection extends Section {
                 JSONObject jsonObject = new JSONObject(json);
                 Bitmap image = null;
                 imageDto = new ImageDto(jsonObject, settings.getPalette().getValue());
-                images.add(position, image);
+                imageDtos.add(position, imageDto);
                 if(itemHolder.isSelected()) {
                     itemHolder.getImageView().setBackground(mainActivity.getResources().
-                            getDrawable(R.drawable.library_item_highlight_selector));
+                            getDrawable(R.drawable.library_item_highlight_selector, null));
                 } else {
                     itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
                             getColor(R.color.white,null));
@@ -186,7 +186,7 @@ public class LibrarySection extends Section {
         return imageFolder;
     }
 
-    public ArrayList<Bitmap> getImages() {
-        return images;
+    public ArrayList<ImageDto> getImages() {
+        return imageDtos;
     }
 }

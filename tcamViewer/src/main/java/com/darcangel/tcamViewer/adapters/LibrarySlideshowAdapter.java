@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragment;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
@@ -21,14 +22,14 @@ public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
 
     // Array of images
-    private ArrayList<Bitmap> images;
+    private ArrayList<ImageDto> imageDtos;
     private Context ctx;
     private CameraUtils cameraUtils;
 
     // Constructor of our ViewPager2Adapter class
-    public LibrarySlideshowAdapter(Context ctx, ArrayList<Bitmap> images) {
+    public LibrarySlideshowAdapter(Context ctx, ArrayList<ImageDto> images) {
         this.ctx = ctx;
-        this.images = images;
+        this.imageDtos = images;
         cameraUtils = MainActivity.getInstance().getCameraUtils();
     }
 
@@ -43,13 +44,13 @@ public class LibrarySlideshowAdapter
     // This method binds the screen with the view
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.ivImageView.setImageBitmap(images.get(position));
+        holder.ivImageView.setImageBitmap(imageDtos.get(position).getBitmap());
     }
 
     // This Method returns the size of the Array
     @Override
     public int getItemCount() {
-        return images.size();
+        return imageDtos.size();
     }
 
     // The ViewHolder class holds the view

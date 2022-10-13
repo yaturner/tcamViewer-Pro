@@ -5,24 +5,26 @@ import android.graphics.Bitmap;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.darcangel.tcamViewer.model.ImageDto;
+
 import java.util.ArrayList;
 
 public class LibraryViewModel extends ViewModel {
-    private MutableLiveData<ArrayList<Bitmap>> selectedImages;
+    private MutableLiveData<ArrayList<ImageDto>> selectedImages;
 
     public LibraryViewModel() {
         clearAllSelectedImages();
     }
 
      public void clearAllSelectedImages() {
-        selectedImages = new MutableLiveData<ArrayList<Bitmap>>(new ArrayList<>());
+        selectedImages = new MutableLiveData<ArrayList<ImageDto>>(new ArrayList<>());
     }
 
-    public MutableLiveData<ArrayList<Bitmap>> getSelectedImages() {
+    public MutableLiveData<ArrayList<ImageDto>> getSelectedImages() {
         return selectedImages;
     }
 
-    public void setSelectedImages(ArrayList<Bitmap> selectedImages) {
+        public void setSelectedImages(ArrayList<ImageDto> selectedImages) {
         this.selectedImages.setValue(selectedImages);
     }
 }
