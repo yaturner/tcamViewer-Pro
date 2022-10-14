@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -330,7 +331,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         //same for settings
         int id = buttonView.getId();
         if (id == R.id.switchAGC) {
-            //settings.setAGC(isChecked);
+            settings.setAGC(isChecked);
+            Toast.makeText(getContext(), R.string.agc_changes_info, Toast.LENGTH_LONG).show();
         } else if(id == R.id.switchManualRange) {
             settings.setManualRange(isChecked);
             cameraViewModel.setRemapNeeded(true);

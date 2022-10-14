@@ -97,7 +97,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 mainActivity.showProgressDialog(getString(R.string.acquiring), "");
                 cameraViewModel.getImageFromCamera();
-                mainActivity.invalidateOptionsMenu(); //enable save
                 break;
             }
             case R.id.action_palette: {
@@ -148,6 +147,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     e.printStackTrace();
                     //TODO handle error
                 }
+//                if(settings.getAGC().getValue()) {
+//                    settings.setAGC(false);
+//                    settings.persist();
+//                    imageDto.setAGC(false);
+//                    cameraViewModel.setRemapNeeded(true);
+//                    drawScreen();
+//                }
                 break;
         }
 
@@ -295,6 +301,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     //Timber.d("Received onNext");
                                     cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                                     drawScreen();
+                                    mainActivity.invalidateOptionsMenu();
                                     mainActivity.dismissProgressDialog();
                                 }
                             }

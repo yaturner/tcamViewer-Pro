@@ -89,8 +89,10 @@ public class ImageDto {
     private void init() {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         palette = MainActivity.getInstance().getPaletteFactory().getPaletteByName(paletteName);
-
         try {
+            //add the palette name to the metadata
+            JSONObject metadata = jsonObject.getJSONObject("metadata");
+            metadata.put("palette", paletteName);
             cameraUtils.processImageResponse(this);
         } catch (JSONException e) {
             e.printStackTrace();

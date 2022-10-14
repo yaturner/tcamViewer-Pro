@@ -73,4 +73,5 @@
     <string name="warning_password">Invalid or missing password</string>
     <string name="title_warning">Warning</string>
     <string name="save_settings_with_warning">Do you wish to save your settings?\nChanging these settings will disconnect the camera</string>
+    <string name="agc_changes_info">AGC mode changes will be applied to the next GET image</string>
 </resources>

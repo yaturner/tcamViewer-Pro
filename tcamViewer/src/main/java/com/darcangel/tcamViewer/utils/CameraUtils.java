@@ -251,22 +251,27 @@ public class CameraUtils extends BaseObservable {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1.0f);
 
+        int b, v;
         try {
             for (int index = 0; index < imageData.length; index++) {
-                //if Manual Range was specified, only include values min < v < max
-                int v = imageData[index];
-                int b = -1;
-                Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
-                int min = temps.first;
-                int max = temps.second;
-                if (isManualRange) {
-                    if (min < v && v < max) {
-                        b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
+                if(!imageDto.isAGC()) {
+                    //if Manual Range was specified, only include values min < v < max
+                    v = imageData[index];
+                    b = -1;
+                    Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
+                    int min = temps.first;
+                    int max = temps.second;
+                    if (isManualRange) {
+                        if (min < v && v < max) {
+                            b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
+                        } else {
+                            b = -1;
+                        }
                     } else {
-                        b = -1;
+                        b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
                     }
                 } else {
-                    b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
+                    b = imageData[index];
                 }
                 if (b >= 0) {
                     bin[255 - b] = bin[255 - b] + 1;
@@ -309,7 +314,7 @@ public class CameraUtils extends BaseObservable {
         } else {
             int minTemperature = Integer.MAX_VALUE;
             int maxTemperature = Integer.MIN_VALUE;
-            for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
+            for (int i = 0, j = 0; i < imageData.length; i = i + 2, j++) {
                 minTemperature = Math.min(imageData[j], minTemperature);
                 maxTemperature = Math.max(imageData[j], maxTemperature);
             }
@@ -320,12 +325,14 @@ public class CameraUtils extends BaseObservable {
 
     public void remapImage(ImageDto imageDto) {
         int[][] palette = imageDto.getPalette();
+        int diff;
         if(imageDto.isAGC()) {
             for (int i = 0; i < pixels.length; i++) {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
-            setTemperatureRange(imageDto);
+            Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
+            diff = temps.second - temps.first;
             for (int i = 0; i < imageData.length; i++) {
                 pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - imageDto.getMinTemperature()) * 255) / diff, 255)]);
             }
