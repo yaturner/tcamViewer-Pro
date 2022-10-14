@@ -18,6 +18,7 @@ import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragment;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -49,8 +50,11 @@ public class LibrarySlideshowAdapter
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ImageDto imageDto = imageDtos.get(position);
         assert imageDto != null;
-        holder.ivImageView.setImageBitmap(imageDto.getBitmap());
-        holder.tvFilename.setText(imageDto.getFilename());
+        Bitmap bitmap = imageDto.drawHotspot();
+        holder.ivImageView.setImageBitmap(bitmap);
+        String path = imageDto.getFilename();
+        String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
+        holder.tvFilename.setText(imageName);
         holder.tvSpotmeterTemperature.setText(String.format("%.2f", imageDto.getMeanTemperatureAtSpotmeter()));
         holder.tvSpotmeterTemperature.setTextColor(MainActivity.getInstance().getResources().getColor(R.color.white, null));
         Bitmap colorbar = imageDto.createColorBar();

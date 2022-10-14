@@ -101,62 +101,32 @@ public class LibrarySection extends Section {
         ImageDto imageDto;
 
         imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
-        try {
-            BufferedReader bufferedReader = new BufferedReader(
-                    new FileReader(new File(path)));
-            do {
-                line = bufferedReader.readLine();
-                if (line != null) {
-                    json = json + line;
-                }
-            } while (line != null);
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            json = "";
-        }
-        if (!json.isEmpty()) {
-            try {
-                JSONObject jsonObject = new JSONObject(json);
-                imageDto = new ImageDto(jsonObject, settings.getPalette().getValue());
-                imageDtos.add(position, imageDto);
-                Bitmap image = imageDto.getBitmap();
-                if(itemHolder.isSelected()) {
-                    itemHolder.getImageView().setBackground(mainActivity.getResources().
-                            getDrawable(R.drawable.library_item_highlight_selector, null));
-                } else {
-                    itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
-                            getColor(R.color.white,null));
-
-                }
-                itemHolder.getImageView().setImageBitmap(image);
-
-                itemHolder.setImagePath(path);
-                if (imageName != null && !imageName.isEmpty()) {
-                    Matcher matcher = PATTERN.matcher(imageName);
-                    if(matcher.find()) {
-                        itemHolder.getTitleView().setText(matcher.group(1));
-                    } else {
-                        itemHolder.getTitleView().setText("");
-                    }
-                } else {
-                    itemHolder.getTitleView().setText("");
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-                //TODO handle error
-            }
-            Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
-                    itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
+        imageDto = new ImageDto(path, settings.getPalette().getValue());
+        imageDtos.add(position, imageDto);
+        Bitmap image = imageDto.getBitmap();
+        if(itemHolder.isSelected()) {
+            itemHolder.getImageView().setBackground(mainActivity.getResources().
+                    getDrawable(R.drawable.library_item_highlight_selector, null));
+        } else {
+            itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
+                    getColor(R.color.white,null));
 
         }
+        itemHolder.getImageView().setImageBitmap(image);
+        itemHolder.setImagePath(path);
+        if (imageName != null && !imageName.isEmpty()) {
+            Matcher matcher = PATTERN.matcher(imageName);
+            if(matcher.find()) {
+                itemHolder.getTitleView().setText(matcher.group(1));
+            } else {
+                itemHolder.getTitleView().setText("");
+            }
+        } else {
+            itemHolder.getTitleView().setText("");
+        }
+        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
+                itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
 
-//        itemHolder.getRootView().setOnClickListener(v -> {
-//            LibraryItemViewHolder viewHolder = (LibraryItemViewHolder) holder;
-//            clickListener.onItemRootViewClicked(LibrarySection.this, viewHolder);
-//        });
 
         itemHolder.bind(Long.valueOf(position));
     }

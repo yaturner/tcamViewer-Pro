@@ -61,15 +61,15 @@
             android:id="@+id/tvMaxTemperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="right"
+            android:gravity="right"
             android:text=""
-            android:layout_marginStart="5sp"
-            android:layout_marginEnd="5sp"
             android:textColor="@color/white"
             android:textSize="12sp"
             app:layout_constraintTop_toTopOf="@+id/ivCamera"
             app:layout_constraintBottom_toTopOf="@+id/ivColorBar"
-            app:layout_constraintStart_toEndOf="@+id/ivCamera"/>
+            app:layout_constraintStart_toEndOf="@+id/ivCamera"
+            app:layout_constraintEnd_toEndOf="@+id/ivColorBar"/>
 
         <ImageView
             android:id="@+id/ivColorBar"
@@ -87,20 +87,22 @@
             android:id="@+id/tvMinTemperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="5sp"
             android:text=""
-            android:textAlignment="center"
+            android:layout_gravity="right"
+            android:gravity="right"
             android:textColor="@color/white"
             android:textSize="12sp"
             app:layout_constraintTop_toBottomOf="@+id/ivColorBar"
             app:layout_constraintBottom_toBottomOf="@+id/ivCamera"
-            app:layout_constraintStart_toEndOf="@+id/ivCamera"/>
+            app:layout_constraintStart_toEndOf="@+id/ivCamera"
+            app:layout_constraintEnd_toEndOf="@+id/ivColorBar"/>
 
         <TextView
             android:id="@+id/tvFilename"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
+            android:textColor="@color/white"
             app:layout_constraintTop_toBottomOf="@+id/ivCamera"
             app:layout_constraintStart_toStartOf="@+id/glLeft"
             app:layout_constraintEnd_toStartOf="@+id/glRight"/>
