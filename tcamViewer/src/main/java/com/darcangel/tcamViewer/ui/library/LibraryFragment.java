@@ -74,25 +74,10 @@ public class LibraryFragment extends Fragment implements MenuProvider {
 
     private SelectionTracker<Long> selectionTracker;
 
-    private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    //ACTION_SEND always returns RESULT_CANCELLED, ignore it
-                    // There are no request codes
-                    File imagePath = mainActivity.getCacheDir();
-                    File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
-                    if (newFile.exists()) {
-                        newFile.delete();
-                    }
-                }
-            });
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+//        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
         }
@@ -196,57 +181,6 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         return count > 0;
     }
 
-
-    private void shareImage(final Selection selection) {
-        String filename = "";
-        String tjsnString = "";
-        JSONObject jsonObject = null;
-        ImageDto imageDto;
-        int key;
-        ArrayList<String> imageFile;
-        try {
-            if (!selection.isEmpty()) {
-                Iterator<Long> it = selection.iterator();
-                while (it.hasNext()) {
-                    key = it.next().intValue();
-                    int position = sectionAdapter.getPositionInSection(key);
-                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-                    imageFile = section.getImageFile();
-                    filename = imageFile.get(position);
-                    Intent shareIntent = new Intent();
-                    tjsnString = cameraUtils.readTjsnFile(filename);
-                    jsonObject = new JSONObject(tjsnString);
-                    imageDto = new ImageDto(jsonObject, "Rainbow");
-                    Bitmap bitmap = imageDto.getBitmap();
-                    File imagePath = mainActivity.getCacheDir();
-                    File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
-                    if (bitmap != null) {
-                        if (newFile.exists()) {
-                            newFile.delete();
-                        }
-                        cameraUtils.saveBitmapToFile(bitmap, newFile);
-                        Uri imageUri = FileProvider.getUriForFile(mainActivity, "com.darcangel.fileprovider", newFile);
-                        shareIntent.setAction(Intent.ACTION_SEND);
-                        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                        shareIntent.setType(mainActivity.getContentResolver().getType(imageUri));
-                        shareIntent.setData(imageUri);
-                        shareIntent.setClipData(ClipData.newRawUri("", imageUri));
-                        shareIntent.putExtra(Intent.EXTRA_SUBJECT, Constants.SHARED_IMAGE_FILENAME);
-                        shareIntent.addFlags(
-                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
-                                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                        shareActivityResultLauncher.launch(shareIntent);
-                    }
-                }
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            //TODO handle error
-        } catch (JSONException e1) {
-            e1.printStackTrace();
-        }
-    }
 
     private void deleteImage(final Selection selection) {
         int key;

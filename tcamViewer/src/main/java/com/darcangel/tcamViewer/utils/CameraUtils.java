@@ -455,7 +455,8 @@ public class CameraUtils extends BaseObservable {
         return simpleDateFormatFolder.format(now);
     }
 
-    public void saveBitmapToFile(Bitmap bitmap, File file) throws IOException {
+    public void saveBitmapToFile(ImageDto imageDto, File file) throws IOException {
+        Bitmap bitmap = imageDto.getBitmap();
         FileOutputStream outputStream = new FileOutputStream(file);
         if (outputStream != null && bitmap != null) {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);

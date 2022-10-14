@@ -279,4 +279,8 @@ public class ImageDto {
         return cameraUtils.saveTjsn(this);
     }
 
+    public void saveBitmapToFile(File newFile) throws IOException {
+        cameraUtils.saveBitmapToFile(this, newFile);
+    }
+
 }
