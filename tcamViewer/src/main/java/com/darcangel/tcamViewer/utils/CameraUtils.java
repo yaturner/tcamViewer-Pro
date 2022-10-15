@@ -250,8 +250,8 @@ public class CameraUtils extends BaseObservable {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1.0f);
 
-        int b;
-        int v;
+        int b, d, v;
+
         try {
             for (int index = 0; index < imageData.length; index++) {
                 if(!imageDto.isAGC()) {
@@ -262,12 +262,13 @@ public class CameraUtils extends BaseObservable {
                     int max = temps.second;
                     if (isManualRange) {
                         if (min < v && v < max) {
-                            b = Math.min(Math.max(((v - min) * 255 / imageDto.getDiff()), 0), 255);
+                            d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                            b = Math.min(Math.max(d, 0), 255);
                         } else {
                             b = -1;
                         }
                     } else {
-                        int d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                        d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
                         b = Math.min(Math.max(d, 0), 255);
                     }
                 } else {

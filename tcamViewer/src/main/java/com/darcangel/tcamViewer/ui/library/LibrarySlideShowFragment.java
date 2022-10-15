@@ -3,6 +3,7 @@ package com.darcangel.tcamViewer.ui.library;
 import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -32,6 +33,7 @@ import com.darcangel.tcamViewer.adapters.LibrarySlideshowAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibrarySlideshowBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.Settings;
 
 import org.json.JSONObject;
 
@@ -50,6 +52,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private FragmentLibrarySlideshowBinding binding;
     private LibraryViewModel libraryViewModel;
     private MainActivity mainActivity;
+    private Settings settings;
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -74,6 +77,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mainActivity = MainActivity.getInstance();
+        settings = mainActivity.getSettings();
         libraryViewModel = mainActivity.getLibraryViewModel();
         this.imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
@@ -137,6 +141,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         ImageDto imageDto = imageDtos.get(position);
         String path = imageDto.getFilename();
         String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
+        int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
+        int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
         path = Environment.getExternalStorageDirectory().toString()  + "/Pictures/tcamViewer/";
         File dir = new File(path);
         if(!dir.exists()) {
@@ -148,6 +154,15 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         File imageFile = new File(path);
 
         try {
+            int res = settings.getExportResolution().getValue();
+            int h = bitmap.getHeight();
+            int w = bitmap.getWidth();
+            int eh = heights[res];
+            int ew = widths[res];
+            if(h != eh && w != ew) {
+                //resize the bitmap
+                bitmap = Bitmap.createScaledBitmap(bitmap, ew, eh, false);
+            }
             out = new FileOutputStream(imageFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
             out.flush();
