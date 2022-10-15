@@ -385,7 +385,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             cameraViewModel.setRemapNeeded(false);
                             imageDto.remapImage();
                         }
-                        //TODO JMT do I need this? cameraViewModel.setImageDto(imageDto);
                         binding.ivCamera.setImageBitmap(image);
                         //Always get AGC for the current image, when settings are changed it refers to the next get
                         if (imageDto.isAGC()) {

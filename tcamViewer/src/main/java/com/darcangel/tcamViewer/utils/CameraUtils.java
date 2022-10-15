@@ -1,17 +1,21 @@
 package com.darcangel.tcamViewer.utils;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 
 import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
@@ -28,6 +32,8 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
 import java.util.regex.Pattern;
+
+import timber.log.Timber;
 
 
 public class CameraUtils extends BaseObservable {
@@ -228,7 +234,8 @@ public class CameraUtils extends BaseObservable {
      * the indices for the colors are all 255-value to match the color bar
      */
     public Bitmap createHistogram(ImageDto imageDto) {
-        int width = 100; //TODO convert from dim to pixels
+        DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+        int width = Math.round(MainActivity.getInstance().getResources().getDimension(R.dimen.histogram_width));
         int[][] palette = imageDto.getPalette();
         int[] bin = new int[256];
         int maxBinCount = -1;
@@ -260,12 +267,13 @@ public class CameraUtils extends BaseObservable {
                             b = -1;
                         }
                     } else {
-                        b = Math.min(Math.max(((v - min) * 255 / imageDto.getDiff()), 0), 255);
+                        int d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                        b = Math.min(Math.max(d, 0), 255);
                     }
                 } else {
                     b = imageData[index];
                 }
-                if (b >= 0) {
+                if (b > 0) {
                     bin[255 - b] = bin[255 - b] + 1;
                     maxBinCount = Math.max(bin[255 - b], maxBinCount);
                 }
