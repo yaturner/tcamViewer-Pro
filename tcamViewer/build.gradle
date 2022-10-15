@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         versionCode 1
-        versionName "0.21"
+        versionName "0.22"
         externalNativeBuild {
             cmake {
                 cppFlags ''
