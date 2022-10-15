@@ -93,7 +93,6 @@ public class LibrarySection extends Section {
     @Override
     public void onBindItemViewHolder(RecyclerView.ViewHolder holder, int position) {
         LibraryItemViewHolder itemHolder = (LibraryItemViewHolder) holder;
-        //////details.position = position;
         String json = "";
         String line;
         String  imageName;
