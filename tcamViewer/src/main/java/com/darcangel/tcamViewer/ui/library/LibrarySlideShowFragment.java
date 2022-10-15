@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -35,7 +36,10 @@ import com.darcangel.tcamViewer.model.ImageDto;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 
@@ -73,10 +77,12 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         libraryViewModel = mainActivity.getLibraryViewModel();
         this.imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
+        getActivity().setTitle("Library");
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle("Library");
         binding = FragmentLibrarySlideshowBinding.inflate(inflater, container, false);
         binding.vpSlideshow.setAdapter(slideshowAdapter);
         MenuHost menuHost = requireActivity();
@@ -89,6 +95,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle("Library");
     }
 
     private void shareImage(final int position) {
@@ -126,6 +133,40 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         }
     }
 
+    private void exportImage(final int position) {
+        ImageDto imageDto = imageDtos.get(position);
+        String path = imageDto.getFilename();
+        String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
+        path = Environment.getExternalStorageDirectory().toString()  + "/Pictures/tcamViewer/";
+        File dir = new File(path);
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+        path = path + imageName + ".png";
+        Bitmap bitmap = imageDto.getBitmap();
+        OutputStream out = null;
+        File imageFile = new File(path);
+
+        try {
+            out = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
+        }
+    }
+
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
@@ -153,6 +194,10 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         } else if (id == R.id.action_item_share) {
             int position = binding.vpSlideshow.getCurrentItem();
             shareImage(position);
+            return true;
+        } else if (id == R.id.action_item_export) {
+            int position = binding.vpSlideshow.getCurrentItem();
+            exportImage(position);
             return true;
         } else {
             return false;

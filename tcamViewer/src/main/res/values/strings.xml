@@ -53,7 +53,7 @@
     <string name="no">No</string>
     <string name="yes">Yes</string>
     <string name="delete">delete</string>
-    <string name="share">share</string>
+    <string name="share">Share</string>
 <!--    DEBUGGING-->
     <string name="info">INFO</string>
     <string name="item_info_title">[Section Item Info]</string>

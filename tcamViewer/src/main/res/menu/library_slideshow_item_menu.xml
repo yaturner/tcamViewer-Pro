@@ -2,10 +2,25 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/action_item_share"
+    <item android:id="@+id/action_item_out"
+        android:title="@string/save"
         android:icon="@drawable/ic_baseline_share_24"
         android:visible="true"
-        app:showAsAction="always" />
+        app:showAsAction="always">
+        <menu>
+            <item android:id="@+id/action_item_share"
+                android:title="@string/share"
+                android:icon="@drawable/ic_baseline_share_24"
+                android:visible="true"/>
+            <item android:id="@+id/action_item_export"
+                android:title="@string/export"
+                android:icon="@drawable/ic_baseline_share_24"
+                android:visible="true"/>
+        </menu>
+    </item>
+
+
+
 
     <item android:id="@+id/action_item_delete"
         android:icon="@drawable/ic_delete"
