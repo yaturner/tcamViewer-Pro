@@ -1,17 +1,12 @@
 package com.darcangel.tcamViewer.utils;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.os.Environment;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -22,7 +17,6 @@ import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,8 +29,6 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.regex.Pattern;
 
-import timber.log.Timber;
-
 
 public class CameraUtils extends BaseObservable {
 
@@ -46,7 +38,7 @@ public class CameraUtils extends BaseObservable {
     private int[] imageData;
     private byte[] imageBytes;
     private int imageLen;
-    private int diff;
+//    private int diff;
     private float manualMaxTemperature;
     private float manualMinTemperature;
     private boolean unitsCelsius;
@@ -132,7 +124,7 @@ public class CameraUtils extends BaseObservable {
             Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
             min = temps.first;
             max = temps.second;
-            diff = max - min;
+            imageDto.setDiff(max - min);
             for (int i = 0; i < imageData.length; i++) {
                 int v = imageData[i];
                 int value;
@@ -142,9 +134,9 @@ public class CameraUtils extends BaseObservable {
                     } else if(v > max) {
                         v = max;
                     }
-                    value = ((v - min) * 255) / diff;
+                    value = ((v - min) * 255) / imageDto.getDiff();
                 } else {
-                    value = ((v - imageDto.getMinTemperature()) * 255) / diff;
+                    value = ((v - imageDto.getMinTemperature()) * 255) / imageDto.getDiff();
                 }
 
                 pixels[i] = rgbToPixel(palette[Math.min(Math.max(value, 0), 255)]);
@@ -203,7 +195,7 @@ public class CameraUtils extends BaseObservable {
         }
 
         float offset = (float)Constants.COLORBAR_HEIGHT -
-                ((((float)(imageDto.getSpotmeterMean()-imageDto.getMinTemperature()))/(float)diff) * (float)Constants.COLORBAR_HEIGHT);
+                ((((float)(imageDto.getSpotmeterMean()-imageDto.getMinTemperature()))/(float)imageDto.getDiff()) * (float)Constants.COLORBAR_HEIGHT);
 
         Paint paint = new Paint();
         paint.setColor(0xffffffff);
@@ -236,7 +228,7 @@ public class CameraUtils extends BaseObservable {
      * the indices for the colors are all 255-value to match the color bar
      */
     public Bitmap createHistogram(ImageDto imageDto) {
-        int width = Constants.HISTOGRAM_WIDTH;
+        int width = 100; //TODO convert from dim to pixels
         int[][] palette = imageDto.getPalette();
         int[] bin = new int[256];
         int maxBinCount = -1;
@@ -251,24 +243,24 @@ public class CameraUtils extends BaseObservable {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1.0f);
 
-        int b, v;
+        int b;
+        int v;
         try {
             for (int index = 0; index < imageData.length; index++) {
                 if(!imageDto.isAGC()) {
                     //if Manual Range was specified, only include values min < v < max
                     v = imageData[index];
-                    b = -1;
                     Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
                     int min = temps.first;
                     int max = temps.second;
                     if (isManualRange) {
                         if (min < v && v < max) {
-                            b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
+                            b = Math.min(Math.max(((v - min) * 255 / imageDto.getDiff()), 0), 255);
                         } else {
                             b = -1;
                         }
                     } else {
-                        b = Math.min(Math.max(((v - min) * 255 / diff), 0), 255);
+                        b = Math.min(Math.max(((v - min) * 255 / imageDto.getDiff()), 0), 255);
                     }
                 } else {
                     b = imageData[index];
@@ -358,7 +350,7 @@ public class CameraUtils extends BaseObservable {
         int imageX = imageDto.getSpotmeterLocation().left;
         int imageY = imageDto.getSpotmeterLocation().top;
         //Create a new image bitmap and attach a brand new canvas to it
-        Bitmap cameraBitmap = Bitmap.createBitmap(pixels, Constants.IMAGE_WIDTH, Constants.IMAGE_HEIGHT, Bitmap.Config.ARGB_8888);
+        Bitmap cameraBitmap = imageDto.getBitmap();
         Bitmap tempBitmap = Bitmap.createBitmap(cameraBitmap.getWidth(), cameraBitmap.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas tempCanvas = new Canvas(tempBitmap);
 

@@ -163,4 +163,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     public void onMenuClosed(@NonNull Menu menu) {
         MenuProvider.super.onMenuClosed(menu);
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        libraryViewModel.clearAllSelectedImages();
+    }
 }
+

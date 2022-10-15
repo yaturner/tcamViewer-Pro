@@ -77,7 +77,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
         }
@@ -213,6 +213,15 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         libraryViewModel.clearAllSelectedImages();
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        selectedImages = new ArrayList<>();
+        for (Long key : selectionTracker.getSelection()) {
+            selectionTracker.deselect(key);
+        }
     }
 
     @Override

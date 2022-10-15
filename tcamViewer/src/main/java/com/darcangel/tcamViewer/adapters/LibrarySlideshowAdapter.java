@@ -62,7 +62,6 @@ public class LibrarySlideshowAdapter
         Pair<Float, Float> temps = imageDto.getTemperatures();
         holder.tvMaxTemperature.setText(String.format("%.2f", temps.second));
         holder.tvMinTemperature.setText(String.format("%.2f", temps.first));
-        imageDto.getTemperatures();
     }
 
     // This Method returns the size of the Array
