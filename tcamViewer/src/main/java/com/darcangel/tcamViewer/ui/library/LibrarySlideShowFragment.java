@@ -25,6 +25,7 @@ import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -182,6 +183,15 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         }
     }
 
+    private void deleteImage(final int position) {
+        slideshowAdapter.removeItem(position);
+        if (slideshowAdapter.getItemCount() == 0) {
+            mainActivity.onBackPressed();
+        } else {
+            binding.vpSlideshow.setAdapter(slideshowAdapter);
+        }
+    }
+
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
@@ -202,16 +212,15 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     @Override
     public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
         // command switch
+        int position = binding.vpSlideshow.getCurrentItem();
         int id = menuItem.getItemId();
         if (id == R.id.action_item_delete) {
-            //deleteImage(selection);
+            deleteImage(position);
             return true;
         } else if (id == R.id.action_item_share) {
-            int position = binding.vpSlideshow.getCurrentItem();
             shareImage(position);
             return true;
         } else if (id == R.id.action_item_export) {
-            int position = binding.vpSlideshow.getCurrentItem();
             exportImage(position);
             return true;
         } else {

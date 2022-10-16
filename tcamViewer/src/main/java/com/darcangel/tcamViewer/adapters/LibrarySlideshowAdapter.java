@@ -70,6 +70,13 @@ public class LibrarySlideshowAdapter
         return imageDtos.size();
     }
 
+    public void removeItem(final int position) {
+        if (position > -1 && position < imageDtos.size()) {
+            imageDtos.remove(position);
+            notifyDataSetChanged();
+        }
+    }
+
     // The ViewHolder class holds the view
     public static class ViewHolder extends RecyclerView.ViewHolder {
         String imageFilename;
