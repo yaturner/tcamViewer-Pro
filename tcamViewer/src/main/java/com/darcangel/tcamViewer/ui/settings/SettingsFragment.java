@@ -75,7 +75,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         cameraViewModel = mainActivity.getCameraViewModel();
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
-        root = binding.getRoot();
 
         //get the settings model
         settings = mainActivity.getSettings();
@@ -166,7 +165,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             binding.layoutManualRange.setVisibility(View.VISIBLE);
         }
 
-            //get the camera settings from the camera if the camera is connected
+        //get the camera settings from the camera if the camera is connected
         //  otherwise hide the camera settings
         if(!cameraService.isConnected()) {
             int refIds[] = binding.groupCameraSettings.getReferencedIds();

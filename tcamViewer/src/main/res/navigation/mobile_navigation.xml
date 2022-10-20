@@ -67,7 +67,7 @@
         android:id="@+id/navigation_librarySlideShowFragment"
         tools:layout="@layout/fragment_library_slideshow"
         android:name="com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragment"
-        android:label="Library" >
+        android:label="Browse" >
         <action
             android:id="@+id/action_librarySlideShowFragment_to_navigation_library"
             app:destination="@id/navigation_library" />

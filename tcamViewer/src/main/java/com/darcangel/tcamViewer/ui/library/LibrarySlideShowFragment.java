@@ -1,7 +1,9 @@
 package com.darcangel.tcamViewer.ui.library;
 
 import android.content.ClipData;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -14,6 +16,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.OnBackPressedCallback;
+import androidx.activity.OnBackPressedDispatcher;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -44,9 +48,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
+    private ViewGroup container;
     private ViewPager2 viewPager;
     private ArrayList<ImageDto> imageDtos;
     private LibrarySlideshowAdapter slideshowAdapter;
@@ -82,12 +88,13 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         libraryViewModel = mainActivity.getLibraryViewModel();
         this.imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
-        getActivity().setTitle("Library");
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        getActivity().setTitle("Library");
+        this.container = container;
+
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         binding = FragmentLibrarySlideshowBinding.inflate(inflater, container, false);
         binding.vpSlideshow.setAdapter(slideshowAdapter);
         MenuHost menuHost = requireActivity();
@@ -100,7 +107,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle("Library");
     }
 
     private void shareImage(final int position) {
@@ -222,6 +228,9 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             return true;
         } else if (id == R.id.action_item_export) {
             exportImage(position);
+            return true;
+       } else if(id == android.R.id.home) {
+            mainActivity.onBackPressed();
             return true;
         } else {
             return false;
