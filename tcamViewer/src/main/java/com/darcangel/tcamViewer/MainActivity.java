@@ -93,6 +93,15 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
                 getNavView().setVisibility(View.VISIBLE);
             }
         });
+
+        //For debugging only, catch unclosed resources
+        try {
+            Class.forName("dalvik.system.CloseGuard")
+                    .getMethod("setEnabled", boolean.class)
+                    .invoke(null, true);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
