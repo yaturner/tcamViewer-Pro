@@ -60,22 +60,28 @@ public class ImageDto {
         this.paletteName = paletteName;
         String line = "";
         tjsnString = "";
+        BufferedReader bufferedReader = null;
         String imageName = filename.substring(filename.lastIndexOf(File.separatorChar) + 1);
         try {
-            BufferedReader bufferedReader = new BufferedReader(
-                    new FileReader(new File(filename)));
+            bufferedReader = new BufferedReader(new FileReader(new File(filename)));
             do {
                 line = bufferedReader.readLine();
                 if (line != null) {
                     tjsnString = tjsnString + line;
                 }
             } while (line != null);
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
         } catch (IOException e) {
             e.printStackTrace();
             tjsnString = "";
+        }
+        finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         if (!tjsnString.isEmpty()) {
             try {
