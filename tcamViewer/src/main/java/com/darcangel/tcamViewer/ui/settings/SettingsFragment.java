@@ -28,6 +28,7 @@ import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.EmissivityDialogListAdapter;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
@@ -193,20 +194,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     }
                     //if AGC or Manual Range changed, we need a remap
                     //we wait till now to persist these settings so we can tell if they have changed
-                    if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()
-                            || binding.switchAGC.isChecked() != settings.getAGC().getValue()
-                    ) {
+                    if(binding.switchAGC.isChecked() != settings.getAGC().getValue()) {
                         cameraViewModel.setRemapNeeded(true);
                         settings.setAGC(binding.switchAGC.isChecked());
-                        settings.setManualRange(binding.switchManualRange.isChecked());
                     }
                     //If ManualRange is checked do the same for it's values
-                    if(settings.getManualRange().getValue()) {
-                        if (!binding.etManualRangeMax.getText().toString()
-                                .equalsIgnoreCase(settings.getManualRangeMax().getValue().toString())
-                                || !binding.etManualRangeMin.getText().toString()
-                                .equalsIgnoreCase(settings.getManualRangeMin().getValue().toString())) {
-                            cameraViewModel.setRemapNeeded(true);
+                    if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()) {
+                        settings.setManualRange(binding.switchManualRange.isChecked());
+                        cameraViewModel.setRemapNeeded(true);
+                        if (settings.getManualRange().getValue()) {
                             try {
                                 settings.setManualRangeMin(
                                         Float.parseFloat(binding.etManualRangeMin.getText().toString()));
@@ -333,16 +329,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             settings.setAGC(isChecked);
             Toast.makeText(getContext(), R.string.agc_changes_info, Toast.LENGTH_LONG).show();
         } else if(id == R.id.switchManualRange) {
-            settings.setManualRange(isChecked);
-            cameraViewModel.setRemapNeeded(true);
-            if(cameraViewModel.getImageDto().getValue().getBitmap() != null) {
-                Pair<Float, Float> temps = cameraViewModel.getImageDto().getValue().getTemperatures();
-                settings.setManualRangeMin(temps.first);
-                settings.setManualRangeMax(temps.second);
-//            } else {
-//                settings.setManualRangeMax(100.0f);
-//                settings.setManualRangeMin(0f);
-            }
             if(isChecked) {
                 binding.layoutManualRange.setVisibility(View.VISIBLE);
             } else {

@@ -253,13 +253,13 @@ public class CameraUtils extends BaseObservable {
         int b, d, v;
 
         try {
+            Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
+            int min = temps.first;
+            int max = temps.second;
             for (int index = 0; index < imageData.length; index++) {
                 if(!imageDto.isAGC()) {
                     //if Manual Range was specified, only include values min < v < max
                     v = imageData[index];
-                    Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
-                    int min = temps.first;
-                    int max = temps.second;
                     if (isManualRange) {
                         if (min < v && v < max) {
                             d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
