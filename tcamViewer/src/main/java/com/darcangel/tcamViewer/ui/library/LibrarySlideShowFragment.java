@@ -182,7 +182,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 if (out != null) {
                     out.close();
                 }
-
             } catch (Exception exc) {
                 exc.printStackTrace();
             }
