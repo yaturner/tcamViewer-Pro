@@ -111,6 +111,14 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         super.onSaveInstanceState(outState);
     }
 
+    @Override
+    protected void onUserLeaveHint()
+    {
+        Timber.d("onUserLeaveHin\\\\Home button pressed");
+        super.onUserLeaveHint();
+        cameraViewModel.startStreaming(false);
+    }
+
     private void init() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         // Passing each menu ID as a set of Ids because each
