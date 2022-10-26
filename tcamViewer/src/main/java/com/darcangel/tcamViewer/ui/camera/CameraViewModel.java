@@ -14,6 +14,8 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import java.util.Calendar;
 import java.util.Locale;
 
+import timber.log.Timber;
+
 public class CameraViewModel extends ViewModel {
 
     private MutableLiveData<ImageDto> imageDto;
@@ -21,8 +23,14 @@ public class CameraViewModel extends ViewModel {
     private CameraUtils cameraUtils;
     private MainActivity mainActivity;
     private Settings settings;
+    private float manualMaxTemperature;
+    private float manualMinTemperature;
+    private boolean unitsCelsius;
     private boolean isStreaming = false;
     private boolean isRemapNeeded = false;
+    private boolean isManualRange;
+
+
 
 
     public CameraViewModel() {
@@ -35,6 +43,22 @@ public class CameraViewModel extends ViewModel {
         MutableLiveData<String> camera = mainActivity.getSettings().getCameraAddress();
         camera.observe(mainActivity, address -> {
             mainActivity.invalidateOptionsMenu();
+        });
+        //observe any changes from settings for manual range and/or units
+        settings.getManualRange().observeForever(v -> {
+            isManualRange = v;
+            Timber.d("\\\\ManualRange\\\\observe isManualRange = %s", (isManualRange?"true":"false"));
+        });
+        settings.getManualRangeMin().observeForever(v -> {
+            manualMinTemperature = v; //convertToRadiometric(v);
+            Timber.d("\\\\ManualRange\\\\observe ManualRangeMin = %f", v);
+        });
+        settings.getManualRangeMax().observeForever(v -> {
+            manualMaxTemperature = v; //convertToRadiometric(v);
+            Timber.d("\\\\ManualRange\\\\observe ManualRangeMax = %f", v);
+        });
+        settings.getUnitsC().observeForever(v -> {
+            unitsCelsius = v;
         });
     }
 
@@ -191,5 +215,37 @@ public class CameraViewModel extends ViewModel {
 
     public void setRemapNeeded(boolean remapNeeded) {
         isRemapNeeded = remapNeeded;
+    }
+
+    public float getManualMaxTemperature() {
+        return manualMaxTemperature;
+    }
+
+    public void setManualMaxTemperature(float manualMaxTemperature) {
+        this.manualMaxTemperature = manualMaxTemperature;
+    }
+
+    public float getManualMinTemperature() {
+        return manualMinTemperature;
+    }
+
+    public void setManualMinTemperature(float manualMinTemperature) {
+        this.manualMinTemperature = manualMinTemperature;
+    }
+
+    public boolean isUnitsCelsius() {
+        return unitsCelsius;
+    }
+
+    public void setUnitsCelsius(boolean unitsCelsius) {
+        this.unitsCelsius = unitsCelsius;
+    }
+
+    public boolean isManualRange() {
+        return isManualRange;
+    }
+
+    public void setManualRange(boolean manualRange) {
+        isManualRange = manualRange;
     }
 }

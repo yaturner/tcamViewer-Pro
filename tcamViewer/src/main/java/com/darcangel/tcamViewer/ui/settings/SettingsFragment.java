@@ -37,6 +37,7 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import timber.log.Timber;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener,
@@ -117,24 +118,24 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         binding.rbUnitsC.setChecked(settings.getUnitsC().getValue());
 
         //If the user does not save the settings, isRemapNeeded is set to false
-        settings.getManualRangeMax().observe(mainActivity, v -> {
-            if (v != null
-                    && !v.toString().isEmpty()
-                    && !binding.etManualRangeMax.getText().toString().isEmpty()
-                    && !settings.getManualRangeMax().getValue().toString()
-                    .equalsIgnoreCase(v.toString())) {
-                cameraViewModel.setRemapNeeded(true);
-            }
-        });
-        settings.getManualRangeMin().observe(mainActivity, v -> {
-            if (v != null
-                    && !v.toString().isEmpty()
-                    && !binding.etManualRangeMax.getText().toString().isEmpty()
-                    && !settings.getManualRangeMax().getValue().toString()
-                    .equalsIgnoreCase(v.toString())) {
-                cameraViewModel.setRemapNeeded(true);
-            }
-        });
+//        settings.getManualRangeMax().observe(mainActivity, v -> {
+//            if (v != null
+//                    && !v.toString().isEmpty()
+//                    && !binding.etManualRangeMax.getText().toString().isEmpty()
+//                    && !settings.getManualRangeMax().getValue().toString()
+//                    .equalsIgnoreCase(v.toString())) {
+//                cameraViewModel.setRemapNeeded(true);
+//            }
+//        });
+//        settings.getManualRangeMin().observe(mainActivity, v -> {
+//            if (v != null
+//                    && !v.toString().isEmpty()
+//                    && !binding.etManualRangeMax.getText().toString().isEmpty()
+//                    && !settings.getManualRangeMax().getValue().toString()
+//                    .equalsIgnoreCase(v.toString())) {
+//                cameraViewModel.setRemapNeeded(true);
+//            }
+//        });
         root = binding.getRoot();
         return root;
     }
@@ -201,6 +202,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     //If ManualRange is checked do the same for it's values
                     if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()) {
                         settings.setManualRange(binding.switchManualRange.isChecked());
+                        Timber.d("\\\\ManualRange\\\\createSaveDialog\\\\manual range = %s",
+                                (binding.switchManualRange.isChecked()?"true":"false"));
                         cameraViewModel.setRemapNeeded(true);
                         if (settings.getManualRange().getValue()) {
                             try {
@@ -352,8 +355,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         max = convertFtoC(settings.getManualRangeMax().getValue());
                         binding.etManualRangeMin.setText(min);
                         binding.etManualRangeMax.setText(max);
-                        settings.setManualRangeMin(Float.parseFloat(min));
-                        settings.setManualRangeMax(Float.parseFloat(max));
+//                        settings.setManualRangeMin(Float.parseFloat(min));
+//                        settings.setManualRangeMax(Float.parseFloat(max));
                     }
                 }
             }
@@ -366,8 +369,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         max = convertCtoF(settings.getManualRangeMax().getValue());
                         binding.etManualRangeMin.setText(min);
                         binding.etManualRangeMax.setText(max);
-                        settings.setManualRangeMin(Float.parseFloat(min));
-                        settings.setManualRangeMax(Float.parseFloat(max));
+//                        settings.setManualRangeMin(Float.parseFloat(min));
+//                        settings.setManualRangeMax(Float.parseFloat(max));
                     }
                 }
             }

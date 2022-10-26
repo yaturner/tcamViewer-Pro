@@ -82,7 +82,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 break;
             }
             case R.id.action_disconnect:
-                if(cameraViewModel.getStreaming()) {
+                if (cameraViewModel.getStreaming()) {
                     cameraViewModel.setStreaming(false);
                     cameraService.stopStreaming();
                 }
@@ -91,7 +91,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
-                if(settings.getShutterSound().getValue()) {
+                if (settings.getShutterSound().getValue()) {
                     MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
                     mediaPlayer.start();
                 }
@@ -115,7 +115,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                 imageDto.setPalette(palette);
                                 binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
                                 if (cameraViewModel.getImageDto().getValue() != null) {
-                                        cameraUtils.remapImage(cameraViewModel.getImageDto().getValue());
+                                    cameraUtils.remapImage(cameraViewModel.getImageDto().getValue());
                                     drawScreen();
                                 }
                             }
@@ -137,7 +137,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             // file menu items
             case R.id.action_save:
-                if(settings.getShutterSound().getValue()) {
+                if (settings.getShutterSound().getValue()) {
                     MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
                     mediaPlayer.start();
                 }
@@ -195,117 +195,117 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         disposable = cameraService.getImageChannel()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(obj -> {
-                            Iterator<String> it = obj.keys();
-                            if (it.hasNext()) {
-                                String response = it.next();
-                                Timber.d("Response String is %s", response);
-                                //error handling
-                                if(response.equalsIgnoreCase("error")) {
-                                    String msg = new JSONObject(obj.getString("error")).getString("message");
-                                    mainActivity.dismissProgressDialog(); //just in case
-                                    if (msg.startsWith("java.net.SocketTimeoutException") ||
-                                            msg.startsWith("java.net.ConnectException")) {
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
-                                                .setCancelable(true)
-                                                .setPositiveButton(R.string.ok, ((dialog, which) -> {
-                                                    dialog.dismiss();
-                                                }))
-                                                .setTitle(R.string.title_error)
-                                                .setMessage(R.string.error_can_not_connect);
-                                        builder.create().show();
+                    Iterator<String> it = obj.keys();
+                    if (it.hasNext()) {
+                        String response = it.next();
+                        Timber.d("Response String is %s", response);
+                        //error handling
+                        if (response.equalsIgnoreCase("error")) {
+                            String msg = new JSONObject(obj.getString("error")).getString("message");
+                            mainActivity.dismissProgressDialog(); //just in case
+                            if (msg.startsWith("java.net.SocketTimeoutException") ||
+                                    msg.startsWith("java.net.ConnectException")) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
+                                        .setCancelable(true)
+                                        .setPositiveButton(R.string.ok, ((dialog, which) -> {
+                                            dialog.dismiss();
+                                        }))
+                                        .setTitle(R.string.title_error)
+                                        .setMessage(R.string.error_can_not_connect);
+                                builder.create().show();
+                            }
+                            //connect/disconnect
+                        } else if (response.equalsIgnoreCase("connected")) {
+                            String value = obj.getString("connected");
+                            if (value.equalsIgnoreCase("true")) {
+                                if (isConnectingToCamera) {
+                                    cameraViewModel.setTime();
+                                }
+                                mainActivity.invalidateOptionsMenu();
+                            } else {
+                                //TODO JMT ERROR
+                                mainActivity.invalidateOptionsMenu();
+                            }
+                            //camera settings commands
+                        } else if (response.equalsIgnoreCase("cam_info")) {
+                            //multiple response have "cam_info"
+                            JSONObject info = obj.getJSONObject("cam_info");
+                            if (info.has("info_string")) {
+                                String infoType = info.getString("info_string");
+                                if (infoType.equalsIgnoreCase("set_time success")) {
+                                    if (isConnectingToCamera) {
+                                        cameraViewModel.getConfig();
                                     }
-                                    //connect/disconnect
-                                } else if (response.equalsIgnoreCase("connected")) {
-                                    String value = obj.getString("connected");
-                                    if (value.equalsIgnoreCase("true")) {
-                                        if (isConnectingToCamera) {
-                                            cameraViewModel.setTime();
-                                        }
-                                        mainActivity.invalidateOptionsMenu();
-                                    } else {
-                                        //TODO JMT ERROR
-                                        mainActivity.invalidateOptionsMenu();
-                                    }
-                                //camera settings commands
-                                } else if (response.equalsIgnoreCase("cam_info")) {
-                                    //multiple response have "cam_info"
-                                    JSONObject info = obj.getJSONObject("cam_info");
-                                    if (info.has("info_string")) {
-                                        String infoType = info.getString("info_string");
-                                        if (infoType.equalsIgnoreCase("set_time success")) {
-                                            if (isConnectingToCamera) {
-                                                cameraViewModel.getConfig();
-                                            }
-                                        } else if (infoType.equalsIgnoreCase("set_config success")) {
-                                            //do nothing
-                                        }
-                                    }
-                                    //get_config
-                                } else if (response.equalsIgnoreCase("config")) {
-                                    JSONObject config = obj.getJSONObject("config");
-                                    if (config.has("agc_enabled")) {
-                                        settings.setAGC(config.getInt("agc_enabled") == 1);
-                                    }
-                                    if (config.has("emissivity")) {
-                                        settings.setEmissivity(config.getInt("emissivity"));
-                                    }
-                                    if (config.has("gain_mode")) {
-                                        switch (config.getInt("gain_mode")) {
-                                            case 0:
-                                                settings.setGainHigh(true);
-                                                break;
-                                            case 1:
-                                                settings.setGainLow(true);
-                                                break;
-                                            case 2:
-                                                settings.setGainAuto(true);
-                                                break;
-                                        }
-                                    }
-                                    settings.persist();
-                                    //get wifi
-                                } else if (response.equalsIgnoreCase("wifi")) {
-                                    int flags = 0;
-                                    JSONObject wifi = obj.getJSONObject("wifi");
-                                    if (wifi.has("ap_ssid")) {
-                                        settings.setApSSID(wifi.getString("ap_ssid"));
-                                    }
-                                    if (wifi.has("sta_ssid")) {
-                                        settings.setStaticSSID(wifi.getString("sta_ssid"));
-                                    }
-                                    if (wifi.has("ap_ip_addr")) {
-                                        settings.setApIPAddress(wifi.getString("ap_ip_addr"));
-                                    }
-                                    if (wifi.has("sta_ip_addr")) {
-                                        settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
-                                    }
-                                    if (wifi.has("sta_netmask")) {
-                                        settings.setStaticNetmask(wifi.getString("sta_netmask"));
-                                    }
-                                    if (wifi.has("flags")) {
-                                        flags = wifi.getInt("flags") & 0xff;
-                                        settings.setFlags(flags);
-                                    }
-                                    //parse flags and set values
-                                    settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
-                                            == 0);
-                                    settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
-                                            1);
-                                    if (settings.getCameraIsAccessPoint().getValue()) {
-                                        settings.setSSID(settings.getApSSID());
-                                    } else {
-                                        settings.setSSID(settings.getStaticSSID());
-                                    }
-                                    //get image
-                                } else if (response.equalsIgnoreCase("metadata")) {
-                                    //Timber.d("Received onNext");
-                                    cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
-                                    drawScreen();
-                                    mainActivity.invalidateOptionsMenu();
-                                    mainActivity.dismissProgressDialog();
+                                } else if (infoType.equalsIgnoreCase("set_config success")) {
+                                    //do nothing
                                 }
                             }
-                        });
+                            //get_config
+                        } else if (response.equalsIgnoreCase("config")) {
+                            JSONObject config = obj.getJSONObject("config");
+                            if (config.has("agc_enabled")) {
+                                settings.setAGC(config.getInt("agc_enabled") == 1);
+                            }
+                            if (config.has("emissivity")) {
+                                settings.setEmissivity(config.getInt("emissivity"));
+                            }
+                            if (config.has("gain_mode")) {
+                                switch (config.getInt("gain_mode")) {
+                                    case 0:
+                                        settings.setGainHigh(true);
+                                        break;
+                                    case 1:
+                                        settings.setGainLow(true);
+                                        break;
+                                    case 2:
+                                        settings.setGainAuto(true);
+                                        break;
+                                }
+                            }
+                            settings.persist();
+                            //get wifi
+                        } else if (response.equalsIgnoreCase("wifi")) {
+                            int flags = 0;
+                            JSONObject wifi = obj.getJSONObject("wifi");
+                            if (wifi.has("ap_ssid")) {
+                                settings.setApSSID(wifi.getString("ap_ssid"));
+                            }
+                            if (wifi.has("sta_ssid")) {
+                                settings.setStaticSSID(wifi.getString("sta_ssid"));
+                            }
+                            if (wifi.has("ap_ip_addr")) {
+                                settings.setApIPAddress(wifi.getString("ap_ip_addr"));
+                            }
+                            if (wifi.has("sta_ip_addr")) {
+                                settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
+                            }
+                            if (wifi.has("sta_netmask")) {
+                                settings.setStaticNetmask(wifi.getString("sta_netmask"));
+                            }
+                            if (wifi.has("flags")) {
+                                flags = wifi.getInt("flags") & 0xff;
+                                settings.setFlags(flags);
+                            }
+                            //parse flags and set values
+                            settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
+                                    == 0);
+                            settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
+                                    1);
+                            if (settings.getCameraIsAccessPoint().getValue()) {
+                                settings.setSSID(settings.getApSSID());
+                            } else {
+                                settings.setSSID(settings.getStaticSSID());
+                            }
+                            //get image
+                        } else if (response.equalsIgnoreCase("metadata")) {
+                            //Timber.d("Received onNext");
+                            cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
+                            drawScreen();
+                            mainActivity.invalidateOptionsMenu();
+                            mainActivity.dismissProgressDialog();
+                        }
+                    }
+                });
     }
 
 
@@ -333,7 +333,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         //watch for palette changes
         settings.getPalette().observe(mainActivity, palette ->
         {
-            if(cameraViewModel.getImageDto() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
+            if (cameraViewModel.getImageDto() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
                 cameraViewModel.setRemapNeeded(true);
             }
         });
@@ -367,14 +367,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private void drawScreen() {
         mainActivity.runOnUiThread(() -> {
             Bitmap image = null;
-            if (binding != null && binding.ivColorBar.getVisibility() == View.VISIBLE) {
+            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+            if (binding != null && binding.ivColorBar != null && imageDto != null) {
                 try {
-                    ImageDto imageDto = cameraViewModel.getImageDto().getValue();
                     int[][] palette = imageDto.getPalette();
                     binding.ivColorBar.setVisibility(View.VISIBLE);
                     binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
                     if (imageDto.getBitmap() != null) {
-                        if(settings.getDisplaySpotmeter().getValue()) {
+                        if (settings.getDisplaySpotmeter().getValue()) {
                             image = imageDto.drawHotspot();
                             binding.tvSpotmeter.setText(createTemperatureString(imageDto.
                                     getMeanTemperatureAtSpotmeter()));
@@ -431,7 +431,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         imageViewY,
                         imageViewX + 1,
                         imageViewY + 1));
-                if(settings.getDisplaySpotmeter().getValue()) {
+                if (settings.getDisplaySpotmeter().getValue()) {
                     imageDto.setBitmap(imageDto.drawHotspot());
                 }
                 if (cameraViewModel.getStreaming()) {
@@ -466,7 +466,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         }
         itemPalette.setEnabled(true);
         itemSave.setVisible(true);
-        if(imageDto == null || imageDto.getBitmap() == null) {
+        if (imageDto == null || imageDto.getBitmap() == null) {
             itemSave.setEnabled(false); //only true if there is an image
         } else {
             itemSave.setEnabled(true);
@@ -535,7 +535,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (cameraViewModel.getStreaming()) {
             cameraService.stopStreaming();
         }
-        if(disposable != null && !disposable.isDisposed()) {
+        if (disposable != null && !disposable.isDisposed()) {
             disposable.dispose();
         }
         binding = null;

@@ -19,6 +19,7 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
 import org.json.JSONException;
 
@@ -38,18 +39,13 @@ import timber.log.Timber;
 
 public class CameraUtils extends BaseObservable {
 
-    private boolean isManualRange;
-
     private int[] pixels;
     private int[] imageData;
     private byte[] imageBytes;
     private int imageLen;
-//    private int diff;
-    private float manualMaxTemperature;
-    private float manualMinTemperature;
-    private boolean unitsCelsius;
 
     private Settings settings;
+    private CameraViewModel cameraViewModel;
 
     private final static int offsetA = 0;
     private final static int offsetB = 80;
@@ -62,20 +58,6 @@ public class CameraUtils extends BaseObservable {
 
     //default constructor
     public CameraUtils() {
-        //observe any changes from settings for manual range and/or units
-        settings = MainActivity.getInstance().getSettings();
-        settings.getManualRange().observeForever(v -> {
-            isManualRange = v;
-        });
-        settings.getManualRangeMin().observeForever(v -> {
-            manualMinTemperature = v; //convertToRadiometric(v);
-        });
-        settings.getManualRangeMax().observeForever(v -> {
-            manualMaxTemperature = v; //convertToRadiometric(v);
-        });
-        settings.getUnitsC().observeForever(v -> {
-            unitsCelsius = v;
-        });
     }
 
     public void processImageResponse(ImageDto imageDto) throws JSONException {
@@ -134,7 +116,7 @@ public class CameraUtils extends BaseObservable {
             for (int i = 0; i < imageData.length; i++) {
                 int v = imageData[i];
                 int value;
-                if (isManualRange) {
+                if (isManualRange()) {
                     if(v < min) {
                         v = min;
                     } else if(v > max) {
@@ -251,6 +233,7 @@ public class CameraUtils extends BaseObservable {
         paint.setStrokeWidth(1.0f);
 
         int b, d, v;
+        Timber.d("\\\\ManualRange\\\\createHistogram\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
 
         try {
             Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
@@ -260,7 +243,7 @@ public class CameraUtils extends BaseObservable {
                 if(!imageDto.isAGC()) {
                     //if Manual Range was specified, only include values min < v < max
                     v = imageData[index];
-                    if (isManualRange) {
+                    if (isManualRange()) {
                         if (min < v && v < max) {
                             d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
                             b = Math.min(Math.max(d, 0), 255);
@@ -307,17 +290,16 @@ public class CameraUtils extends BaseObservable {
      * the radiometric data for the min/max is useless, so we always recalculate it from settings
      */
     private void setTemperatureRange(ImageDto imageDto) {
+        Timber.d("\\\\ManualRange\\\\setTemperatureRange\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
         if(isManualRange()) {
-            imageDto.setMinTemperature(convertToRadiometric(imageDto, settings.getManualRangeMin().getValue()));
-            imageDto.setMaxTemperature(convertToRadiometric(imageDto, settings.getManualRangeMax().getValue()));
-            manualMinTemperature = settings.getManualRangeMin().getValue();
-            manualMaxTemperature = settings.getManualRangeMax().getValue();
+            imageDto.setMinTemperature(convertToRadiometric(imageDto, getManualRangeMin()));
+            imageDto.setMaxTemperature(convertToRadiometric(imageDto, getManualRangeMax()));
         } else {
             int minTemperature = Integer.MAX_VALUE;
             int maxTemperature = Integer.MIN_VALUE;
-            for (int i = 0, j = 0; i < imageData.length; i = i + 2, j++) {
-                minTemperature = Math.min(imageData[j], minTemperature);
-                maxTemperature = Math.max(imageData[j], maxTemperature);
+            for (int i = 0; i < imageData.length; i++) {
+                minTemperature = Math.min(imageData[i], minTemperature);
+                maxTemperature = Math.max(imageData[i], maxTemperature);
             }
             imageDto.setMinTemperature(minTemperature);
             imageDto.setMaxTemperature(maxTemperature);
@@ -332,10 +314,29 @@ public class CameraUtils extends BaseObservable {
                 pixels[i] = rgbToPixel(palette[imageData[i]]);
             }
         } else {
+            int v, b, d;
             Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
-            diff = temps.second - temps.first;
-            for (int i = 0; i < imageData.length; i++) {
-                pixels[i] = rgbToPixel(palette[Math.min(((imageData[i] - imageDto.getMinTemperature()) * 255) / diff, 255)]);
+            int min = temps.first;
+            int max = temps.second;
+            diff = max - min;
+            for (int index = 0; index < imageData.length; index++) {
+                v = imageData[index];
+                if (isManualRange()) {
+                    if (min < v && v < max) {
+                        d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                        b = Math.min(Math.max(d, 0), 255);
+                    } else {
+                        b = -1;
+                    }
+                } else {
+                    d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                    b = Math.min(Math.max(d, 0), 255);
+                }
+                if(b > 0) {
+                    pixels[index] = rgbToPixel(palette[b]);
+                } else {
+                    pixels[index] = 0;
+                }
             }
         }
 
@@ -372,16 +373,29 @@ public class CameraUtils extends BaseObservable {
     }
 
     public boolean isUnitsCelsius() {
-        return unitsCelsius;
+        return cameraViewModel.isUnitsCelsius();
     }
 
-    public boolean isManualRange() {
-        return isManualRange;
+    private boolean isManualRange() {
+        if(cameraViewModel == null) {
+            cameraViewModel = MainActivity.getInstance().getCameraViewModel();
+        }
+        return cameraViewModel.isManualRange();
     }
 
-//    public void setManualRange(boolean manualRange) {
-//        isManualRange = manualRange;
-//    }
+    private float getManualRangeMin() {
+        if(cameraViewModel == null) {
+            cameraViewModel = MainActivity.getInstance().getCameraViewModel();
+        }
+        return cameraViewModel.getManualMinTemperature();
+    }
+
+    private float getManualRangeMax() {
+        if(cameraViewModel == null) {
+            cameraViewModel = MainActivity.getInstance().getCameraViewModel();
+        }
+        return cameraViewModel.getManualMaxTemperature();
+    }
 
     /**
      * getRadiometricTemperatures
@@ -389,9 +403,10 @@ public class CameraUtils extends BaseObservable {
      * @return min, max temperatures in radiometric values
      */
     public Pair<Integer, Integer> getRadiometricTemperatures(ImageDto imageDto) {
-        if(isManualRange) {
-            return new Pair<>(convertToRadiometric(imageDto, manualMinTemperature),
-                    convertToRadiometric(imageDto,manualMaxTemperature));
+        Timber.d("\\\\ManualRange\\\\getRadiometricTemperatures\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
+        if(isManualRange()) {
+            return new Pair<>(convertToRadiometric(imageDto, cameraViewModel.getManualMinTemperature()),
+                    convertToRadiometric(imageDto, cameraViewModel.getManualMaxTemperature()));
         } else {
             return new Pair<>(imageDto.getMinTemperature(), imageDto.getMaxTemperature());
         }
