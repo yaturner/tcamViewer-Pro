@@ -289,8 +289,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             //parse flags and set values
                             settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
                                     == 0);
-                            settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) ==
-                                    1);
+                            settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) == Constants.WIFI_MASK_STATIC_IP);
                             if (settings.getCameraIsAccessPoint().getValue()) {
                                 settings.setSSID(settings.getApSSID());
                             } else {
@@ -353,8 +352,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 if (index == paletteNames.length - 1) {
                     index = -1;
                 }
-                settings.setPalette(paletteNames[index + 1]);
+                String paletteName = paletteNames[index + 1];
+                settings.setPalette(paletteName);
                 settings.persist();
+                imageDto.setPaletteName(paletteName);
+                imageDto.setPalette(MainActivity.getInstance().getPaletteFactory().getPaletteByName(paletteName));
                 if (imageDto.getBitmap() != null) {
                     imageDto.remapImage();
                     drawScreen();

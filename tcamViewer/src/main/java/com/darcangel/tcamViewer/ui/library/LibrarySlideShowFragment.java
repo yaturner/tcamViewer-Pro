@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -24,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
@@ -150,7 +155,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
         int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
         int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
-        path = Environment.getExternalStorageDirectory().toString()  + "/Pictures/tcamViewer/";
+        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/tcamViewer/";
         File dir = new File(path);
         if(!dir.exists()) {
             dir.mkdirs();
@@ -171,7 +176,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 bitmap = Bitmap.createScaledBitmap(bitmap, ew, eh, false);
             }
             out = new FileOutputStream(imageFile);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
             out.flush();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -186,6 +191,18 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 exc.printStackTrace();
             }
         }
+    }
+
+    public static Bitmap getBitmapFromView(View view) {
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(returnedBitmap);
+        Drawable bgDrawable =view.getBackground();
+        if (bgDrawable!=null)
+            bgDrawable.draw(canvas);
+        else
+            canvas.drawColor(Color.WHITE);
+        view.draw(canvas);
+        return returnedBitmap;
     }
 
     private void deleteImage(final int position) {

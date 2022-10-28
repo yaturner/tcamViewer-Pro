@@ -2,6 +2,9 @@ package com.darcangel.tcamViewer.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.Pair;
 import android.view.LayoutInflater;
         import android.view.View;
@@ -53,7 +56,7 @@ public class LibrarySlideshowAdapter
         Bitmap bitmap = imageDto.drawHotspot();
         holder.ivImageView.setImageBitmap(bitmap);
         String path = imageDto.getFilename();
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
+        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
         holder.tvFilename.setText(imageName);
         holder.tvSpotmeterTemperature.setText(String.format("%.2f", imageDto.getMeanTemperatureAtSpotmeter()));
         holder.tvSpotmeterTemperature.setTextColor(MainActivity.getInstance().getResources().getColor(R.color.white, null));

@@ -222,6 +222,14 @@ public class ImageDto {
         this.palette = palette;
     }
 
+    public String getPaletteName() {
+        return paletteName;
+    }
+
+    public void setPaletteName(String paletteName) {
+        this.paletteName = paletteName;
+    }
+
     public String getFilename() {
         return filename;
     }
