@@ -216,6 +216,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                             }
                         }
                     }
+                    //if palette changed
+                    if(!selectedPalette.equalsIgnoreCase(settings.getPalette().getValue())) {
+                        settings.setPalette(selectedPalette);
+                    }
                     settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
@@ -291,7 +295,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    settings.setPalette(selectedPalette);
+                    dialog.dismiss();
                 }
             });
             builder.setNegativeButton("Cancel", null);

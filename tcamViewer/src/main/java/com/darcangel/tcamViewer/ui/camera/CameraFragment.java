@@ -332,7 +332,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         //watch for palette changes
         settings.getPalette().observe(mainActivity, palette ->
         {
-            if (cameraViewModel.getImageDto() != null && !palette.equalsIgnoreCase(settings.getPalette().getValue())) {
+            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+            if (imageDto != null && !imageDto.getPaletteName().equals(palette)) {
+                imageDto.setPaletteName(palette);
+                imageDto.setPalette(MainActivity.getInstance().getPaletteFactory().getPaletteByName(palette));
                 cameraViewModel.setRemapNeeded(true);
             }
         });

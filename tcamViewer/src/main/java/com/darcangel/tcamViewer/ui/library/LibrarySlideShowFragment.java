@@ -34,6 +34,7 @@ import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.navigation.NavDirections;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -104,7 +105,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         binding.vpSlideshow.setAdapter(slideshowAdapter);
         MenuHost menuHost = requireActivity();
         menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
-
         View root = binding.getRoot();
         return root;
     }
@@ -208,7 +208,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private void deleteImage(final int position) {
         slideshowAdapter.removeItem(position);
         if (slideshowAdapter.getItemCount() == 0) {
-            mainActivity.onBackPressed();
+            NavDirections navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
+            mainActivity.getNavController().navigate(navDirections);
         } else {
             binding.vpSlideshow.setAdapter(slideshowAdapter);
         }
@@ -246,7 +247,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             exportImage(position);
             return true;
        } else if(id == android.R.id.home) {
-            mainActivity.onBackPressed();
+            NavDirections navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
+            mainActivity.getNavController().navigate(navDirections);
             return true;
         } else {
             return false;

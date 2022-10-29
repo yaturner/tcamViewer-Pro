@@ -158,7 +158,7 @@ public class Settings extends BaseObservable implements Parcelable {
         setGainAuto(sharedPreferences.getBoolean(Constants.KEY_GAIN_AUTO, true));
         setGainHigh(sharedPreferences.getBoolean(Constants.KEY_GAIN_HIGH, false));
         setGainLow(sharedPreferences.getBoolean(Constants.KEY_GAIN_LOW, false));
-        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "192.168.4.2"));
+        setCameraAddress(sharedPreferences.getString(Constants.KEY_CAMERA_IP_ADDRESS, "192.168.4.1"));
         setExportOnSave(sharedPreferences.getBoolean(Constants.KEY_EXPORT_PICTURE_ON_SAVE, false));
         setExportMetaData((sharedPreferences.getBoolean(Constants.KEY_EXPORT_METADATA, true)));
         setExportResolution(sharedPreferences.getInt(Constants.KEY_EXPORT_RESOLUTION, 1));
@@ -363,7 +363,7 @@ public class Settings extends BaseObservable implements Parcelable {
     @Bindable
     public MutableLiveData<String> getCameraAddress() {
         if (cameraAddress == null) {
-            cameraAddress = new MutableLiveData<>("192.168.4.2");
+            cameraAddress = new MutableLiveData<>("192.168.4.1");
         }
         return cameraAddress;
     }
