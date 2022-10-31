@@ -8,16 +8,19 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -66,6 +69,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private LibraryViewModel libraryViewModel;
     private MainActivity mainActivity;
     private Settings settings;
+    private View root;
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -105,7 +109,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         binding.vpSlideshow.setAdapter(slideshowAdapter);
         MenuHost menuHost = requireActivity();
         menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
-        View root = binding.getRoot();
+        root = binding.getRoot();
         return root;
     }
 
@@ -150,7 +154,9 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     }
 
     private void exportImage(final int position) {
+        String imageFilename;
         ImageDto imageDto = imageDtos.get(position);
+        Bitmap bitmap = createExportImage(imageDto);
         String path = imageDto.getFilename();
         String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
         int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
@@ -161,7 +167,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             dir.mkdirs();
         }
         path = path + imageName + ".png";
-        Bitmap bitmap = imageDto.getBitmap();
         OutputStream out = null;
         File imageFile = new File(path);
 
@@ -193,16 +198,39 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         }
     }
 
-    public static Bitmap getBitmapFromView(View view) {
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(returnedBitmap);
-        Drawable bgDrawable =view.getBackground();
-        if (bgDrawable!=null)
-            bgDrawable.draw(canvas);
-        else
-            canvas.drawColor(Color.WHITE);
-        view.draw(canvas);
-        return returnedBitmap;
+    private Bitmap createExportImage(ImageDto imageDto) {
+        ImageView ivImageView;
+        TextView tvSpotmeterTemperature;
+        TextView tvMaxTemperature;
+        ImageView ivColorBar;
+        TextView tvMinTemperature;
+        TextView tvFilename;
+
+        View inflatedFrame = getLayoutInflater().inflate(R.layout.export_library_image, null);
+        ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame.findViewById(R.id.clItemLayout) ;
+        constraintLayout.setDrawingCacheEnabled(true);
+        constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        constraintLayout.layout(0, 0, constraintLayout.getMeasuredWidth(), constraintLayout.getMeasuredHeight());
+        constraintLayout.buildDrawingCache(true);
+        ivImageView = constraintLayout.findViewById(R.id.ivCamera);
+        tvSpotmeterTemperature = constraintLayout.findViewById(R.id.tvSpotmeterTemperature);
+        tvMaxTemperature = constraintLayout.findViewById(R.id.tvMaxTemperature);
+        ivColorBar = constraintLayout.findViewById(R.id.ivColorBar);
+        tvMinTemperature = constraintLayout.findViewById(R.id.tvMinTemperature);
+        tvFilename = constraintLayout.findViewById(R.id.tvFilename);
+        Bitmap bitmap = imageDto.drawHotspot();
+        ivImageView.setImageBitmap(bitmap);
+        Bitmap colorbar = imageDto.createColorBar();
+        ivColorBar.setImageBitmap(colorbar);
+        Pair<Float, Float> temps = imageDto.getTemperatures();
+        tvMaxTemperature.setText(String.format("%.2f", temps.second));
+        tvMinTemperature.setText(String.format("%.2f", temps.first));
+        bitmap = Bitmap.createBitmap(
+                constraintLayout.getWidth(), constraintLayout.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        constraintLayout.draw(canvas);
+        return bitmap;
     }
 
     private void deleteImage(final int position) {

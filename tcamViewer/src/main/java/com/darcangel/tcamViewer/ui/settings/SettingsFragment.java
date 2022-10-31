@@ -217,7 +217,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         }
                     }
                     //if palette changed
-                    if(!selectedPalette.equalsIgnoreCase(settings.getPalette().getValue())) {
+                    if(selectedPalette != null && !selectedPalette.equalsIgnoreCase(settings.getPalette().getValue())) {
                         settings.setPalette(selectedPalette);
                     }
                     settings.persist();

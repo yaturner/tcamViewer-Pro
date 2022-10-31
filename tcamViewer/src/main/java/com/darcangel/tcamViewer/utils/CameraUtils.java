@@ -274,8 +274,10 @@ public class CameraUtils extends BaseObservable {
         canvas.drawRect(fill, black);
 
         for(int index = 0; index < 256; index++) {
-            paint.setColor(rgbToPixel(palette[255 - index]));
-            canvas.drawLine(0, (float)index, (float)bin[index]*scale, (float)index, paint);
+            if (bin[index] > 0) {
+                paint.setColor(rgbToPixel(palette[255 - index]));
+                canvas.drawLine(0, (float) index, (float) bin[index] * scale, (float) index, paint);
+            }
         }
 
         return image;
