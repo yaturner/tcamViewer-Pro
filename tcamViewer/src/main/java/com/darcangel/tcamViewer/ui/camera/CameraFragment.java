@@ -379,16 +379,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     binding.ivColorBar.setVisibility(View.VISIBLE);
                     binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
                     if (imageDto.getBitmap() != null) {
+                        //Do we need to recreate the image
+                        if (cameraViewModel.isRemapNeeded()) {
+                            cameraViewModel.setRemapNeeded(false);
+                            imageDto.remapImage();
+                        }
                         if (settings.getDisplaySpotmeter().getValue()) {
                             image = imageDto.drawHotspot();
                             binding.tvSpotmeter.setText(createTemperatureString(imageDto.
                                     getMeanTemperatureAtSpotmeter()));
                             imageDto.setBitmap(image);
-                        }
-                        //Do we need to recreate the image
-                        if (cameraViewModel.isRemapNeeded()) {
-                            cameraViewModel.setRemapNeeded(false);
-                            imageDto.remapImage();
                         }
                         binding.ivCamera.setImageBitmap(image);
                         //Always get AGC for the current image, when settings are changed it refers to the next get
@@ -442,6 +442,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 if (cameraViewModel.getStreaming()) {
                     cameraService.startStreaming();
                 } else {
+                    cameraViewModel.setRemapNeeded(true);
                     drawScreen();
                 }
             } catch (IOException e) {
