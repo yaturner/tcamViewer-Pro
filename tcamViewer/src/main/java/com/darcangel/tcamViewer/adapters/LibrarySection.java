@@ -1,9 +1,11 @@
 package com.darcangel.tcamViewer.adapters;
 
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.view.View;
 
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -99,35 +101,37 @@ public class LibrarySection extends Section {
         String path = imageFile.get(position);
         ImageDto imageDto;
 
-        imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
-        imageDto = new ImageDto(path, settings.getPalette().getValue());
-        imageDtos.add(position, imageDto);
-        Bitmap image = imageDto.getBitmap();
+        imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1);
+        if(imageDtos.size() <= position) {
+            imageDto = new ImageDto(path, settings.getPalette().getValue());
+            imageDtos.add(position, imageDto);
+            itemHolder.setImagePath(path);
+            if (imageName != null && !imageName.isEmpty()) {
+                Matcher matcher = PATTERN.matcher(imageName);
+                if (matcher.find()) {
+                    itemHolder.getTitleView().setText(matcher.group(1));
+                } else {
+                    itemHolder.getTitleView().setText("");
+                }
+            } else {
+                itemHolder.getTitleView().setText("");
+            }
+            Bitmap image = imageDto.getBitmap();
+            itemHolder.getImageView().setImageBitmap(image);
+            itemHolder.bind((long) position);
+        } else {
+            imageDto = imageDtos.get(position);
+        }
+        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
+                    itemHolder.getTitleView().getText(), position, (itemHolder.isSelected() ? "true" : "false"));
         if(itemHolder.isSelected()) {
-            itemHolder.getImageView().setBackground(mainActivity.getResources().
-                    getDrawable(R.drawable.library_item_highlight_selector, null));
+            itemHolder.getImageView().setBackground(ResourcesCompat.
+                    getDrawable(mainActivity.getResources(), R.drawable.library_item_highlight_selector, null));
         } else {
             itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
                     getColor(R.color.white,null));
 
         }
-        itemHolder.getImageView().setImageBitmap(image);
-        itemHolder.setImagePath(path);
-        if (imageName != null && !imageName.isEmpty()) {
-            Matcher matcher = PATTERN.matcher(imageName);
-            if(matcher.find()) {
-                itemHolder.getTitleView().setText(matcher.group(1));
-            } else {
-                itemHolder.getTitleView().setText("");
-            }
-        } else {
-            itemHolder.getTitleView().setText("");
-        }
-        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
-                itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
-
-
-        itemHolder.bind(Long.valueOf(position));
     }
 
     @Override

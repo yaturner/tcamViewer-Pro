@@ -374,6 +374,32 @@ public class CameraUtils extends BaseObservable {
         return tempBitmap;
     }
 
+    public void rotateColormap(ImageDto imageDto) {
+        String pal = imageDto.getPaletteName();
+        MainActivity mainActivity = MainActivity.getInstance();
+        String[] paletteNames = mainActivity.getPaletteFactory().getPaletteNames();
+        for (int index = 0; index < paletteNames.length; index++) {
+            if (pal.equalsIgnoreCase(paletteNames[index])) {
+                if (index == paletteNames.length - 1) {
+                    index = -1;
+                }
+                String paletteName = paletteNames[index + 1];
+                if(settings == null) {
+                    settings = MainActivity.getInstance().getSettings();
+                }
+                settings.setPalette(paletteName);
+                settings.persist();
+                imageDto.setPaletteName(paletteName);
+                imageDto.setPalette(mainActivity.getPaletteFactory().getPaletteByName(paletteName));
+                if (imageDto.getBitmap() != null) {
+                    imageDto.remapImage();
+                }
+                break;
+            }
+        }
+    }
+
+
     public boolean isUnitsCelsius() {
         return cameraViewModel.isUnitsCelsius();
     }

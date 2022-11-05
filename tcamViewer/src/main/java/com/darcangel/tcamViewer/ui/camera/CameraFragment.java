@@ -339,34 +339,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraViewModel.setRemapNeeded(true);
             }
         });
+
         //watch for palette rotation requests
         binding.ivColorBar.setOnClickListener(v -> {
-            rotateColormap();
+            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+            imageDto.rotateColormap();
+            drawScreen();
         });
 
         drawScreen();
-    }
-
-    private void rotateColormap() {
-        String pal = settings.getPalette().getValue();
-        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-        for (int index = 0; index < paletteNames.length; index++) {
-            if (pal.equalsIgnoreCase(paletteNames[index])) {
-                if (index == paletteNames.length - 1) {
-                    index = -1;
-                }
-                String paletteName = paletteNames[index + 1];
-                settings.setPalette(paletteName);
-                settings.persist();
-                imageDto.setPaletteName(paletteName);
-                imageDto.setPalette(MainActivity.getInstance().getPaletteFactory().getPaletteByName(paletteName));
-                if (imageDto.getBitmap() != null) {
-                    imageDto.remapImage();
-                    drawScreen();
-                }
-                break;
-            }
-        }
     }
 
     private void drawScreen() {

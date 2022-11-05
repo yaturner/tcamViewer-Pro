@@ -8,11 +8,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.ContactsContract;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -59,8 +61,10 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import timber.log.Timber;
 
-public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
+
+public class LibrarySlideShowFragment extends Fragment implements MenuProvider, View.OnClickListener {
     private ViewGroup container;
     private ViewPager2 viewPager;
     private ArrayList<ImageDto> imageDtos;
@@ -98,6 +102,21 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         libraryViewModel = mainActivity.getLibraryViewModel();
         this.imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
+        slideshowAdapter.setOnItemClickListener(new LibrarySlideshowAdapter.ClickListener() {
+            @Override
+            public void onItemClick(ImageDto imageDto, int position, View v) {
+                Timber.d("clicked on colorbar");
+                imageDto.rotateColormap();
+                v.getRootView().invalidate();
+                //slideshowAdapter.notifyDataSetChanged();
+                slideshowAdapter.notifyItemChanged(position);
+            }
+
+            @Override
+            public void onItemLongClick(ImageDto imageDto, int position, View v) {
+
+            }
+        });
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -215,6 +234,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         constraintLayout.buildDrawingCache(true);
         ivImageView = constraintLayout.findViewById(R.id.ivCamera);
         tvSpotmeterTemperature = constraintLayout.findViewById(R.id.tvSpotmeterTemperature);
+        ImageView ivSpotmeterTemperature = constraintLayout.findViewById(R.id.ivSpotmeterTemperature);
+        writeTextonImageView(ivSpotmeterTemperature, R.id.ivSpotmeterTemperature, "32.0");
         tvMaxTemperature = constraintLayout.findViewById(R.id.tvMaxTemperature);
         ivColorBar = constraintLayout.findViewById(R.id.ivColorBar);
         tvMinTemperature = constraintLayout.findViewById(R.id.tvMinTemperature);
@@ -231,6 +252,30 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         Canvas canvas = new Canvas(bitmap);
         constraintLayout.draw(canvas);
         return bitmap;
+    }
+
+    private void writeTextonImageView(ImageView imageView, int resId, String text) {
+        Bitmap.createBitmap(
+                imageView.getWidth(), imageView.getHeight(), Bitmap.Config.ARGB_8888);
+        imageView.setDrawingCacheEnabled(true);
+        Drawable drawable = imageView.getBackground();
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+//        Bitmap.Config config = bm.getConfig();
+//        int width = bm.getWidth();
+//        int height = bm.getHeight();
+//
+//        Bitmap newImage = Bitmap.createBitmap(width, height, config);
+//
+//        Canvas c = new Canvas(newImage);
+//        c.drawBitmap(bm, 0, 0, null);
+//
+//        Paint paint = new Paint();
+//        paint.setColor(Color.BLACK);
+//        paint.setStyle(Paint.Style.FILL);
+//        paint.setTextSize(20);
+//        c.drawText(text, 0, 25, paint);
+//
+//        imageView.setImageBitmap(newImage);
     }
 
     private void deleteImage(final int position) {
@@ -292,6 +337,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     public void onDestroy() {
         super.onDestroy();
         libraryViewModel.clearAllSelectedImages();
+    }
+
+    @Override
+    public void onClick(View v) {
+
     }
 }
 

@@ -308,4 +308,9 @@ public class ImageDto {
         cameraUtils.saveBitmapToFile(this, newFile);
     }
 
-}
+    public void rotateColormap() {
+        cameraUtils.rotateColormap(this);
+    }
+
+
+    }

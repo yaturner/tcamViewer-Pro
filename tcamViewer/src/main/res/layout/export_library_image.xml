@@ -61,7 +61,6 @@
                 app:layout_constraintStart_toStartOf="@+id/glLeft"
                 app:layout_constraintTop_toTopOf="@+id/glTop" />
 
-
             <ImageView
                 android:id="@+id/ivCamera"
                 android:layout_width="@dimen/display_image_width"
@@ -70,7 +69,7 @@
                 android:scaleType="fitXY"
                 app:layout_constraintEnd_toStartOf="@+id/ivColorBar"
                 app:layout_constraintStart_toStartOf="@id/glLeft"
-                app:layout_constraintTop_toBottomOf="@+id/tvSpotmeterTemperature" />
+                app:layout_constraintTop_toBottomOf="@+id/ivSpotmeterTemperature" />
 
             <TextView
                 android:id="@+id/tvMaxTemperature"
