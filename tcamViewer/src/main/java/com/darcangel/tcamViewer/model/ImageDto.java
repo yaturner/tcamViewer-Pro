@@ -49,40 +49,15 @@ public class ImageDto {
 
     //Constructor from camera response
     public ImageDto(JSONObject jsonObject, String paletteName) {
+        cameraUtils = MainActivity.getInstance().getCameraUtils();
         this.jsonObject = jsonObject;
-        this.paletteName = paletteName;
-        init();
+        init(paletteName);
     }
 
     //Constructor from file
     public ImageDto(String filename, String paletteName) {
-        this.filename = filename;
-        this.paletteName = paletteName;
-        String line = "";
-        tjsnString = "";
-        BufferedReader bufferedReader = null;
-        String imageName = filename.substring(filename.lastIndexOf(File.separatorChar) + 1);
-        try {
-            bufferedReader = new BufferedReader(new FileReader(new File(filename)));
-            do {
-                line = bufferedReader.readLine();
-                if (line != null) {
-                    tjsnString = tjsnString + line;
-                }
-            } while (line != null);
-        } catch (IOException e) {
-            e.printStackTrace();
-            tjsnString = "";
-        }
-        finally {
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        cameraUtils = MainActivity.getInstance().getCameraUtils();
+        String tjsnString = cameraUtils.readTjsnFile(filename);
         if (!tjsnString.isEmpty()) {
             try {
                 jsonObject = new JSONObject(tjsnString);
@@ -90,18 +65,22 @@ public class ImageDto {
                 e.printStackTrace();
             }
         }
-        init();
+        init(paletteName);
     }
 
-    private void init() {
-        cameraUtils = MainActivity.getInstance().getCameraUtils();
-        palette = MainActivity.getInstance().getPaletteFactory().getPaletteByName(paletteName);
+    private void init(final String paletteName) {
         try {
-            //add the palette name to the metadata
+            //add the palette name to the metadata if it isn't there already
             JSONObject metadata = jsonObject.getJSONObject("metadata");
-            metadata.put("palette", paletteName);
+            if (!metadata.has("palette")) {
+                metadata.put("palette", paletteName);
+                this.paletteName = paletteName;
+            } else {
+                this.paletteName = metadata.getString("palette");
+            }
+            palette = MainActivity.getInstance().getPaletteFactory().getPaletteByName(this.paletteName);
             cameraUtils.processImageResponse(this);
-        } catch (JSONException e) {
+        } catch(JSONException e) {
             e.printStackTrace();
         }
     }
