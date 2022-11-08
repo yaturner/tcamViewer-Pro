@@ -50,6 +50,7 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibrarySlideshowBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
 
@@ -135,6 +136,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        BottomNavigationView navBar = getActivity().findViewById(R.id.nav_view);
+        if(navBar != null) {
+            navBar.setVisibility(View.GONE);
+        }
+
     }
 
     private void shareImage(final int position) {

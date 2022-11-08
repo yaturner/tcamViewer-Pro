@@ -132,9 +132,16 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavigationUI.setupWithNavController(binding.navView, navController);
         navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
             @Override
-            public void onDestinationChanged(@NonNull NavController navController, @NonNull NavDestination navDestination,
+            public void onDestinationChanged(@NonNull NavController navController,
+                                             @NonNull NavDestination navDestination,
                                              @Nullable Bundle bundle) {
                 Timber.d("New Destination is %s", navDestination.toString());
+                BottomNavigationView navBar = findViewById(R.id.nav_view);
+                if(navDestination.getId() == R.id.navigation_librarySlideShowFragment) {
+                    navBar.setVisibility(View.GONE);
+                } else {
+                    navBar.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -188,44 +195,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             progressDialog.dismiss();
         }
     }
-
-    /** Defines callbacks for service binding, passed to bindService() */
-//    private ServiceConnection connection = new ServiceConnection() {
-//
-//        @Override
-//        public void onServiceConnected(ComponentName className,
-//                                       IBinder service) {
-//            // We've bound to LocalService, cast the IBinder and get LocalService instance
-////            CameraService.LocalBinder binder = (CameraService.LocalBinder) service;
-////            cameraService = binder.getService();
-//            if(cameraService == null) {
-//                cameraService = new CameraService();
-//            }
-//            cameraService.setIpAddress(settings.getCameraAddress());
-////            isCameraServiceBound = true;
-//
-//        }
-//
-//        @Override
-//        public void onServiceDisconnected(ComponentName arg0) {
-//            isCameraServiceBound = false;
-//        }
-//    };
-//
-//    private void startCameraService() {
-//        Intent intent = new Intent(this, CameraService.class);
-//        bindService(intent, connection, Context.BIND_AUTO_CREATE);
-//        isCameraServiceBound = true;
-//    }
-//
-//
-//    private void destroyCameraService() {
-//        if (isCameraServiceBound) {
-//            // Detach our existing connection.
-//            unbindService(connection);
-//            isCameraServiceBound = false;
-//        }
-//    }
 
     public NavController getNavController() {
         return navController;
