@@ -232,11 +232,11 @@ public class CameraUtils extends BaseObservable {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1.0f);
 
-        int b, d, v;
+        int b = -1, d = -1, v = -1;
         Timber.d("\\\\ManualRange\\\\createHistogram\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
 
         try {
-            Pair<Integer, Integer> temps = imageDto.getRadiometricTemperatures();
+            Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
             int min = temps.first;
             int max = temps.second;
             for (int index = 0; index < imageData.length; index++) {
@@ -257,9 +257,16 @@ public class CameraUtils extends BaseObservable {
                 } else {
                     b = imageData[index];
                 }
-                if (b > 0) {
+                if(!isManualRange()) {
+                    Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d, min = %d", b, v, d, min);
+                }
+                if (b >= 0) {
                     bin[255 - b] = bin[255 - b] + 1;
                     maxBinCount = Math.max(bin[255 - b], maxBinCount);
+                } else {
+                    if(!isManualRange()) {
+                        Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d", b, v, d);
+                    }
                 }
             }
         } catch(Exception e) {
@@ -293,10 +300,10 @@ public class CameraUtils extends BaseObservable {
      */
     private void setTemperatureRange(ImageDto imageDto) {
         Timber.d("\\\\ManualRange\\\\setTemperatureRange\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
-        if(isManualRange()) {
-            imageDto.setMinTemperature(convertToRadiometric(imageDto, getManualRangeMin()));
-            imageDto.setMaxTemperature(convertToRadiometric(imageDto, getManualRangeMax()));
-        } else {
+//        if(isManualRange()) {
+//            imageDto.setMinTemperature(convertToRadiometric(imageDto, getManualRangeMin()));
+//            imageDto.setMaxTemperature(convertToRadiometric(imageDto, getManualRangeMax()));
+//        } else {
             int minTemperature = Integer.MAX_VALUE;
             int maxTemperature = Integer.MIN_VALUE;
             for (int i = 0; i < imageData.length; i++) {
@@ -305,7 +312,7 @@ public class CameraUtils extends BaseObservable {
             }
             imageDto.setMinTemperature(minTemperature);
             imageDto.setMaxTemperature(maxTemperature);
-        }
+//        }
     }
 
     public void remapImage(ImageDto imageDto) {
@@ -518,8 +525,9 @@ public class CameraUtils extends BaseObservable {
     public String readTjsnFile(String path) {
         String json = new String();
         String line;
+        BufferedReader bufferedReader = null;
         try {
-            BufferedReader bufferedReader = new BufferedReader(
+            bufferedReader = new BufferedReader(
                     new FileReader(new File(path)));
             do {
                 line = bufferedReader.readLine();
@@ -527,12 +535,17 @@ public class CameraUtils extends BaseObservable {
                     json = json + line;
                 }
             } while (line != null);
-            if (bufferedReader != null) {
-                bufferedReader.close();
-            }
         } catch (IOException e) {
             e.printStackTrace();
             json = "";
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return json;
     }

@@ -53,9 +53,10 @@ public class LibrarySlideshowAdapter
     // This method binds the screen with the view
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ImageDto imageDto = imageDtos.get(position);
+        ImageDto imageDto = imageDtos.get(holder.getAbsoluteAdapterPosition());
         assert imageDto != null;
         Bitmap bitmap = imageDto.drawHotspot();
+        imageDto.remapImage();
         holder.ivImageView.setImageBitmap(bitmap);
         String path = imageDto.getFilename();
         String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");

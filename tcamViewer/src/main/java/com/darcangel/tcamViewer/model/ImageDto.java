@@ -57,6 +57,7 @@ public class ImageDto {
     //Constructor from file
     public ImageDto(String filename, String paletteName) {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
+        this.filename = filename;
         String tjsnString = cameraUtils.readTjsnFile(filename);
         if (!tjsnString.isEmpty()) {
             try {

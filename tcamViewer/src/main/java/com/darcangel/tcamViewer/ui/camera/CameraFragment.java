@@ -1,13 +1,13 @@
 package com.darcangel.tcamViewer.ui.camera;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -102,7 +102,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             case R.id.action_palette: {
                 String title = ((MenuItemImpl) menuItem).getTitle().toString();
                 if (!title.equalsIgnoreCase("Palette") &&
-                        !title.equalsIgnoreCase(settings.getPalette().getValue())) {
+                        !title.equalsIgnoreCase(imageDto.getPaletteName())) {
                     settings.setPalette(title);
                     settings.persist();
                     mainActivity.runOnUiThread(new Runnable() {
@@ -110,7 +110,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         public void run() {
                             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
                             int[][] palette = mainActivity.getPaletteFactory()
-                                    .getPaletteByName(settings.getPalette().getValue());
+                                    .getPaletteByName(imageDto.getPaletteName());
                             if (palette != null) {
                                 imageDto.setPalette(palette);
                                 binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
@@ -443,9 +443,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
         ImageDto imageDto = cameraViewModel.getImageDto().getValue();
 
+
         if (settings.getPalette() != null && !settings.getPalette().getValue().isEmpty()) {
             itemPalette.setTitle(settings.getPalette().getValue());
         }
+//        if (imageDto.getPaletteName() != null && !imageDto.getPaletteName().isEmpty()) {
+//            itemPalette.setTitle(imageDto.getPaletteName());
+//        }
+
         //since this fragment can be recreated, prevent multiple items
         paletteSubMenu.clear();
         for (int i = 0; i < paletteNames.length; i++) {
