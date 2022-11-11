@@ -36,7 +36,6 @@ public class ImageDto {
     private int autoGainMode;
     private int maxTemperature;
     private int minTemperature;
-    private int diff;
 
     private JSONObject jsonObject;
     private String filename;
@@ -232,14 +231,6 @@ public class ImageDto {
 
     public void setMinTemperature(int minTemperature) {
         this.minTemperature = minTemperature;
-    }
-
-    public int getDiff() {
-        return diff;
-    }
-
-    public void setDiff(int diff) {
-        this.diff = diff;
     }
 
     /*********************************************************************/

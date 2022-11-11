@@ -62,6 +62,7 @@ public class CameraUtils extends BaseObservable {
 
     public void processImageResponse(ImageDto imageDto) throws JSONException {
         int[][] palette = imageDto.getPalette();
+        int diff = 0;
 
         if(pixels != null) {
             pixels = null;
@@ -112,7 +113,7 @@ public class CameraUtils extends BaseObservable {
             Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
             min = temps.first;
             max = temps.second;
-            imageDto.setDiff(max - min);
+            diff = max - min;
             for (int i = 0; i < imageData.length; i++) {
                 int v = imageData[i];
                 int value;
@@ -122,9 +123,9 @@ public class CameraUtils extends BaseObservable {
                     } else if(v > max) {
                         v = max;
                     }
-                    value = ((v - min) * 255) / imageDto.getDiff();
+                    value = ((v - min) * 255) / diff;
                 } else {
-                    value = ((v - imageDto.getMinTemperature()) * 255) / imageDto.getDiff();
+                    value = ((v - imageDto.getMinTemperature()) * 255) / diff;
                 }
 
                 pixels[i] = rgbToPixel(palette[Math.min(Math.max(value, 0), 255)]);
@@ -181,9 +182,14 @@ public class CameraUtils extends BaseObservable {
         if(imageDto.getMinTemperature() == 0 && imageDto.getMaxTemperature() == 0) {
             return colorBar;
         }
+        int min, max, diff;
+        Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
+        min = temps.first;
+        max = temps.second;
+        diff = max - min;
 
         float offset = (float)Constants.COLORBAR_HEIGHT -
-                ((((float)(imageDto.getSpotmeterMean()-imageDto.getMinTemperature()))/(float)imageDto.getDiff()) * (float)Constants.COLORBAR_HEIGHT);
+                ((((float)(imageDto.getSpotmeterMean()-imageDto.getMinTemperature()))/(float)diff) * (float)Constants.COLORBAR_HEIGHT);
 
         Paint paint = new Paint();
         paint.setColor(0xffffffff);
@@ -239,19 +245,20 @@ public class CameraUtils extends BaseObservable {
             Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
             int min = temps.first;
             int max = temps.second;
+            int diff = max - min;
             for (int index = 0; index < imageData.length; index++) {
                 if(!imageDto.isAGC()) {
                     //if Manual Range was specified, only include values min < v < max
                     v = imageData[index];
                     if (isManualRange()) {
                         if (min < v && v < max) {
-                            d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                            d = Math.round(((float)(v-min)/(float)diff) * 255f);
                             b = Math.min(Math.max(d, 0), 255);
                         } else {
                             b = -1;
                         }
                     } else {
-                        d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                        d = Math.round(((float)(v-min)/(float)diff) * 255f);
                         b = Math.min(Math.max(d, 0), 255);
                     }
                 } else {
@@ -332,13 +339,13 @@ public class CameraUtils extends BaseObservable {
                 v = imageData[index];
                 if (isManualRange()) {
                     if (min < v && v < max) {
-                        d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                        d = Math.round(((float)(v-min)/(float)diff) * 255f);
                         b = Math.min(Math.max(d, 0), 255);
                     } else {
                         b = -1;
                     }
                 } else {
-                    d = Math.round(((float)(v-min)/(float)imageDto.getDiff()) * 255f);
+                    d = Math.round(((float)(v-min)/(float)diff) * 255f);
                     b = Math.min(Math.max(d, 0), 255);
                 }
                 if(b > 0) {
