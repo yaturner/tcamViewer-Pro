@@ -3,11 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/black">
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clItemLayout"
             android:layout_width="wrap_content"
@@ -43,24 +38,6 @@
                 android:orientation="horizontal"
                 app:layout_constraintGuide_percent=".95" />
 
-<!--            <TextView-->
-<!--                android:id="@+id/tvSpotmeterTemperature"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:gravity="center_horizontal"-->
-<!--                app:layout_constraintEnd_toStartOf="@+id/glRight"-->
-<!--                app:layout_constraintStart_toStartOf="@+id/glLeft"-->
-<!--                app:layout_constraintTop_toTopOf="@+id/glTop" />-->
-
-            <ImageView
-                android:id="@+id/ivSpotmeterTemperature"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                app:layout_constraintEnd_toStartOf="@+id/glRight"
-                app:layout_constraintStart_toStartOf="@+id/glLeft"
-                app:layout_constraintTop_toTopOf="@+id/glTop" />
-
             <ImageView
                 android:id="@+id/ivCamera"
                 android:layout_width="@dimen/display_image_width"
@@ -69,14 +46,14 @@
                 android:scaleType="fitXY"
                 app:layout_constraintEnd_toStartOf="@+id/ivColorBar"
                 app:layout_constraintStart_toStartOf="@id/glLeft"
-                app:layout_constraintTop_toBottomOf="@+id/ivSpotmeterTemperature" />
+                app:layout_constraintTop_toBottomOf="@+id/glTop" />
 
             <TextView
                 android:id="@+id/tvMaxTemperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:gravity="right"
+                android:layout_gravity="end"
+                android:gravity="end"
                 android:text=""
                 android:textColor="@color/white"
                 android:textSize="12sp"
@@ -101,8 +78,8 @@
                 android:id="@+id/tvMinTemperature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:gravity="right"
+                android:layout_gravity="end"
+                android:gravity="end"
                 android:text=""
                 android:textColor="@color/white"
                 android:textSize="12sp"
@@ -111,15 +88,78 @@
                 app:layout_constraintStart_toEndOf="@+id/ivCamera"
                 app:layout_constraintTop_toBottomOf="@+id/ivColorBar" />
 
-            <TextView
-                android:id="@+id/tvFilename"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/llAnnotation"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:textColor="@color/white"
-                app:layout_constraintEnd_toStartOf="@+id/glRight"
-                app:layout_constraintStart_toStartOf="@+id/glLeft"
-                app:layout_constraintTop_toBottomOf="@+id/ivCamera" />
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ivCamera">
+
+                <LinearLayout
+                    android:id="@+id/llAnnotation_line_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:weightSum="3"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvLogo"
+                        android:layout_width="64pt"
+                        android:layout_height="12pt"
+                        android:layout_gravity="start"
+                        android:layout_weight="1"
+                        android:gravity="start"/>
+
+                    <TextView
+                        android:id="@+id/tvSpotmeterTemperature"
+                        android:layout_width="36pt"
+                        android:layout_height="12pt"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"/>
+
+
+                    <TextView
+                        android:id="@+id/tvEmissivity"
+                        android:layout_width="36pt"
+                        android:layout_height="12pt"
+                        android:layout_gravity="end"
+                        android:layout_weight="1"/>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/llAnnotation_line_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:weightSum="3"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvDateTime"
+                        android:layout_width="92pt"
+                        android:layout_height="12pt"
+                        android:layout_gravity="start"
+                        android:layout_weight="1"
+                        android:gravity="start"/>
+
+                    <TextView
+                        android:id="@+id/tvGain"
+                        android:layout_width="24pt"
+                        android:layout_height="12pt"
+                        android:layout_gravity="end"
+                        android:layout_weight="1"/>
+
+                </LinearLayout>
+            </LinearLayout>
+            <!--        <TextView-->
+            <!--            android:id="@+id/tvFilename"-->
+            <!--            android:layout_width="wrap_content"-->
+            <!--            android:layout_height="wrap_content"-->
+            <!--            android:gravity="center_horizontal"-->
+            <!--            android:textColor="@color/white"-->
+            <!--            app:layout_constraintEnd_toStartOf="@+id/glRight"-->
+            <!--            app:layout_constraintStart_toStartOf="@+id/glLeft"-->
+            <!--            app:layout_constraintTop_toBottomOf="@+id/ivCamera" />-->
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
