@@ -15,21 +15,24 @@ import androidx.annotation.Nullable;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.databinding.FragmentPrivacyDisclosureBinding;
-import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragmentDirections;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class PrivacyDisclosure extends Fragment implements MenuProvider {
+public class PrivacyDisclosureFragment extends Fragment implements MenuProvider {
     private MainActivity mainActivity;
     private FragmentPrivacyDisclosureBinding binding;
+    private BottomNavigationView navBar;
     private View root;
 
 
@@ -40,10 +43,19 @@ public class PrivacyDisclosure extends Fragment implements MenuProvider {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_USER);
+        mainActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR);
         binding = FragmentPrivacyDisclosureBinding.inflate(inflater, container, false);
+        if(savedInstanceState != null) {
+            binding.wvDisclosure.restoreState(savedInstanceState);
+        }
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         root = binding.getRoot();
         return root;
+    }
+
+    public void onSaveInstanceState(Bundle outState) {
+        binding.wvDisclosure.saveState(outState);
     }
 
     @Override
@@ -51,9 +63,13 @@ public class PrivacyDisclosure extends Fragment implements MenuProvider {
         super.onViewCreated(view, savedInstanceState);
         String htmlString = readTxt();
         binding.wvDisclosure.setWebChromeClient(new WebChromeClient());
-        binding.wvDisclosure.loadData(htmlString, "text/html", "ISO-8859-1");
-        MenuHost menuHost = requireActivity();
-        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        binding.wvDisclosure.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+        binding.wvDisclosure.getSettings().setUseWideViewPort(false);
+        binding.wvDisclosure.loadDataWithBaseURL(null, htmlString, "text/html", "ISO-8859-1", null);
+        navBar = getActivity().findViewById(R.id.nav_view);
+        if(navBar != null) {
+            navBar.setVisibility(View.GONE);
+        }
     }
 
     private String readTxt() {
@@ -84,7 +100,8 @@ public class PrivacyDisclosure extends Fragment implements MenuProvider {
         // command switch
         int id = menuItem.getItemId();
         if(id == android.R.id.home) {
-            NavDirections navDirections = PrivacyDisclosureDirections.actionPrivacyDisclosureToNavigationSettings();
+            NavDirections navDirections = PrivacyDisclosureFragmentDirections.
+                    actionPrivacyDisclosureToNavigationSettings();
             mainActivity.getNavController().navigate(navDirections);
             return true;
         } else {
@@ -92,5 +109,11 @@ public class PrivacyDisclosure extends Fragment implements MenuProvider {
         }
     }
 
-
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(navBar != null) {
+            navBar.setVisibility(View.VISIBLE);
+        }
+    }
 }

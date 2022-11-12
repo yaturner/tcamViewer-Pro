@@ -33,7 +33,9 @@ import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
+import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import dagger.hilt.android.AndroidEntryPoint;

@@ -57,11 +57,13 @@
     </fragment>
     <fragment
         android:id="@+id/privacyDisclosure"
-        android:name="com.darcangel.tcamViewer.ui.settings.PrivacyDisclosure"
+        android:name="com.darcangel.tcamViewer.ui.settings.PrivacyDisclosureFragment"
         android:label="PrivacyDisclosure" >
         <action
             android:id="@+id/action_privacyDisclosure_to_navigation_settings"
-            app:destination="@id/navigation_settings" />
+            app:destination="@id/navigation_settings"
+            app:popUpTo="@id/navigation_settings"
+            app:popUpToInclusive="true"/>
     </fragment>
     <fragment
         android:id="@+id/navigation_librarySlideShowFragment"
@@ -70,6 +72,9 @@
         android:label="Browse" >
         <action
             android:id="@+id/action_librarySlideShowFragment_to_navigation_library"
-            app:destination="@id/navigation_library" />
+            app:destination="@id/navigation_library"
+            app:popUpTo="@id/navigation_library"
+            app:popUpToInclusive="true"/>
+
     </fragment>
 </navigation>

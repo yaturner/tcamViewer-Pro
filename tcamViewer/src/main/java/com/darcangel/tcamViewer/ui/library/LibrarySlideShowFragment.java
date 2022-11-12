@@ -74,6 +74,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
     private LibraryViewModel libraryViewModel;
     private MainActivity mainActivity;
     private Settings settings;
+    private BottomNavigationView navBar;
     private View root;
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
@@ -136,7 +137,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        BottomNavigationView navBar = getActivity().findViewById(R.id.nav_view);
+        navBar = getActivity().findViewById(R.id.nav_view);
         if(navBar != null) {
             navBar.setVisibility(View.GONE);
         }
@@ -343,6 +344,9 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
     public void onDestroy() {
         super.onDestroy();
         libraryViewModel.clearAllSelectedImages();
+        if(navBar != null) {
+            navBar.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
