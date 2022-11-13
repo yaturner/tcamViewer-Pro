@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.ContactsContract;
+import android.text.Layout;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,6 +37,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuHost;
@@ -202,15 +204,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         File imageFile = new File(path);
 
         try {
-            int res = settings.getExportResolution().getValue();
-            int h = bitmap.getHeight();
-            int w = bitmap.getWidth();
-            int eh = heights[res];
-            int ew = widths[res];
-            if(h != eh && w != ew) {
-                //resize the bitmap
-                bitmap = Bitmap.createScaledBitmap(bitmap, ew, eh, false);
-            }
             out = new FileOutputStream(imageFile);
             bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
             out.flush();
@@ -248,14 +241,12 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         int bitmapWidth;
         int bitmapHeight;
         StringBuilder stringBuilder = new StringBuilder();
-
+        int res = settings.getExportResolution().getValue();
         resources = mainActivity.getResources();
+        int[] width = resources.getIntArray(R.array.resolution_widths);
+        int[] height = resources.getIntArray(R.array.resolution_heights);
+        float textSize = 12f;
         scale = resources.getDisplayMetrics().density;
-        paint = new Paint();
-        paint.setColor(resources.getColor(android.R.color.black, getActivity().getTheme()));
-        paint.setStyle(Paint.Style.FILL);
-        paint.setAlpha(255);
-        paint.setTextSize(scale * 18f);
         Pair<Float, Float> temps = imageDto.getTemperatures();
         String path = imageDto.getFilename();
         String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
@@ -263,6 +254,44 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         String maxString = createTemperatureString(temps.second);
         String minString = createTemperatureString(temps.first);
         View inflatedFrame = getLayoutInflater().inflate(R.layout.export_library_image, null);
+
+        tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);
+        ivColorBar = inflatedFrame.findViewById(R.id.ivColorBar);
+        tvMinTemperature = inflatedFrame.findViewById(R.id.tvMinTemperature);
+        tvLogo = inflatedFrame.findViewById(R.id.tvLogo);
+        tvSpotmeterTemperature = inflatedFrame.findViewById(R.id.tvSpotmeterTemperature);
+        tvEmissivity = inflatedFrame.findViewById(R.id.tvEmissivity);
+        tvDateTime = inflatedFrame.findViewById(R.id.tvDateTime);
+        tvGain = inflatedFrame.findViewById(R.id.tvGain);
+
+        ivImageView = inflatedFrame.findViewById(R.id.ivCamera);
+        ViewGroup.LayoutParams lp = new LinearLayout.LayoutParams(width[res], height[res]);
+        ivImageView.setLayoutParams(lp);
+
+        tvMaxTemperature.setText(maxString);
+        tvMaxTemperature.setTextSize(textSize);
+        tvMinTemperature.setText(minString);
+        tvMinTemperature.setTextSize(textSize);
+
+        LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
+        tvLogo.setText("tcamViewer");
+        tvLogo.setTextSize(textSize);
+        tvSpotmeterTemperature.setText(hotspotString);
+        tvSpotmeterTemperature.setTextSize(textSize);
+        tvEmissivity.setText("\u03b51.0");
+        tvEmissivity.setTextSize(textSize);
+        lline1.requestLayout();;
+        LinearLayoutCompat lline2 = inflatedFrame.findViewById(R.id.llAnnotation_line_2);
+        tvDateTime.setText("6:59:36 10/01/2022");
+        tvDateTime.setTextSize(textSize);
+        tvGain.setText("gHIGH");
+        tvGain.setTextSize(textSize);
+        lline2.requestLayout();
+
+
+        inflatedFrame.requestLayout();
+//        inflatedFrame.forceLayout();
+
         ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame.findViewById(R.id.clItemLayout) ;
         constraintLayout.setDrawingCacheEnabled(true);
         constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
@@ -271,43 +300,24 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         layoutWidth = constraintLayout.getMeasuredWidth();
         constraintLayout.layout(0, 0, layoutWidth, layoutHeight);
         constraintLayout.buildDrawingCache(true);
-        ivImageView = constraintLayout.findViewById(R.id.ivCamera);
-        tvMaxTemperature = constraintLayout.findViewById(R.id.tvMaxTemperature);
-        ivColorBar = constraintLayout.findViewById(R.id.ivColorBar);
-        tvMinTemperature = constraintLayout.findViewById(R.id.tvMinTemperature);
-        tvLogo = constraintLayout.findViewById(R.id.tvLogo);
-        tvSpotmeterTemperature = constraintLayout.findViewById(R.id.tvSpotmeterTemperature);
-        tvEmissivity = constraintLayout.findViewById(R.id.tvEmissivity);
-        tvDateTime = constraintLayout.findViewById(R.id.tvDateTime);
-        tvGain = constraintLayout.findViewById(R.id.tvGain);
-
 
         Bitmap bitmap = imageDto.drawHotspot();
         ivImageView.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
         ivColorBar.setImageBitmap(colorbar);
-        bitmapHeight = (int)(layoutHeight * 1.25f);
-        bitmapWidth = (int)(layoutWidth * 1.25f);
-        bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888);
-        bitmap.eraseColor(resources.getColor(android.R.color.white, getActivity().getTheme()));
+        bitmap = Bitmap.createBitmap(layoutWidth, layoutHeight, Bitmap.Config.ARGB_8888);
+        bitmap.eraseColor(resources.getColor(android.R.color.black, getActivity().getTheme()));
         Canvas canvas = new Canvas(bitmap);
-        drawText(constraintLayout, canvas, maxString, paint, tvMaxTemperature);
-        drawText(constraintLayout, canvas, minString, paint, tvMinTemperature);
-        drawText(constraintLayout, canvas, "tcamViewer", paint, tvLogo);
-        drawText(constraintLayout, canvas, hotspotString, paint, tvSpotmeterTemperature);
-        drawText(constraintLayout, canvas,imageName, paint, tvDateTime);
-        drawText(constraintLayout, canvas, "gHIGH", paint, tvGain);
-        drawText(constraintLayout, canvas, "1.00", paint, tvEmissivity);
         constraintLayout.draw(canvas);
         return bitmap;
     }
 
-    private void drawText(ConstraintLayout container, Canvas canvas, String text, Paint paint, TextView textView) {
-        Rect rect = new Rect();
-        textView.getDrawingRect(rect);
-        container.offsetDescendantRectToMyCoords(textView, rect);
-        canvas.drawText(text, rect.left, rect.bottom, paint);
-    }
+//    private void drawText(ConstraintLayout container, Canvas canvas, String text, Paint paint, TextView textView) {
+//        Rect rect = new Rect();
+//        textView.getDrawingRect(rect);
+//        container.offsetDescendantRectToMyCoords(textView, rect);
+//        canvas.drawText(text, rect.left, rect.bottom, paint);
+//    }
 
     private String createTemperatureString(float temperature) {
         StringBuilder stringBuilder = new StringBuilder();

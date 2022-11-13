@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/clItemLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:padding="10dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -88,78 +89,75 @@
                 app:layout_constraintStart_toEndOf="@+id/ivCamera"
                 app:layout_constraintTop_toBottomOf="@+id/ivColorBar" />
 
-            <LinearLayout
+            <androidx.appcompat.widget.LinearLayoutCompat
                 android:id="@+id/llAnnotation"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="@id/glRight"
+                app:layout_constraintStart_toStartOf="@id/glLeft"
                 app:layout_constraintTop_toBottomOf="@+id/ivCamera">
 
-                <LinearLayout
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/llAnnotation_line_1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:weightSum="3"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:weightSum="3">
 
                     <TextView
                         android:id="@+id/tvLogo"
-                        android:layout_width="64pt"
-                        android:layout_height="12pt"
-                        android:layout_gravity="start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="textStart"
+                        android:layout_alignParentLeft="true"
                         android:layout_weight="1"
-                        android:gravity="start"/>
+                        android:text="tcamViewer"
+                        android:textColor="@android:color/white" />
 
                     <TextView
                         android:id="@+id/tvSpotmeterTemperature"
-                        android:layout_width="36pt"
-                        android:layout_height="12pt"
-                        android:layout_gravity="center"
-                        android:layout_weight="1"/>
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="233C"
+                        android:textColor="@color/white" />
 
 
                     <TextView
                         android:id="@+id/tvEmissivity"
-                        android:layout_width="36pt"
-                        android:layout_height="12pt"
-                        android:layout_gravity="end"
-                        android:layout_weight="1"/>
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="e1.00"
+                        android:textColor="@color/white" />
 
-                </LinearLayout>
-                <LinearLayout
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/llAnnotation_line_2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:weightSum="3"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:weightSum="2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
 
                     <TextView
                         android:id="@+id/tvDateTime"
-                        android:layout_width="92pt"
-                        android:layout_height="12pt"
-                        android:layout_gravity="start"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:gravity="start"/>
+                        android:textColor="@color/white" />
 
                     <TextView
                         android:id="@+id/tvGain"
-                        android:layout_width="24pt"
-                        android:layout_height="12pt"
-                        android:layout_gravity="end"
-                        android:layout_weight="1"/>
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:textColor="@color/white" />
 
-                </LinearLayout>
-            </LinearLayout>
-            <!--        <TextView-->
-            <!--            android:id="@+id/tvFilename"-->
-            <!--            android:layout_width="wrap_content"-->
-            <!--            android:layout_height="wrap_content"-->
-            <!--            android:gravity="center_horizontal"-->
-            <!--            android:textColor="@color/white"-->
-            <!--            app:layout_constraintEnd_toStartOf="@+id/glRight"-->
-            <!--            app:layout_constraintStart_toStartOf="@+id/glLeft"-->
-            <!--            app:layout_constraintTop_toBottomOf="@+id/ivCamera" />-->
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </androidx.appcompat.widget.LinearLayoutCompat>
         </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
