@@ -264,16 +264,16 @@ public class CameraUtils extends BaseObservable {
                 } else {
                     b = imageData[index];
                 }
-                if(!isManualRange()) {
-                    Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d, min = %d", b, v, d, min);
-                }
+//                if(!isManualRange()) {
+//                    Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d, min = %d", b, v, d, min);
+//                }
                 if (b >= 0) {
                     bin[255 - b] = bin[255 - b] + 1;
                     maxBinCount = Math.max(bin[255 - b], maxBinCount);
-                } else {
-                    if(!isManualRange()) {
-                        Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d", b, v, d);
-                    }
+//                } else {
+//                    if(!isManualRange()) {
+//                        Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d", b, v, d);
+//                    }
                 }
             }
         } catch(Exception e) {
