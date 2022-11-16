@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Date;
 
 import manifold.ext.rt.api.Extension;
 import manifold.ext.rt.api.This;
@@ -36,6 +37,7 @@ public class ImageDto {
     private int autoGainMode;
     private int maxTemperature;
     private int minTemperature;
+    private Date creationDate;
 
     private JSONObject jsonObject;
     private String filename;
@@ -83,6 +85,7 @@ public class ImageDto {
         } catch(JSONException e) {
             e.printStackTrace();
         }
+        creationDate = new Date();
     }
 
     public JSONObject getJsonObject() {
@@ -284,4 +287,11 @@ public class ImageDto {
     }
 
 
+    public Date getCreationDate() {
+        return creationDate;
     }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+}

@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -22,6 +21,7 @@ import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
@@ -61,6 +62,7 @@ public class CameraUtils extends BaseObservable {
     }
 
     public void processImageResponse(ImageDto imageDto) throws JSONException {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
         int[][] palette = imageDto.getPalette();
         int diff = 0;
 
@@ -73,9 +75,20 @@ public class CameraUtils extends BaseObservable {
         imageDto.setMaxTemperature(Integer.MIN_VALUE);
         imageDto.setMinTemperature(Integer.MAX_VALUE);
 
+        JSONObject metadata = imageDto.getJsonObject().getJSONObject("metadata");
         String radiometricString = imageDto.getJsonObject().getString("radiometric");
         String telemetryString = imageDto.getJsonObject().getString("telemetry");
         imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
+        Date date;
+        try {
+            date = sdf.parse(metadata.getString("Date") +
+                    " " +
+                    metadata.getString("Time"));
+        } catch (ParseException e) {
+           e.printStackTrace();
+            date = new Date();
+        }
+        imageDto.setCreationDate(date);
 
         imageLen = imageBytes.length;
         imageData = new int[imageLen / 2];

@@ -65,6 +65,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
@@ -194,7 +195,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
         int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
         int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
-        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + "/tcamViewer/";
+        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString() + "/tcamViewer/";
         File dir = new File(path);
         if(!dir.exists()) {
             dir.mkdirs();
@@ -232,6 +233,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         TextView tvEmissivity;
         TextView tvDateTime;
         TextView tvGain;
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss MM/dd/yyyy");
 
         Paint paint;
         Resources resources;
@@ -245,10 +247,29 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         resources = mainActivity.getResources();
         int[] width = resources.getIntArray(R.array.resolution_widths);
         int[] height = resources.getIntArray(R.array.resolution_heights);
-        float textSize = 12f;
+        float textSize;
         scale = resources.getDisplayMetrics().density;
         Pair<Float, Float> temps = imageDto.getTemperatures();
         String path = imageDto.getFilename();
+
+        switch(res) {
+            case 0:
+                textSize = 4f;
+                break;
+            case 1:
+                textSize = 6f;
+                break;
+            case 2:
+                textSize = 8f;
+                break;
+            case 3:
+                textSize = 12f;
+                break;
+            default:
+                textSize = 8f;
+        }
+        /////textSize = textSize * scale;
+
         String imageName = path.substring(path.lastIndexOf(File.separatorChar)+1).replace(".tjsn", "");
         String hotspotString = createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter());
         String maxString = createTemperatureString(temps.second);
@@ -274,17 +295,19 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         tvMinTemperature.setTextSize(textSize);
 
         LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
-        tvLogo.setText("tcamViewer");
+        tvLogo.setText(R.string.appName);
         tvLogo.setTextSize(textSize);
         tvSpotmeterTemperature.setText(hotspotString);
         tvSpotmeterTemperature.setTextSize(textSize);
-        tvEmissivity.setText("\u03b51.0");
+        float emissivity = (float)imageDto.getEmissivity() / 8192f;
+        tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
         tvEmissivity.setTextSize(textSize);
         lline1.requestLayout();;
         LinearLayoutCompat lline2 = inflatedFrame.findViewById(R.id.llAnnotation_line_2);
-        tvDateTime.setText("6:59:36 10/01/2022");
+        tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
         tvDateTime.setTextSize(textSize);
-        tvGain.setText("gHIGH");
+        int gain = imageDto.getGainMode();
+        tvGain.setText("g"+(gain==0?"LOW":gain==1?"MEDIUM":"HIGH"));
         tvGain.setTextSize(textSize);
         lline2.requestLayout();
 
