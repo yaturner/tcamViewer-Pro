@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
 
+import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.databinding.FragmentPrivacyDisclosureBinding;
@@ -87,7 +88,10 @@ public class PrivacyDisclosureFragment extends Fragment implements MenuProvider 
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return byteArrayOutputStream.toString();
+        //update version
+        String string = byteArrayOutputStream.toString();
+        string = string.replace("x.x", BuildConfig.VERSION_NAME);
+        return string;
     }
 
     @Override
