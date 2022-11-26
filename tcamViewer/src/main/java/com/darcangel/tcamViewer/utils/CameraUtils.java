@@ -542,6 +542,14 @@ public class CameraUtils extends BaseObservable {
         }
     }
 
+    public void saveBitmapToFile(Bitmap bitmap, File file) throws IOException {
+        FileOutputStream outputStream = new FileOutputStream(file);
+        if (outputStream != null && bitmap != null) {
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            outputStream.close();
+        }
+    }
+
     public String readTjsnFile(String path) {
         String json = new String();
         String line;

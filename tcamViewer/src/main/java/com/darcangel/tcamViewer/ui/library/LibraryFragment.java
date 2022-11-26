@@ -243,7 +243,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         if (id == R.id.action_item_delete) {
             deleteImage(selection);
         } else if (id == R.id.action_slideshow) {
-            Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
             if (!selection.isEmpty()) {
                 int key, position;
                 ArrayList<String> imageFile;

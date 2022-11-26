@@ -5,6 +5,10 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -24,6 +28,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
+import com.darcangel.tcamViewer.AsyncTasks.NetworkSniffTask;
 import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -37,6 +42,11 @@ import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
@@ -183,6 +193,22 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         //Take a snapshot of the settings so that if the user selects cancel we can restore it
         snapshot = new Bundle();
         settings.snapshot(snapshot);
+
+        String ipAddress = getMyIPAddress();
+        new NetworkSniffTask(mainActivity).execute();
+    }
+
+    private String getMyIPAddress() {
+        WifiManager wm = (WifiManager) requireContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        int ip = wm.getConnectionInfo().getIpAddress();
+        byte[] buffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(ip).array();
+
+        try {
+            String dotNotation = InetAddress.getByAddress(buffer).getHostAddress();
+            return dotNotation;
+        } catch (UnknownHostException ignore) {
+            return null;
+        }
     }
 
     private Dialog createSaveDialog() {
@@ -336,7 +362,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         int id = buttonView.getId();
         if (id == R.id.switchAGC) {
             settings.setAGC(isChecked);
-            Toast.makeText(getContext(), R.string.agc_changes_info, Toast.LENGTH_LONG).show();
+            //Toast.makeText(getContext(), R.string.agc_changes_info, Toast.LENGTH_LONG).show();
         } else if(id == R.id.switchManualRange) {
             if(isChecked) {
                 binding.layoutManualRange.setVisibility(View.VISIBLE);

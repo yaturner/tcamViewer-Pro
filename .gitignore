@@ -35,3 +35,4 @@ tcamViewer/.cxx/
 *.ninja*
 tcamViewer/debug/output-metadata.json
 *.apk
+*.properties
