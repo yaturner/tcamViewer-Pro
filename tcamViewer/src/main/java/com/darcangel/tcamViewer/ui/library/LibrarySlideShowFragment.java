@@ -297,13 +297,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
         tvGain.setTextSize(textSize);
         lline2.requestLayout();
-        tvLogo.setVisibility(View.GONE);
-        tvSpotmeterTemperature.setVisibility(View.GONE);
-        tvEmissivity.setVisibility(View.GONE);
-        tvDateTime.setVisibility(View.GONE);
-        tvGain.setVisibility(View.GONE);
-
-
         inflatedFrame.requestLayout();
 
         ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame.findViewById(R.id.clItemLayout);
