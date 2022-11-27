@@ -240,7 +240,6 @@ public class ImageDto {
     /*                                                                   */
     /*                      Extenstions                                  */
     /*                                                                   */
-
     /*********************************************************************/
     public int convertToRadiometric(float value) {
         return cameraUtils.convertToRadiometric(this, value);
@@ -282,10 +281,10 @@ public class ImageDto {
         cameraUtils.saveBitmapToFile(this, newFile);
     }
 
+
     public void rotateColormap() {
         cameraUtils.rotateColormap(this);
     }
-
 
     public Date getCreationDate() {
         return creationDate;
@@ -294,4 +293,5 @@ public class ImageDto {
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
+
 }

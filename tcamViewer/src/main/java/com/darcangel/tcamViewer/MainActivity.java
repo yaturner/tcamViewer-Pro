@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     protected void onUserLeaveHint()
     {
-        Timber.d("onUserLeaveHin\\\\Home button pressed");
+        Timber.d("onUserLeaveHint\\\\Home button pressed");
         super.onUserLeaveHint();
         cameraViewModel.startStreaming(false);
     }

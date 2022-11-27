@@ -5,19 +5,14 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -33,14 +28,11 @@ import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.EmissivityDialogListAdapter;
-import com.darcangel.tcamViewer.model.ImageDto;
-import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
-import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.net.InetAddress;
@@ -73,7 +65,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
     private View root;
     private Bundle snapshot;
     private String selectedPalette;
-
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -129,25 +120,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         binding.rbUnitsF.setChecked(settings.getUnitsF().getValue());
         binding.rbUnitsC.setChecked(settings.getUnitsC().getValue());
 
-        //If the user does not save the settings, isRemapNeeded is set to false
-//        settings.getManualRangeMax().observe(mainActivity, v -> {
-//            if (v != null
-//                    && !v.toString().isEmpty()
-//                    && !binding.etManualRangeMax.getText().toString().isEmpty()
-//                    && !settings.getManualRangeMax().getValue().toString()
-//                    .equalsIgnoreCase(v.toString())) {
-//                cameraViewModel.setRemapNeeded(true);
-//            }
-//        });
-//        settings.getManualRangeMin().observe(mainActivity, v -> {
-//            if (v != null
-//                    && !v.toString().isEmpty()
-//                    && !binding.etManualRangeMax.getText().toString().isEmpty()
-//                    && !settings.getManualRangeMax().getValue().toString()
-//                    .equalsIgnoreCase(v.toString())) {
-//                cameraViewModel.setRemapNeeded(true);
-//            }
-//        });
         root = binding.getRoot();
         return root;
     }
