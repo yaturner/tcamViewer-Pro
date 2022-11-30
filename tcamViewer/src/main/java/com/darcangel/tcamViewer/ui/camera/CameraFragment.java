@@ -1,7 +1,6 @@
 package com.darcangel.tcamViewer.ui.camera;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -20,7 +19,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.view.menu.MenuItemImpl;
+import androidx.core.internal.view.SupportMenuItem;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
@@ -29,9 +28,9 @@ import androidx.lifecycle.Lifecycle;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
+import com.darcangel.tcamViewer.databinding.FragmentCameraBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
-import com.darcangel.tcamViewer.databinding.FragmentCameraBinding;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import org.json.JSONObject;
@@ -100,7 +99,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 break;
             }
             case R.id.action_palette: {
-                String title = ((MenuItemImpl) menuItem).getTitle().toString();
+                String title = ((SupportMenuItem) menuItem).getTitle().toString();
                 if (!title.equalsIgnoreCase("Palette") &&
                         !title.equalsIgnoreCase(imageDto.getPaletteName())) {
                     settings.setPalette(title);
@@ -143,6 +142,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 try {
                     imageDto.saveTjsn();
+                    if(settings.getExportOnSave().getValue()) {
+                        mainActivity.getUtils().exportImage(imageDto);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     //TODO handle error

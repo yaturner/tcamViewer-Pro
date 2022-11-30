@@ -1,6 +1,8 @@
 package com.darcangel.tcamViewer.ui.library;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
@@ -51,6 +53,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
@@ -60,7 +63,6 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
-    private CameraUtils cameraUtils;
     private LibrarySelectionAdapter sectionAdapter;
     private ArrayList<LibrarySection> librarySections;
 
@@ -70,6 +72,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     private ArrayList<File> imageFolder;
     private ArrayList<ImageDto> selectedImages;
 
+    private View root;
     private int nFolders = 0;
 
     private SelectionTracker<Long> selectionTracker;
@@ -85,27 +88,36 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             assetManager = mainActivity.getAssets();
         }
         libraryViewModel = mainActivity.getLibraryViewModel();
-        cameraUtils = mainActivity.getCameraUtils();
         librarySections = new ArrayList<>();
-        selectedImages  = new ArrayList<>();
+        selectedImages = new ArrayList<>();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        binding = FragmentLibraryBinding.inflate(inflater, container, false);
+
+        initRecyclerView();
+
+        root = binding.getRoot();
+        return root;
+    }
+
+    private void initRecyclerView() {
+        librarySections = new ArrayList<>();
+        selectedImages = new ArrayList<>();
         imageFolder = new ArrayList<File>();
+
+        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(), 1);
+        binding.rvLibrary.setLayoutManager(gridLayoutManager);
+
         File dir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File list[] = dir.listFiles();
         imageFolder.addAll(Arrays.asList(list));
 
-        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(), 1);
-        binding = FragmentLibraryBinding.inflate(inflater, container, false);
-        binding.rvLibrary.setLayoutManager(gridLayoutManager);
-
-        MenuHost menuHost = requireActivity();
-        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
-
         // Create an instance of SectionedRecyclerViewAdapter
-        sectionAdapter = new LibrarySelectionAdapter(); ///SectionedRecyclerViewAdapter
+        sectionAdapter = new LibrarySelectionAdapter();
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
@@ -122,13 +134,6 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
         binding.rvLibrary.setAdapter(sectionAdapter);
 
-        View root = binding.getRoot();
-        return root;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
         selectionTracker = new SelectionTracker.Builder<Long>("librarySelection",
                 binding.rvLibrary,
                 new LibrarySelectionAdapter.KeyProvider(binding.rvLibrary.getAdapter()),
@@ -155,14 +160,15 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         sectionAdapter.setSelectionTracker(selectionTracker);
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+    }
+
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_slideshow);
-        if (selectionTracker != null && selectionTracker.hasSelection()) {
-            itemDelete.setEnabled(true);
-        } else {
-            itemDelete.setEnabled(false);
-        }
+        itemDelete.setEnabled(true);
         itemSlideShow.setEnabled(true);
     }
 
@@ -183,29 +189,45 @@ public class LibraryFragment extends Fragment implements MenuProvider {
 
 
     private void deleteImage(final Selection selection) {
-        int key;
-        String filename;
-        ArrayList<String> imageFile;
         if (!selection.isEmpty()) {
-            Iterator<Long> it = selection.iterator();
-            while (it.hasNext()) {
-                key = it.next().intValue();
-                int position = sectionAdapter.getPositionInSection(key);
-                LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-                imageFile = section.getImageFile();
-                filename = imageFile.get(position);
-                File file = new File(filename);
-                if (file.exists()) {
-                    //file.delete();
-                }
-                section.deleteItem(position);
-                sectionAdapter.notifyItemRemoved(position);
-            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+            builder.setTitle("Confirm Deletion")
+                    .setMessage("Are you sure you want to permanently remove these image(s)")
+                    .setNegativeButton("Cancel", (dlg, which) -> {
+                        dlg.dismiss();
+                    })
+                    .setPositiveButton("OK", (dlg, which) -> {
+                        deleteImages(selection);
+                    })
+                    .show();
+        } else {
+            Toast.makeText(mainActivity, R.string.nothing_to_delete, Toast.LENGTH_LONG).show();
         }
     }
 
-    private void exportImage() {
-
+    private void deleteImages(final Selection selection) {
+        String filename;
+        ArrayList<String> imageFile;
+        ArrayList<Integer> keys = new ArrayList<>(selection.size());
+        Iterator<Long> it = selection.iterator();
+        while (it.hasNext()) {
+            keys.add(it.next().intValue());
+        }
+        keys.sort(Comparator.reverseOrder());
+        for (Integer key : keys) {
+            int position = sectionAdapter.getPositionInSection(key);
+            LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
+            imageFile = section.getImageFile();
+            filename = imageFile.get(position);
+            File file = new File(filename);
+            if (file.exists()) {
+                file.delete();
+            }
+            section.deleteItem(position);
+            sectionAdapter.notifyItemRemoved(position);
+        }
+        libraryViewModel.clearAllSelectedImages();
+        initRecyclerView();
     }
 
     @Override

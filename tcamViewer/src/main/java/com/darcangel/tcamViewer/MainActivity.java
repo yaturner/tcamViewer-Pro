@@ -29,6 +29,7 @@ import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.ui.library.LibraryViewModel;
 import com.darcangel.tcamViewer.ui.settings.SettingsViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -54,6 +55,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private CameraService cameraService;
     private CameraUtils cameraUtils;
+    private Utils utils;
 
     private ProgressDialog progressDialog;
 
@@ -68,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         if(savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
+            utils = savedInstanceState.getParcelable(Constants.KEY_UTILS);
             cameraService = savedInstanceState.getParcelable(Constants.KEY_CAMERASERVICE);
             settings = savedInstanceState.getParcelable(Constants.KEY_SETTINGS);
         }
@@ -235,6 +238,13 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             cameraUtils = new CameraUtils();
         }
         return cameraUtils;
+    }
+
+    public Utils getUtils() {
+        if(utils == null) {
+            utils = new Utils();
+        }
+        return utils;
     }
 
     public PaletteFactory getPaletteFactory() {

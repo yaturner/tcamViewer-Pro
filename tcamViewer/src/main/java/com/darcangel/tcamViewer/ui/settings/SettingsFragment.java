@@ -23,7 +23,6 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 
-import com.darcangel.tcamViewer.AsyncTasks.NetworkSniffTask;
 import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -165,9 +164,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         //Take a snapshot of the settings so that if the user selects cancel we can restore it
         snapshot = new Bundle();
         settings.snapshot(snapshot);
-
-        String ipAddress = getMyIPAddress();
-        new NetworkSniffTask(mainActivity).execute();
     }
 
     private String getMyIPAddress() {

@@ -1,32 +1,19 @@
 package com.darcangel.tcamViewer.ui.library;
 
 import android.content.ClipData;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -34,8 +21,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
@@ -52,18 +37,15 @@ import com.darcangel.tcamViewer.databinding.FragmentLibrarySlideshowBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -78,6 +60,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
     private MainActivity mainActivity;
     private Settings settings;
     private CameraUtils cameraUtils;
+    private Utils utils;
     private BottomNavigationView navBar;
     private View root;
 
@@ -106,6 +89,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         mainActivity = MainActivity.getInstance();
         settings = mainActivity.getSettings();
         cameraUtils = mainActivity.getCameraUtils();
+        utils = mainActivity.getUtils();
         libraryViewModel = mainActivity.getLibraryViewModel();
         this.imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
@@ -156,7 +140,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         ImageDto imageDto = imageDtos.get(position);
         try {
             Intent shareIntent = new Intent();
-            Bitmap bitmap = createExportImage(imageDto);
+            Bitmap bitmap = utils.createExportImage(imageDto);
             File imagePath = mainActivity.getCacheDir();
             File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
             if (bitmap != null) {
@@ -182,179 +166,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         }
     }
 
-    private void exportImage(final int position) throws FileNotFoundException {
-        String imageFilename = null;
-        ImageDto imageDto = imageDtos.get(position);
-        Bitmap bitmap = createExportImage(imageDto);
-        String path = imageDto.getFilename();
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
-        int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
-        int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
-        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-        File myDir = new File(root);
-        myDir.mkdirs();
-        ;
-        OutputStream out = null;
-        File imageFile = new File(root, imageName);
-        saveImage(bitmap, root, imageName);
-        Toast.makeText(mainActivity, "Image exported as " + imageName, Toast.LENGTH_LONG).show();
-    }
-
-    /**
-     * createExportImage
-     *
-     * @param imageDto
-     * @return - the image to be shared/exported, if export metadata is off, then only the image is returned
-     */
-    private Bitmap createExportImage(ImageDto imageDto) {
-        ImageView ivImageView;
-        TextView tvMaxTemperature;
-        ImageView ivColorBar;
-        TextView tvMinTemperature;
-        TextView tvLogo;
-        TextView tvSpotmeterTemperature;
-        TextView tvEmissivity;
-        TextView tvDateTime;
-        TextView tvGain;
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss MM/dd/yyyy");
-
-        Paint paint;
-        Resources resources;
-        float scale;
-        int layoutWidth;
-        int layoutHeight;
-        int bitmapWidth;
-        int bitmapHeight;
-        StringBuilder stringBuilder = new StringBuilder();
-        int res = settings.getExportResolution().getValue();
-        resources = mainActivity.getResources();
-        int[] width = resources.getIntArray(R.array.resolution_widths);
-        int[] height = resources.getIntArray(R.array.resolution_heights);
-        float textSize;
-        scale = resources.getDisplayMetrics().density;
-        Pair<Float, Float> temps = imageDto.getTemperatures();
-        String path = imageDto.getFilename();
-
-        switch (res) {
-            case 0:
-                textSize = 4f;
-                break;
-            case 1:
-                textSize = 6f;
-                break;
-            case 2:
-                textSize = 8f;
-                break;
-            case 3:
-                textSize = 12f;
-                break;
-            default:
-                textSize = 8f;
-        }
-        /////textSize = textSize * scale;
-
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
-        String hotspotString = createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter());
-        String maxString = createTemperatureString(temps.second);
-        String minString = createTemperatureString(temps.first);
-        View inflatedFrame = getLayoutInflater().inflate(R.layout.export_library_image, null);
-
-        tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);
-        ivColorBar = inflatedFrame.findViewById(R.id.ivColorBar);
-        tvMinTemperature = inflatedFrame.findViewById(R.id.tvMinTemperature);
-        tvLogo = inflatedFrame.findViewById(R.id.tvLogo);
-        tvSpotmeterTemperature = inflatedFrame.findViewById(R.id.tvSpotmeterTemperature);
-        tvEmissivity = inflatedFrame.findViewById(R.id.tvEmissivity);
-        tvDateTime = inflatedFrame.findViewById(R.id.tvDateTime);
-        tvGain = inflatedFrame.findViewById(R.id.tvGain);
-        ivImageView = inflatedFrame.findViewById(R.id.ivCamera);
-
-        ViewGroup.LayoutParams lp = new LinearLayout.LayoutParams(width[res], height[res]);
-        ivImageView.setLayoutParams(lp);
-
-        tvMaxTemperature.setText(maxString);
-        tvMaxTemperature.setTextSize(textSize);
-        tvMinTemperature.setText(minString);
-        tvMinTemperature.setTextSize(textSize);
-
-        if (!settings.getExportMetaData().getValue()) {
-            return imageDto.getBitmap();
-        }
-        LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
-        tvLogo.setText(R.string.appName);
-        tvLogo.setTextSize(textSize);
-        tvSpotmeterTemperature.setText(hotspotString);
-        tvSpotmeterTemperature.setTextSize(textSize);
-        float emissivity = (float) imageDto.getEmissivity() / 8192f;
-        tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-        tvEmissivity.setTextSize(textSize);
-        lline1.requestLayout();
-
-        LinearLayoutCompat lline2 = inflatedFrame.findViewById(R.id.llAnnotation_line_2);
-        tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-        tvDateTime.setTextSize(textSize);
-        int gain = imageDto.getGainMode();
-        tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-        tvGain.setTextSize(textSize);
-        lline2.requestLayout();
-        inflatedFrame.requestLayout();
-
-        ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame.findViewById(R.id.clItemLayout);
-        constraintLayout.setDrawingCacheEnabled(true);
-        constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        layoutHeight = constraintLayout.getMeasuredHeight();
-        layoutWidth = constraintLayout.getMeasuredWidth();
-        constraintLayout.layout(0, 0, layoutWidth, layoutHeight);
-        constraintLayout.buildDrawingCache(true);
-
-        Bitmap bitmap = imageDto.drawHotspot();
-        ivImageView.setImageBitmap(bitmap);
-        Bitmap colorbar = imageDto.createColorBar();
-        ivColorBar.setImageBitmap(colorbar);
-        bitmap = Bitmap.createBitmap(layoutWidth, layoutHeight, Bitmap.Config.ARGB_8888);
-        bitmap.eraseColor(resources.getColor(android.R.color.black, getActivity().getTheme()));
-        Canvas canvas = new Canvas(bitmap);
-        constraintLayout.draw(canvas);
-        return bitmap;
-    }
-
-    private void saveImage(Bitmap bitmap, String folderName, String imageFilename) throws FileNotFoundException {
-        File dir = null, imageFile = null;
-        if (android.os.Build.VERSION.SDK_INT >= 29) {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/" + folderName);
-            values.put(MediaStore.Images.Media.IS_PENDING, true);
-            // RELATIVE_PATH and IS_PENDING are introduced in API 29.
-
-            Uri uri = mainActivity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            if (uri != null) {
-                saveImageToStream(bitmap, mainActivity.getContentResolver().openOutputStream(uri));
-                values.put(MediaStore.Images.Media.IS_PENDING, false);
-                mainActivity.getContentResolver().update(uri, values, null, null);
-            }
-        } else {
-            dir = new File(mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "tcamViewer");
-            // getExternalStorageDirectory is deprecated in API 29
-
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            java.util.Date date = new java.util.Date();
-            imageFile = new File(dir.getAbsolutePath()
-                    + File.separator
-                    + imageFilename
-                    + ".png");
-            saveImageToStream(bitmap, new FileOutputStream(imageFile));
-            if (imageFile.getAbsolutePath() != null) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DATA, imageFile.getAbsolutePath());
-                // .DATA is deprecated in API 29
-                mainActivity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-            }
-        }
-    }
 
     private ContentValues contentValues() {
         ContentValues values = new ContentValues();
@@ -363,31 +174,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
         return values;
     }
-
-    private void saveImageToStream(Bitmap bitmap, OutputStream outputStream) {
-        if (outputStream != null) {
-            try {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-
-    private String createTemperatureString(float temperature) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format(Locale.US, "%.01f", temperature));
-        stringBuilder.append("\u00B0");
-        if (mainActivity.getSettings().getUnitsC().getValue()) {
-            stringBuilder.append("C");
-        } else {
-            stringBuilder.append("F");
-        }
-        return stringBuilder.toString();
-    }
-
 
     private void deleteImage(final int position) {
         slideshowAdapter.removeItem(position);
@@ -429,7 +215,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
             return true;
         } else if (id == R.id.action_item_export) {
             try {
-                exportImage(position);
+                ImageDto imageDto = imageDtos.get(position);
+                utils.exportImage(imageDto);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -455,11 +242,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider, 
         if (navBar != null) {
             navBar.setVisibility(View.VISIBLE);
         }
-    }
-
-    @Override
-    public void onClick(View v) {
-
     }
 }
 

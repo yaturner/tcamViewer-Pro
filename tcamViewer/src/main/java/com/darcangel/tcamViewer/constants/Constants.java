@@ -19,6 +19,7 @@ public final class Constants {
 
     //Keys for Save/Restore instance
     public final static String KEY_CAMERAUTILS = "CameraUtils";
+    public final static String KEY_UTILS = "Utils";
     public final static String KEY_SETTINGS = "Settings";
     public final static String KEY_CAMERASERVICE = "CameraService";
 

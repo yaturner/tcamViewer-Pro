@@ -75,4 +75,5 @@
     <string name="save_settings_with_warning">Do you wish to save your settings?\nChanging these settings will disconnect the camera</string>
     <string name="agc_changes_info">AGC mode changes will be applied to the next GET image</string>
     <string name="appName">tcamViewer</string>
+    <string name="nothing_to_delete">Nothing to delete</string>
 </resources>
