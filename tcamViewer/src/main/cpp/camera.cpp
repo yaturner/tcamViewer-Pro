@@ -1,18 +1,18 @@
 // Client side C/C++ program to demonstrate Socket
 // programming
 #include <arpa/inet.h>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <iostream>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <sys/epoll.h>
 #include <sys/poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <chrono>
 #include <jni.h>
-#include <thread>
+#include <pthread.h>
 #include <android/log.h>
 
 #define PORT 5001
@@ -38,13 +38,15 @@ bool connected = false;
 bool start_found, end_found;
 char *pos, *start, *end;
 long responseLen;
+pthread_t pthread;
+int pid;
 const char *cmd_get_image = "\02{\"cmd\":\"get_image\"}\03";
 const char *cmd_stream = "\02{\"cmd\":\"stream_on\", "
                          "\"args\":{\"delay_msec\":0, \"num_frames\":0}}\03";
 
 bool sockConnect();
 bool sendCommand(const char *cmd);
-bool isDataAvailable();
+void isDataAvailable();
 int init();
 
 /**
@@ -63,6 +65,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
     connected = false;
     timeout.tv_sec = 30;
     timeout.tv_usec = 0;
+
     env->GetJavaVM(&jvm); //store jvm reference for later call
 
     store_env = env;
@@ -71,6 +74,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
     jclass clazz = env->GetObjectClass(store_Wlistener);
 
     store_method = env->GetMethodID(clazz, "onAcceptResponse", "(Ljava/lang/String;)V");
+
     if (!sockConnect()) {
         __android_log_print( ANDROID_LOG_ERROR, APP_NAME, "Could not connect to socket\n");
         ret = false;
@@ -88,7 +92,8 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_startListening(JNIEnv *env, jobject thiz) {
-    std::thread listener(isDataAvailable);
+    ///pid = pthread_create(&pthread, NULL, isDataAvailable, (void*)"dataAvailThread");
+    isDataAvailable();
 }
 
 extern "C"
@@ -156,7 +161,12 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
     return ret;
 }
 
-bool isDataAvailable() {
+void isDataAvailable() {
+    jint res = jvm->AttachCurrentThread(&store_env, (void*)NULL);
+    if(res < 0) {
+
+    }
+
     bytes_read = 0;
     pos = read_buffer;
     while (running) {
@@ -202,7 +212,7 @@ bool isDataAvailable() {
                         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                                 time_stop - time_start);
                         memcpy(response, start, responseLen + 1);
-                        jstring message = store_env->NewStringUTF(response);
+                        jstring message = store_env->NewStringUTF((const char*)&response);
                         store_env->CallVoidMethod(store_Wlistener, store_method, message);
                         __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "response starts with %d and ends with %d\n", response[0],
                                response[responseLen]);
@@ -217,7 +227,6 @@ bool isDataAvailable() {
                 __android_log_print(ANDROID_LOG_ERROR, APP_NAME, "nothing read\n");
             }
         }
-    }
-    return true;
+    };
 }
 

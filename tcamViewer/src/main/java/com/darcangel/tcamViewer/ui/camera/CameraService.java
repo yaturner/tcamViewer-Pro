@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import timber.log.Timber;
 
 public class CameraService implements Parcelable {
 
@@ -24,7 +25,7 @@ public class CameraService implements Parcelable {
     private Boolean isStreaming = false;
     private TreeTypeAdapter streamThread;
     private String ipAddress;
-    private final PublishSubject<JSONObject> imageChannel = PublishSubject.create();
+    private PublishSubject<JSONObject> imageChannel;
     private MainActivity mainActivity;
     private CameraServiceJNI jni;
     private MainActivity.JNIListener jniListener;
@@ -33,6 +34,7 @@ public class CameraService implements Parcelable {
     public CameraService() {
         mainActivity = MainActivity.getInstance();
         jni = mainActivity.getCameraServiceJNI();
+        imageChannel = PublishSubject.create();
         jniListener = new MainActivity.JNIListener() {
             @Override
             public void onAcceptResponse(String response) {
@@ -94,7 +96,12 @@ public class CameraService implements Parcelable {
     public void connect() {
         jni.connect(jniListener);
         if(jni.isConnected()) {
-            jni.startListening();
+            mainActivity.getExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    jni.startListening();
+                }
+            });
         }
     }
 
@@ -127,8 +134,9 @@ public class CameraService implements Parcelable {
      * startStreaming
      */
     public void startStreaming() {
-        String args = String.format(Constants.ARGS_SET_STREAM_ON, 0, 0);
+        String args = String.format(Constants.ARGS_SET_STREAM_ON, 250, 0);
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
+        mainActivity.getCameraServiceJNI().sendCommand(command);
     }
 
     public void stopStreaming() {
@@ -150,7 +158,7 @@ public class CameraService implements Parcelable {
     JSONObject parseResponse(String response) {
         try {
             if (response != null) {
-                //Timber.d("parseResponse('%s')", response);
+                Timber.d("parseResponse('%s')", response);
                 //strip out start/stop bytes
                 response = response.substring(1, response.length() - 1);
                 return new JSONObject(response);
