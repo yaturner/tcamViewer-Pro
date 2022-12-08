@@ -86,10 +86,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         //order is important, do this before setting the view
         ViewModelProvider viewModelProvider = new ViewModelProvider(this);
+        cameraServiceJNI = new CameraServiceJNI();
         settingsViewModel = viewModelProvider.get(SettingsViewModel.class);
         libraryViewModel = viewModelProvider.get(LibraryViewModel.class);
         cameraViewModel = viewModelProvider.get(CameraViewModel.class);
-        cameraServiceJNI = new CameraServiceJNI();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());

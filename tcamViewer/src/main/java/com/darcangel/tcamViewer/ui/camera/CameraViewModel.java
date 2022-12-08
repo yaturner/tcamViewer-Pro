@@ -47,15 +47,15 @@ public class CameraViewModel extends ViewModel {
         //observe any changes from settings for manual range and/or units
         settings.getManualRange().observeForever(v -> {
             isManualRange = v;
-            Timber.d("\\\\ManualRange\\\\observe isManualRange = %s", (isManualRange?"true":"false"));
+            //Timber.d("\\\\ManualRange\\\\observe isManualRange = %s", (isManualRange?"true":"false"));
         });
         settings.getManualRangeMin().observeForever(v -> {
             manualMinTemperature = v; //convertToRadiometric(v);
-            Timber.d("\\\\ManualRange\\\\observe ManualRangeMin = %f", v);
+            //Timber.d("\\\\ManualRange\\\\observe ManualRangeMin = %f", v);
         });
         settings.getManualRangeMax().observeForever(v -> {
             manualMaxTemperature = v; //convertToRadiometric(v);
-            Timber.d("\\\\ManualRange\\\\observe ManualRangeMax = %f", v);
+            //Timber.d("\\\\ManualRange\\\\observe ManualRangeMax = %f", v);
         });
         settings.getUnitsC().observeForever(v -> {
             unitsCelsius = v;
@@ -81,16 +81,9 @@ public class CameraViewModel extends ViewModel {
      * connectToCamera
      * this is called when the camera is connected
      */
-    public void connectToCamera(MainActivity.JNIListener jniListener) {
+    public void connectToCamera() {
         try {
-            mainActivity.getExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    boolean result = mainActivity.getCameraServiceJNI().init(jniListener);
-                    Timber.d("CameraServiceJNI returned %s", result?"true":"false");
-                }
-            });
-
+            mainActivity.getCameraService().connect();
         } catch (Exception e) {
             e.printStackTrace();
         }

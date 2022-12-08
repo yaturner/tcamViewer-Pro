@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <chrono>
 #include <jni.h>
+#include <thread>
 #include <android/log.h>
 
 #define PORT 5001
@@ -57,7 +58,7 @@ void responseCallback(JNIEnv *env, const _jstring *message_);
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_init(JNIEnv *env, jobject MainActivity, jobject jnilistener) {
+Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject MainActivity, jobject jnilistener) {
     bool ret = true;
     connected = false;
     timeout.tv_sec = 30;
@@ -87,7 +88,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_init(JNIEnv *env, jobject Mai
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_startListening(JNIEnv *env, jobject thiz) {
-    isDataAvailable();
+    std::thread listener(isDataAvailable);
 }
 
 extern "C"

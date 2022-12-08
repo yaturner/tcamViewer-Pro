@@ -189,15 +189,11 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
             throw new IllegalArgumentException();
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
-        try {
-            cameraService.sendCmdNoResponse(cmd);
-            //Set_wifi disconnects the camera
-            cameraService.disconnect();
-            mainActivity.invalidateOptionsMenu();
+        cameraService.sendCmd(cmd);
+        //Set_wifi disconnects the camera
+        cameraService.disconnect();
+        mainActivity.invalidateOptionsMenu();
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private void getWifi() {
