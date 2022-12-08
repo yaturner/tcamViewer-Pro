@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import timber.log.Timber;
 
 
-public class LibrarySlideShowFragment extends Fragment implements MenuProvider, View.OnClickListener {
+public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private ViewGroup container;
     private ViewPager2 viewPager;
     private ArrayList<ImageDto> imageDtos;

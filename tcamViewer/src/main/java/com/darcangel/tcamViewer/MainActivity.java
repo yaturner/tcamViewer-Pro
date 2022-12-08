@@ -20,17 +20,21 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.darcangel.tcamViewer.JNI.CameraServiceJNI;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
-import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.ui.library.LibraryViewModel;
 import com.darcangel.tcamViewer.ui.settings.SettingsViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import timber.log.Timber;
@@ -53,20 +57,25 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private SharedPreferences sharedPreferences;
     private PaletteFactory paletteFactory;
 
-    private CameraService cameraService;
+    private com.darcangel.tcamViewer.ui.camera.CameraService cameraService;
     private CameraUtils cameraUtils;
     private Utils utils;
 
     private ProgressDialog progressDialog;
 
     private NavController navController;
+    private ThreadPoolExecutor executor;
+    private CameraServiceJNI cameraServiceJNI;
+    public interface JNIListener {
+        void onAcceptResponse(String response);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _instance = this;
 
-        ////////System.loadLibrary("camera");
+        System.loadLibrary("camera");
 
         if(savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
@@ -80,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         settingsViewModel = viewModelProvider.get(SettingsViewModel.class);
         libraryViewModel = viewModelProvider.get(LibraryViewModel.class);
         cameraViewModel = viewModelProvider.get(CameraViewModel.class);
+        cameraServiceJNI = new CameraServiceJNI();
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -105,6 +115,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+
+        executor = new ThreadPoolExecutor(5, 10, 0,
+                TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>());
     }
 
     @Override
@@ -226,9 +239,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return cameraViewModel;
     }
 
-    public CameraService getCameraService() {
+    public com.darcangel.tcamViewer.ui.camera.CameraService getCameraService() {
         if(cameraService == null) {
-            cameraService = new CameraService();
+            cameraService = new com.darcangel.tcamViewer.ui.camera.CameraService();
         }
         return cameraService;
     }
@@ -267,6 +280,14 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         } catch (NullPointerException e) {
             return null;
         }
+    }
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
+    }
+
+    public CameraServiceJNI getCameraServiceJNI() {
+        return cameraServiceJNI;
     }
 
     @Override

@@ -144,6 +144,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
 
         // Add your Sections only if the directory is not empty
         //  or in the free version only movie files
+        librarySections.clear();
         try {
             for (int iFolder = 0; iFolder < imageFolder.size(); iFolder++) {
                 if (hasImages(imageFolder.get(iFolder).toString())) {
@@ -227,7 +228,14 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             sectionAdapter.notifyItemRemoved(position);
         }
         libraryViewModel.clearAllSelectedImages();
+        deselectAll();
         initRecyclerView();
+        root.requestLayout();
+    }
+
+    private void deselectAll() {
+        selectionTracker.clearSelection();
+        libraryViewModel.clearAllSelectedImages();
     }
 
     @Override
@@ -241,9 +249,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
     public void onResume() {
         super.onResume();
         selectedImages = new ArrayList<>();
-        for (Long key : selectionTracker.getSelection()) {
-            selectionTracker.deselect(key);
-        }
+        deselectAll();
     }
 
     @Override

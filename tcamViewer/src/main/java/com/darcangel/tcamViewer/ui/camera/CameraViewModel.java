@@ -81,9 +81,16 @@ public class CameraViewModel extends ViewModel {
      * connectToCamera
      * this is called when the camera is connected
      */
-    public void connectToCamera() {
+    public void connectToCamera(MainActivity.JNIListener jniListener) {
         try {
-            mainActivity.getCameraService().connect();
+            mainActivity.getExecutor().execute(new Runnable() {
+                @Override
+                public void run() {
+                    boolean result = mainActivity.getCameraServiceJNI().init(jniListener);
+                    Timber.d("CameraServiceJNI returned %s", result?"true":"false");
+                }
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }

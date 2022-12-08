@@ -16,7 +16,7 @@ public class LibraryViewModel extends ViewModel {
         clearAllSelectedImages();
     }
 
-     public void clearAllSelectedImages() {
+    public void clearAllSelectedImages() {
         selectedImages = new MutableLiveData<ArrayList<ImageDto>>(new ArrayList<>());
     }
 
@@ -24,7 +24,7 @@ public class LibraryViewModel extends ViewModel {
         return selectedImages;
     }
 
-        public void setSelectedImages(ArrayList<ImageDto> selectedImages) {
+    public void setSelectedImages(ArrayList<ImageDto> selectedImages) {
         this.selectedImages.setValue(selectedImages);
     }
 }

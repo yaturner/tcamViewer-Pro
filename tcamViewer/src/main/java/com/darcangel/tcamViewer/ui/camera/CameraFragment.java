@@ -33,6 +33,7 @@ import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileDescriptor;
@@ -58,6 +59,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private Disposable disposable;
     private MainActivity mainActivity = null;
 
+    private MainActivity.JNIListener jniListener;
+
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
@@ -76,7 +79,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         switch (menuItem.getItemId()) {
             case R.id.action_connect: {
                 isConnectingToCamera = true;
-                cameraViewModel.connectToCamera();
+                cameraViewModel.connectToCamera(jniListener);
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
@@ -142,7 +145,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 try {
                     imageDto.saveTjsn();
-                    if(settings.getExportOnSave().getValue()) {
+                    if (settings.getExportOnSave().getValue()) {
                         mainActivity.getUtils().exportImage(imageDto);
                     }
                 } catch (IOException e) {
@@ -185,128 +188,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         cameraUtils = mainActivity.getCameraUtils();
         cameraService = mainActivity.getCameraService();
         settings = mainActivity.getSettings();
-
-//        info_value:
-//        0	Command NACK - the command failed. See the information string for more information.
-//        1	Command ACK - the command succeeded.
-//        2	Command unimplemented - the camera firmware does not implement the command.
-//        3	Command bad - the command was incorrectly formatted or was not a json string.
-//        4	Internal Error - the camera detected an internal error. See the information string for more information.
-//        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
-
-        disposable = cameraService.getImageChannel()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(obj -> {
-                    Iterator<String> it = obj.keys();
-                    if (it.hasNext()) {
-                        String response = it.next();
-                        Timber.d("Response String is %s", response);
-                        //error handling
-                        if (response.equalsIgnoreCase("error")) {
-                            String msg = new JSONObject(obj.getString("error")).getString("message");
-                            mainActivity.dismissProgressDialog(); //just in case
-                            if (msg.startsWith("java.net.SocketTimeoutException") ||
-                                    msg.startsWith("java.net.ConnectException")) {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
-                                        .setCancelable(true)
-                                        .setPositiveButton(R.string.ok, ((dialog, which) -> {
-                                            dialog.dismiss();
-                                        }))
-                                        .setTitle(R.string.title_error)
-                                        .setMessage(R.string.error_can_not_connect);
-                                builder.create().show();
-                            }
-                            //connect/disconnect
-                        } else if (response.equalsIgnoreCase("connected")) {
-                            String value = obj.getString("connected");
-                            if (value.equalsIgnoreCase("true")) {
-                                if (isConnectingToCamera) {
-                                    cameraViewModel.setTime();
-                                }
-                                mainActivity.invalidateOptionsMenu();
-                            } else {
-                                //TODO JMT ERROR
-                                mainActivity.invalidateOptionsMenu();
-                            }
-                            //camera settings commands
-                        } else if (response.equalsIgnoreCase("cam_info")) {
-                            //multiple response have "cam_info"
-                            JSONObject info = obj.getJSONObject("cam_info");
-                            if (info.has("info_string")) {
-                                String infoType = info.getString("info_string");
-                                if (infoType.equalsIgnoreCase("set_time success")) {
-                                    if (isConnectingToCamera) {
-                                        cameraViewModel.getConfig();
-                                    }
-                                } else if (infoType.equalsIgnoreCase("set_config success")) {
-                                    //do nothing
-                                }
-                            }
-                            //get_config
-                        } else if (response.equalsIgnoreCase("config")) {
-                            JSONObject config = obj.getJSONObject("config");
-                            if (config.has("agc_enabled")) {
-                                settings.setAGC(config.getInt("agc_enabled") == 1);
-                            }
-                            if (config.has("emissivity")) {
-                                settings.setEmissivity(config.getInt("emissivity"));
-                            }
-                            if (config.has("gain_mode")) {
-                                switch (config.getInt("gain_mode")) {
-                                    case 0:
-                                        settings.setGainHigh(true);
-                                        break;
-                                    case 1:
-                                        settings.setGainLow(true);
-                                        break;
-                                    case 2:
-                                        settings.setGainAuto(true);
-                                        break;
-                                }
-                            }
-                            settings.persist();
-                            //get wifi
-                        } else if (response.equalsIgnoreCase("wifi")) {
-                            int flags = 0;
-                            JSONObject wifi = obj.getJSONObject("wifi");
-                            if (wifi.has("ap_ssid")) {
-                                settings.setApSSID(wifi.getString("ap_ssid"));
-                            }
-                            if (wifi.has("sta_ssid")) {
-                                settings.setStaticSSID(wifi.getString("sta_ssid"));
-                            }
-                            if (wifi.has("ap_ip_addr")) {
-                                settings.setApIPAddress(wifi.getString("ap_ip_addr"));
-                            }
-                            if (wifi.has("sta_ip_addr")) {
-                                settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
-                            }
-                            if (wifi.has("sta_netmask")) {
-                                settings.setStaticNetmask(wifi.getString("sta_netmask"));
-                            }
-                            if (wifi.has("flags")) {
-                                flags = wifi.getInt("flags") & 0xff;
-                                settings.setFlags(flags);
-                            }
-                            //parse flags and set values
-                            settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
-                                    == 0);
-                            settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) == Constants.WIFI_MASK_STATIC_IP);
-                            if (settings.getCameraIsAccessPoint().getValue()) {
-                                settings.setSSID(settings.getApSSID());
-                            } else {
-                                settings.setSSID(settings.getStaticSSID());
-                            }
-                            //get image
-                        } else if (response.equalsIgnoreCase("metadata")) {
-                            //Timber.d("Received onNext");
-                            cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
-                            drawScreen();
-                            mainActivity.invalidateOptionsMenu();
-                            mainActivity.dismissProgressDialog();
-                        }
-                    }
-                });
+        jniListener = new MainActivity.JNIListener() {
+            @Override
+            public void onAcceptResponse(String response) {
+                try {
+                    handleCameraResponse(response);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
     }
 
 
@@ -350,6 +241,124 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         });
 
         drawScreen();
+    }
+
+    private void handleCameraResponse(String response) throws JSONException {
+//        info_value:
+//        0	Command NACK - the command failed. See the information string for more information.
+//        1	Command ACK - the command succeeded.
+//        2	Command unimplemented - the camera firmware does not implement the command.
+//        3	Command bad - the command was incorrectly formatted or was not a json string.
+//        4	Internal Error - the camera detected an internal error. See the information string for more information.
+//        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
+
+
+        Timber.d("Response String is %s", response);
+        JSONObject obj = new JSONObject(response);
+        //error handling
+        if (response.equalsIgnoreCase("error")) {
+            String msg = new JSONObject(obj.getString("error")).getString("message");
+            mainActivity.dismissProgressDialog(); //just in case
+            if (msg.startsWith("java.net.SocketTimeoutException") ||
+                    msg.startsWith("java.net.ConnectException")) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
+                        .setCancelable(true)
+                        .setPositiveButton(R.string.ok, ((dialog, which) -> {
+                            dialog.dismiss();
+                        }))
+                        .setTitle(R.string.title_error)
+                        .setMessage(R.string.error_can_not_connect);
+                builder.create().show();
+            }
+            //connect/disconnect
+        } else if (response.equalsIgnoreCase("connected")) {
+            String value = obj.getString("connected");
+            if (value.equalsIgnoreCase("true")) {
+                if (isConnectingToCamera) {
+                    cameraViewModel.setTime();
+                }
+                mainActivity.invalidateOptionsMenu();
+            } else {
+                //TODO JMT ERROR
+                mainActivity.invalidateOptionsMenu();
+            }
+            //camera settings commands
+        } else if (response.equalsIgnoreCase("cam_info")) {
+            //multiple response have "cam_info"
+            JSONObject info = obj.getJSONObject("cam_info");
+            if (info.has("info_string")) {
+                String infoType = info.getString("info_string");
+                if (infoType.equalsIgnoreCase("set_time success")) {
+                    if (isConnectingToCamera) {
+                        cameraViewModel.getConfig();
+                    }
+                } else if (infoType.equalsIgnoreCase("set_config success")) {
+                    //do nothing
+                }
+            }
+            //get_config
+        } else if (response.equalsIgnoreCase("config")) {
+            JSONObject config = obj.getJSONObject("config");
+            if (config.has("agc_enabled")) {
+                settings.setAGC(config.getInt("agc_enabled") == 1);
+            }
+            if (config.has("emissivity")) {
+                settings.setEmissivity(config.getInt("emissivity"));
+            }
+            if (config.has("gain_mode")) {
+                switch (config.getInt("gain_mode")) {
+                    case 0:
+                        settings.setGainHigh(true);
+                        break;
+                    case 1:
+                        settings.setGainLow(true);
+                        break;
+                    case 2:
+                        settings.setGainAuto(true);
+                        break;
+                }
+            }
+            settings.persist();
+            //get wifi
+        } else if (response.equalsIgnoreCase("wifi")) {
+            int flags = 0;
+            JSONObject wifi = obj.getJSONObject("wifi");
+            if (wifi.has("ap_ssid")) {
+                settings.setApSSID(wifi.getString("ap_ssid"));
+            }
+            if (wifi.has("sta_ssid")) {
+                settings.setStaticSSID(wifi.getString("sta_ssid"));
+            }
+            if (wifi.has("ap_ip_addr")) {
+                settings.setApIPAddress(wifi.getString("ap_ip_addr"));
+            }
+            if (wifi.has("sta_ip_addr")) {
+                settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
+            }
+            if (wifi.has("sta_netmask")) {
+                settings.setStaticNetmask(wifi.getString("sta_netmask"));
+            }
+            if (wifi.has("flags")) {
+                flags = wifi.getInt("flags") & 0xff;
+                settings.setFlags(flags);
+            }
+            //parse flags and set values
+            settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
+                    == 0);
+            settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) == Constants.WIFI_MASK_STATIC_IP);
+            if (settings.getCameraIsAccessPoint().getValue()) {
+                settings.setSSID(settings.getApSSID());
+            } else {
+                settings.setSSID(settings.getStaticSSID());
+            }
+            //get image
+        } else if (response.equalsIgnoreCase("metadata")) {
+            //Timber.d("Received onNext");
+            cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
+            drawScreen();
+            mainActivity.invalidateOptionsMenu();
+            mainActivity.dismissProgressDialog();
+        }
     }
 
     private void drawScreen() {
