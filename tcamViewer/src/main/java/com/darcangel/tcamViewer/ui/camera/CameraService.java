@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.util.concurrent.Future;
 
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import timber.log.Timber;
@@ -29,7 +30,8 @@ public class CameraService implements Parcelable {
     private MainActivity mainActivity;
     private CameraServiceJNI jni;
     private MainActivity.JNIListener jniListener;
-
+    private Runnable cameraTask;
+    private Future<?> jniTask;
 
     public CameraService() {
         mainActivity = MainActivity.getInstance();
@@ -94,21 +96,31 @@ public class CameraService implements Parcelable {
      * connect
      */
     public void connect() {
+        cameraTask = new Runnable() {
+            @Override
+            public void run() {
+                if(Thread.currentThread().isInterrupted()) {
+                    jni.stopListening();
+                }
+                jni.startListening();
+            }
+        };
         jni.connect(jniListener);
         if(jni.isConnected()) {
-            mainActivity.getExecutor().execute(new Runnable() {
-                @Override
-                public void run() {
-                    jni.startListening();
-                }
-            });
+            jniTask = mainActivity.getExecutor().submit(cameraTask);
         }
+    }
+
+    public void stopListening() {
+        jni.stopListening();
     }
 
     /**
      * disconnect
      */
     public void disconnect() {
+        jni.disconnect();
+        jniTask.cancel(true);
         //TODO jni.disconnect();
     }
 
@@ -134,7 +146,7 @@ public class CameraService implements Parcelable {
      * startStreaming
      */
     public void startStreaming() {
-        String args = String.format(Constants.ARGS_SET_STREAM_ON, 250, 0);
+        String args = String.format(Constants.ARGS_SET_STREAM_ON, 250, 4);
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
         mainActivity.getCameraServiceJNI().sendCommand(command);
     }
@@ -158,7 +170,8 @@ public class CameraService implements Parcelable {
     JSONObject parseResponse(String response) {
         try {
             if (response != null) {
-                Timber.d("parseResponse('%s')", response);
+                Timber.d("parseResponse starts with %s and ends with %s",
+                        response.substring(0, 1), response.substring(response.length()-1));
                 //strip out start/stop bytes
                 response = response.substring(1, response.length() - 1);
                 return new JSONObject(response);
@@ -169,14 +182,9 @@ public class CameraService implements Parcelable {
         return new JSONObject();
     }
 
-    /**
-     * onDestroy
-     */
-    public void onDestroy() {
-    }
-
     private void handleError(Exception e) {
         e.printStackTrace();
+        mainActivity.getExecutor().shutdown();
 //        try {
 //            imageChannel.onNext(new JSONObject(String.format(jsonString, e.toString())));
 //        } catch (JSONException ex) {

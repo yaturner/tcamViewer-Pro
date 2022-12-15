@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         System.loadLibrary("camera");
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
             utils = savedInstanceState.getParcelable(Constants.KEY_UTILS);
             cameraService = savedInstanceState.getParcelable(Constants.KEY_CAMERASERVICE);
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         getSettings();
 
         navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
-            if(navDestination.getId() == R.id.navigation_settings ||
+            if (navDestination.getId() == R.id.navigation_settings ||
                     navDestination.getId() == R.id.wifiSettingsFragment) {
                 getNavView().setVisibility(View.GONE);
             } else {
@@ -116,8 +116,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             throw new RuntimeException(e);
         }
 
-        executor = new ThreadPoolExecutor(5, 10, 0,
-                TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>());
+        if (executor == null || executor.getMaximumPoolSize() == 0) {
+            executor = new ThreadPoolExecutor(5, 10, 0,
+                    TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>());
+        }
     }
 
     @Override
@@ -301,10 +303,15 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     protected void onResume() {
         super.onResume();
+        if(executor.getMaximumPoolSize() == 0) {
+            executor = new ThreadPoolExecutor(5, 10, 0,
+                    TimeUnit.MICROSECONDS, new LinkedBlockingQueue<Runnable>());
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //executor.shutdown();
     }
 }

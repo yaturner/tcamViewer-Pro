@@ -531,5 +531,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             disposable.dispose();
         }
         binding = null;
+        cameraService.stopListening();
     }
 }

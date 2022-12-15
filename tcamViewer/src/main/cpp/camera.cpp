@@ -13,12 +13,23 @@
 #include <chrono>
 #include <jni.h>
 #include <pthread.h>
+#include <chrono>
 #include <android/log.h>
 
 #define PORT 5001
 #define BUFFER_LENGTH 65535
 #define MAX_EVENTS 5
 #define APP_NAME "Camera.cpp"
+#define LOGD(x...) do { \
+  char buf[512]; \
+  sprintf(buf, x); \
+  __android_log_print(ANDROID_LOG_DEBUG,"camera.cpp", "%s | line %i", buf, __LINE__); \
+} while (0)
+#define LOGE(x...) do { \
+  char buf[512]; \
+  sprintf(buf, x); \
+  __android_log_print(ANDROID_LOG_ERROR,"camera.cpp", "%s | line%i", buf, __LINE__); \
+} while (0)
 
 static JavaVM *jvm = nullptr;
 JNIEnv *store_env;
@@ -29,14 +40,15 @@ struct sockaddr_in serv_addr;
 struct timeval timeout;
 int sock_fd = -1;
 int epoll_fd = -1;
-int running = 1, event_count, i;
+bool running = false;
+int event_count, i;
 int bytes_read;
 char read_buffer[BUFFER_LENGTH + 1] = {0};
 char response[BUFFER_LENGTH + 1] = {0};
 struct epoll_event event, events[MAX_EVENTS];
 bool connected = false;
 bool start_found, end_found;
-char *pos, *start, *end;
+char *bufferPos, *startPos, *endPos;
 long responseLen;
 pthread_t pthread;
 int pid;
@@ -58,6 +70,9 @@ int init();
 
 void responseCallback(JNIEnv *env, const _jstring *message_);
 
+/**
+ * connect
+ */
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject MainActivity, jobject jnilistener) {
@@ -76,11 +91,11 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
     store_method = env->GetMethodID(clazz, "onAcceptResponse", "(Ljava/lang/String;)V");
 
     if (!sockConnect()) {
-        __android_log_print( ANDROID_LOG_ERROR, APP_NAME, "Could not connect to socket\n");
+        LOGD("Could not connect to socket\n");
         ret = false;
     } else {
-        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "Connected");
-        pos = read_buffer;
+        LOGD("Connected");
+        bufferPos = read_buffer;
         end_found = false;
         start_found = false;
         connected = true;
@@ -89,22 +104,54 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
     return ret;
 }
 
+/**
+ * startListening
+ */
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_startListening(JNIEnv *env, jobject thiz) {
-    ///pid = pthread_create(&pthread, NULL, isDataAvailable, (void*)"dataAvailThread");
+    running = true;
+    LOGD("running = %s", running?"true":"false");
     isDataAvailable();
 }
 
+/**
+ * stopListening
+ */
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_stopListening(JNIEnv *env, jobject thiz) {
+    running = false;
+    LOGD("running = %s", running?"true":"false");
+}
+
+/**
+ * disconnect
+ */
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_disconnect(JNIEnv *env, jobject thiz) {
+    running = false;
+    connected = false;
+    close(sock_fd);
+    sock_fd = -1;
+}
+/**
+ * isConnected
+ */
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_isConnected(JNIEnv *env, jobject thiz) {
     return connected;
 }
 
+/**
+ * socketConnect
+ * @return
+ */
 bool sockConnect() {
     if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "\n Socket creation error \n");
+        LOGD("\n Socket creation error \n");
         return false;
     }
 
@@ -118,13 +165,13 @@ bool sockConnect() {
 
     int b = connect(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (b < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, APP_NAME, "Error: connect\n");
+        LOGE("Error: connect\n");
         return false;
     }
 
     epoll_fd = epoll_create1(0);
     if (epoll_fd == -1) {
-        __android_log_print(ANDROID_LOG_ERROR, APP_NAME, "Failed to create epoll file descriptor\n");
+        LOGE("Failed to create epoll file descriptor\n");
         return false;
     }
 
@@ -132,7 +179,7 @@ bool sockConnect() {
     event.data.fd = sock_fd;
 
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock_fd, &event)) {
-        __android_log_print(ANDROID_LOG_ERROR, APP_NAME, "Failed to add file descriptor to epoll\n");
+        LOGE("Failed to add file descriptor to epoll\n");
         close(epoll_fd);
         return false;
     }
@@ -140,6 +187,9 @@ bool sockConnect() {
     return true;
 }
 
+/**
+ * sendCommand
+ */
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobject thiz, jstring command) {
@@ -151,82 +201,116 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
     }
     int bytes_sent = send(sock_fd, cmd, strlen(cmd), 0);
     if (bytes_sent < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, APP_NAME, "Failed to send command");
+        LOGE("Failed to send command");
         ret = false;
     } else {
-        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "'%s' sent\n", cmd);
+        LOGD("'%s' sent\n", cmd);
         ret = true;
     }
     env->ReleaseStringUTFChars(command, cmd);
     return ret;
 }
 
+/**
+ *
+ */
 void isDataAvailable() {
     jint res = jvm->AttachCurrentThread(&store_env, (void*)NULL);
     if(res < 0) {
 
     }
-
+    int totalBytesRead = 0;
     bytes_read = 0;
-    pos = read_buffer;
-    while (running) {
-        printf("\nPolling for input...\n");
+    bufferPos = read_buffer;
+    while (connected && running) {
+        usleep(250);
+        //LOGD("running = %s", running?"true":"false");
         /* wait for data to be available */
         event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, 30000);
         if(event_count == 0) {
-            __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "epoll timeout");
+            LOGD("epoll timeout");
             continue;
         }
 
-        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "%d ready events\n", event_count);
+        //LOGD("%d ready events\n", event_count);
         /* read all of the available data */
         auto time_start = std::chrono::high_resolution_clock::now();
         for (i = 0; i < event_count; i++) {
-            __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "Reading file descriptor '%d' -- ", events[i].data.fd);
+            if(!running) {
+                break;
+            }
+            //LOGD("Reading file descriptor '%d' -- ", events[i].data.fd);
             /* read a data packet */
-            bytes_read = read(events[i].data.fd, pos, BUFFER_LENGTH);
+            bytes_read = read(events[i].data.fd, bufferPos, BUFFER_LENGTH);
             /* if we read anything */
             if (bytes_read > 0) {
-                __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "%d bytes read.\n", bytes_read);
+                totalBytesRead = totalBytesRead + bytes_read;
+                LOGD("%d bytes read, total = %d.\n", bytes_read, totalBytesRead);
                 /* next buffer read position */
-                pos = pos + bytes_read;
+                bufferPos = bufferPos + bytes_read;
+                if(bufferPos > read_buffer + BUFFER_LENGTH -1) {
+                    LOGE("BUFFER OVERRUN bufferPos = %x, read_buffer = %x, exiting while", bufferPos, read_buffer);
+                    running = false;
+                    break;
+                }
                 /* scan the buffer for start and end markers*/
-                for (char *p = pos - bytes_read; p < pos; p++) {
+                for (char *currentPos = bufferPos - bytes_read; currentPos < bufferPos; currentPos++) {
                     /* tjsn start */
-                    if (*p == '\02') {
-                        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "found start at buffer position %lx, value = %d\n", p - read_buffer,
-                               *p);
+                    if (*currentPos == '\02') {
+                        LOGD("found start at buffer position %lx, value = %d\n",
+                                            currentPos - read_buffer,
+                               *currentPos);
                         start_found = true;
-                        start = p;
+                        startPos = currentPos;
                     }
                     /* tjsn end */
-                    if (*p == '\03') {
-                        end = p;
-                        responseLen = end - start;
-                        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "found end at buffer position %lx, len = %ld, value = %d\n",
-                               p - read_buffer,
-                               responseLen, *p);
+                    if (*currentPos == '\03') {
+                        endPos = currentPos;
+                        responseLen = endPos - startPos;
+                        LOGD("found end at buffer position %lx, len = %ld, value = %d\n",
+                               endPos, responseLen, *currentPos);
                         end_found = true;
                         /* create the tjsn package and return it to java */
                         auto time_stop = std::chrono::high_resolution_clock::now();
                         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                                 time_stop - time_start);
-                        memcpy(response, start, responseLen + 1);
+                        memcpy(response, startPos, responseLen + 1);
                         jstring message = store_env->NewStringUTF((const char*)&response);
                         store_env->CallVoidMethod(store_Wlistener, store_method, message);
-                        __android_log_print(ANDROID_LOG_DEBUG, APP_NAME, "response starts with %d and ends with %d\n", response[0],
+                        LOGD("response starts with %d and ends with %d\n", response[0],
                                response[responseLen]);
                         std::cout << "duration = " << duration.count() << std::endl;
-                        pos = read_buffer;
-                        /* if there is any thin left in the bufeer after the end, nove it to the beginning */
-
-                        /////break;
+                        /***********************************************************************************/
+                        /* if there is any thin left in the buffer after the end, move it to the beginning */
+                        /***********************************************************************************/
+                        LOGD("Comparing %x > %x", bufferPos, endPos+1);
+                        if(bufferPos > endPos + 1) {
+                            int len = bufferPos - endPos;
+                            LOGD("partial response found: len = %d, endPos = %d", len, *(endPos));
+                            bufferPos = endPos + 1;
+                            LOGD("Preparing to move %d bytes from %x to %x", len, bufferPos,
+                                 read_buffer);
+                            LOGD("bufferPos[0] = %d\n", bufferPos[0]);
+                            memcpy(read_buffer, bufferPos, len);
+                            read_buffer[len] = '\0';
+                            bufferPos = read_buffer;
+                            LOGD("After memcpy/set read_buffer = %d/%d", read_buffer[0], read_buffer[len]);
+                            LOGD("read_buffer = '%s'\n", read_buffer);
+                        }
+                        end_found = false;
+                        start_found = false;
+                        totalBytesRead = 0;
+                        break;
                     }
                 }
             } else {
-                __android_log_print(ANDROID_LOG_ERROR, APP_NAME, "nothing read\n");
+                if(!running) {
+                    break;
+                }
+                //LOGE("nothing read\n");
             }
         }
     };
+    return;
 }
 

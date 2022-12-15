@@ -7,4 +7,6 @@ public class CameraServiceJNI {
     public native boolean sendCommand(String cmd);
     public native boolean isConnected();
     public native void startListening();
+    public native void stopListening();
+    public native void disconnect();
 }

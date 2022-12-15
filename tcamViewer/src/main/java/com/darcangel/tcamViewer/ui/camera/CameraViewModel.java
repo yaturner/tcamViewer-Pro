@@ -83,7 +83,7 @@ public class CameraViewModel extends ViewModel {
      */
     public void connectToCamera() {
         try {
-            mainActivity.getCameraService().connect();
+            cameraService.connect();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,7 +94,7 @@ public class CameraViewModel extends ViewModel {
      */
     public void disconnectFromCamera() {
         try {
-            mainActivity.getCameraService().disconnect();
+            cameraService.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -126,7 +126,7 @@ public class CameraViewModel extends ViewModel {
 
         String cmd = String.format(Constants.CMD_SET_TIME, args);
         try {
-            mainActivity.getCameraService().sendCmd(cmd);
+            cameraService.sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -146,7 +146,7 @@ public class CameraViewModel extends ViewModel {
             String cmd = String.format(Constants.CMD_SET_CONFIG, args);
             //isConnectingToCamera = false;
             try {
-                mainActivity.getCameraService().sendCmd(cmd);
+                cameraService.sendCmd(cmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -157,7 +157,7 @@ public class CameraViewModel extends ViewModel {
         if(cameraService.isConnected()) {
             String cmd = Constants.CMD_GET_CONFIG;
             try {
-                mainActivity.getCameraService().sendCmd(cmd);
+                cameraService.sendCmd(cmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -168,7 +168,7 @@ public class CameraViewModel extends ViewModel {
         if(cameraService.isConnected()) {
             String cmd = Constants.CMD_GET_WIFI;
             try {
-                mainActivity.getCameraService().sendCmd(cmd);
+                cameraService.sendCmd(cmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -180,7 +180,7 @@ public class CameraViewModel extends ViewModel {
      */
     public void getImageFromCamera() {
         try {
-            mainActivity.getCameraService().sendCmd(Constants.CMD_GET_IMAGE);
+            cameraService.sendCmd(Constants.CMD_GET_IMAGE);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -190,9 +190,9 @@ public class CameraViewModel extends ViewModel {
         try {
             if(flag) {
 
-                mainActivity.getCameraService().startStreaming();
+                cameraService.startStreaming();
             } else {
-                mainActivity.getCameraService().stopStreaming();
+                cameraService.stopStreaming();
             }
             isStreaming = flag;
         } catch (Exception e) {

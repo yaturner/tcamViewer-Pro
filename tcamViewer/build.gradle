@@ -25,7 +25,7 @@ android {
         versionName "0.25"
         externalNativeBuild {
             cmake {
-                cppFlags ''
+                cppFlags '-O0 -ggdb'
             }
         }
     }

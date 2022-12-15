@@ -252,7 +252,7 @@ public class CameraUtils extends BaseObservable {
         paint.setStrokeWidth(1.0f);
 
         int b = -1, d = -1, v = -1;
-        Timber.d("\\\\ManualRange\\\\createHistogram\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
+        //Timber.d("\\\\ManualRange\\\\createHistogram\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
 
         try {
             Pair<Integer, Integer> temps = getRadiometricTemperatures(imageDto);
@@ -319,7 +319,7 @@ public class CameraUtils extends BaseObservable {
      * the radiometric data for the min/max is useless, so we always recalculate it from settings
      */
     private void setTemperatureRange(ImageDto imageDto) {
-        Timber.d("\\\\ManualRange\\\\setTemperatureRange\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
+        //Timber.d("\\\\ManualRange\\\\setTemperatureRange\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
 //        if(isManualRange()) {
 //            imageDto.setMinTemperature(convertToRadiometric(imageDto, getManualRangeMin()));
 //            imageDto.setMaxTemperature(convertToRadiometric(imageDto, getManualRangeMax()));
@@ -458,7 +458,7 @@ public class CameraUtils extends BaseObservable {
      * @return min, max temperatures in radiometric values
      */
     public Pair<Integer, Integer> getRadiometricTemperatures(ImageDto imageDto) {
-        Timber.d("\\\\ManualRange\\\\getRadiometricTemperatures\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
+        //Timber.d("\\\\ManualRange\\\\getRadiometricTemperatures\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
         if(isManualRange()) {
             return new Pair<>(convertToRadiometric(imageDto, cameraViewModel.getManualMinTemperature()),
                     convertToRadiometric(imageDto, cameraViewModel.getManualMaxTemperature()));
