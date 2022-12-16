@@ -3,35 +3,47 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_save"
-        android:visible="true"
         android:title="@string/save"
+        android:visible="true"
         app:showAsAction="always|withText" />
     <item
         android:id="@+id/action_connect"
-        android:title="@string/connect"
         android:icon="@drawable/bolt_30_30"
+        android:title="@string/connect"
         android:visible="true"
         app:showAsAction="always|withText" />
     <item
         android:id="@+id/action_disconnect"
-        android:title="@string/disconnect"
         android:icon="@drawable/bolt_30_30"
+        android:title="@string/disconnect"
         android:visible="false"
         app:showAsAction="always|withText" />
     <item
         android:id="@+id/action_get"
-        android:title="@string/get"
         android:icon="@drawable/camera_30_30"
+        android:title="@string/get"
         app:showAsAction="always|withText" />
     <item
         android:id="@+id/action_stream"
-        android:title="Stream"
         android:icon="@drawable/video_camera_no_t_30_30"
-        app:showAsAction="always|withText" />
+        android:title="@string/stream"
+        app:showAsAction="always|withText">
+        <menu>
+            <item
+                android:id="@+id/action_stream_on"
+                android:title="@string/start"
+                android:visible="true" />
+            <item
+                android:id="@+id/action_stream_off"
+                android:title="@string/stop"
+                android:visible="true" />
+        </menu>
+    </item>
+
     <item
         android:id="@+id/action_palette"
-        android:title="@string/palette"
         android:icon="@drawable/palette_30_30"
+        android:title="@string/palette"
         app:showAsAction="ifRoom|withText">
         <menu></menu>
     </item>

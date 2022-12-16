@@ -20,6 +20,7 @@
 #define BUFFER_LENGTH 65535
 #define MAX_EVENTS 5
 #define APP_NAME "Camera.cpp"
+#ifdef DEBUG
 #define LOGD(x...) do { \
   char buf[512]; \
   sprintf(buf, x); \
@@ -30,7 +31,10 @@
   sprintf(buf, x); \
   __android_log_print(ANDROID_LOG_ERROR,"camera.cpp", "%s | line%i", buf, __LINE__); \
 } while (0)
-
+#else
+#define LOGD(x...)
+#define LOGE(x...)
+#endif
 using namespace std;
 
 static JavaVM *jvm = nullptr;

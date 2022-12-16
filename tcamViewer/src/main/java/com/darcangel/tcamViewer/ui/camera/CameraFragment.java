@@ -126,12 +126,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
-            case R.id.action_stream: {
-                if (cameraViewModel.getStreaming()) {
-                    cameraViewModel.startStreaming(false);
-                } else {
-                    cameraViewModel.startStreaming(true);
-                }
+            case R.id.action_stream_off: {
+                cameraViewModel.startStreaming(false);
+                mainActivity.invalidateOptionsMenu();
+                break;
+            }
+            case R.id.action_stream_on: {
+                cameraViewModel.startStreaming(true);
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
@@ -440,6 +441,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemGet = menu.findItem(R.id.action_get);
         MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
+        MenuItem itemStreamStart = menu.findItem(R.id.action_stream_on);
+        MenuItem itemStreamStop = menu.findItem(R.id.action_stream_off);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
         ImageDto imageDto = cameraViewModel.getImageDto().getValue();
 
@@ -447,9 +450,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (settings.getPalette() != null && !settings.getPalette().getValue().isEmpty()) {
             itemPalette.setTitle(settings.getPalette().getValue());
         }
-//        if (imageDto.getPaletteName() != null && !imageDto.getPaletteName().isEmpty()) {
-//            itemPalette.setTitle(imageDto.getPaletteName());
-//        }
 
         //since this fragment can be recreated, prevent multiple items
         paletteSubMenu.clear();
@@ -474,10 +474,15 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             itemGet.setEnabled(true);
             itemStream.setEnabled(true);
         }
+
         if (!cameraService.isConnected() || cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
+            itemStreamStart.setVisible(false);
+            itemStreamStop.setVisible(true);
         } else {
             itemGet.setEnabled(true);
+            itemStreamStart.setVisible(true);
+            itemStreamStop.setVisible(false);
         }
     }
 
