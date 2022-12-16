@@ -31,6 +31,8 @@
   __android_log_print(ANDROID_LOG_ERROR,"camera.cpp", "%s | line%i", buf, __LINE__); \
 } while (0)
 
+using namespace std;
+
 static JavaVM *jvm = nullptr;
 JNIEnv *store_env;
 jmethodID store_method;
@@ -43,12 +45,16 @@ int epoll_fd = -1;
 bool running = false;
 int event_count, i;
 int bytes_read;
-char read_buffer[BUFFER_LENGTH + 1] = {0};
-char response[BUFFER_LENGTH + 1] = {0};
+//char read_buffer[BUFFER_LENGTH + 1] = {0};
+//char response[BUFFER_LENGTH + 1] = {0};
+string read_buffer;
+char temp[BUFFER_LENGTH];
+string response;
 struct epoll_event event, events[MAX_EVENTS];
 bool connected = false;
 bool start_found, end_found;
 char *bufferPos, *startPos, *endPos;
+int startPosition, endPosition; //relative to start of read_buffer
 long responseLen;
 pthread_t pthread;
 int pid;
@@ -57,8 +63,11 @@ const char *cmd_stream = "\02{\"cmd\":\"stream_on\", "
                          "\"args\":{\"delay_msec\":0, \"num_frames\":0}}\03";
 
 bool sockConnect();
+
 bool sendCommand(const char *cmd);
+
 void isDataAvailable();
+
 int init();
 
 /**
@@ -75,7 +84,8 @@ void responseCallback(JNIEnv *env, const _jstring *message_);
  */
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject MainActivity, jobject jnilistener) {
+Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject MainActivity,
+                                                           jobject jnilistener) {
     bool ret = true;
     connected = false;
     timeout.tv_sec = 30;
@@ -95,7 +105,8 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
         ret = false;
     } else {
         LOGD("Connected");
-        bufferPos = read_buffer;
+        read_buffer.reserve(BUFFER_LENGTH);
+        response.reserve(BUFFER_LENGTH);
         end_found = false;
         start_found = false;
         connected = true;
@@ -111,7 +122,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_startListening(JNIEnv *env, jobject thiz) {
     running = true;
-    LOGD("running = %s", running?"true":"false");
+    LOGD("running = %s", running ? "true" : "false");
     isDataAvailable();
 }
 
@@ -122,7 +133,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_stopListening(JNIEnv *env, jobject thiz) {
     running = false;
-    LOGD("running = %s", running?"true":"false");
+    LOGD("running = %s", running ? "true" : "false");
 }
 
 /**
@@ -192,7 +203,8 @@ bool sockConnect() {
  */
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobject thiz, jstring command) {
+Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobject thiz,
+                                                               jstring command) {
     // TODO: implement sendCommand()
     bool ret = true;
     const char *cmd = env->GetStringUTFChars(command, 0);
@@ -215,19 +227,18 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
  *
  */
 void isDataAvailable() {
-    jint res = jvm->AttachCurrentThread(&store_env, (void*)NULL);
-    if(res < 0) {
+    jint res = jvm->AttachCurrentThread(&store_env, (void *) NULL);
+    if (res < 0) {
 
     }
     int totalBytesRead = 0;
     bytes_read = 0;
-    bufferPos = read_buffer;
     while (connected && running) {
         usleep(250);
         //LOGD("running = %s", running?"true":"false");
         /* wait for data to be available */
         event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, 30000);
-        if(event_count == 0) {
+        if (event_count == 0) {
             LOGD("epoll timeout");
             continue;
         }
@@ -236,75 +247,62 @@ void isDataAvailable() {
         /* read all of the available data */
         auto time_start = std::chrono::high_resolution_clock::now();
         for (i = 0; i < event_count; i++) {
-            if(!running) {
+            if (!running) {
                 break;
             }
             //LOGD("Reading file descriptor '%d' -- ", events[i].data.fd);
             /* read a data packet */
-            bytes_read = read(events[i].data.fd, bufferPos, BUFFER_LENGTH);
+            bytes_read = recv(events[i].data.fd, temp, BUFFER_LENGTH-1, 0);
+
             /* if we read anything */
             if (bytes_read > 0) {
+                temp[bytes_read] = 0;
+                read_buffer = read_buffer + temp;
                 totalBytesRead = totalBytesRead + bytes_read;
                 LOGD("%d bytes read, total = %d.\n", bytes_read, totalBytesRead);
                 /* next buffer read position */
-                bufferPos = bufferPos + bytes_read;
-                if(bufferPos > read_buffer + BUFFER_LENGTH -1) {
-                    LOGE("BUFFER OVERRUN bufferPos = %x, read_buffer = %x, exiting while", bufferPos, read_buffer);
-                    running = false;
-                    break;
-                }
                 /* scan the buffer for start and end markers*/
-                for (char *currentPos = bufferPos - bytes_read; currentPos < bufferPos; currentPos++) {
-                    /* tjsn start */
-                    if (*currentPos == '\02') {
-                        LOGD("found start at buffer position %lx, value = %d\n",
-                                            currentPos - read_buffer,
-                               *currentPos);
+                /* tjsn start */
+                if (!start_found) {
+                    startPos = strchr((char *const) &read_buffer[0], '\02');
+                    if (startPos != NULL) {
+                        LOGD("found start at buffer position %d, value = %d\n", startPosition, startPos[0]);
                         start_found = true;
-                        startPos = currentPos;
+                        startPosition = startPos-&read_buffer[0];
                     }
-                    /* tjsn end */
-                    if (*currentPos == '\03') {
-                        endPos = currentPos;
-                        responseLen = endPos - startPos;
-                        LOGD("found end at buffer position %lx, len = %ld, value = %d\n",
-                               endPos, responseLen, *currentPos);
+                }
+                /* tjsn end */
+                if (start_found && !end_found) {
+                    endPos = strchr((char *const) &read_buffer[0], '\03');
+                    if (endPos != NULL) {
                         end_found = true;
+                        endPosition = endPos-&read_buffer[0];
+                        LOGD("found end at buffer position %d, value = %d\n", endPosition, endPos[0]);
                         /* create the tjsn package and return it to java */
                         auto time_stop = std::chrono::high_resolution_clock::now();
                         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                                 time_stop - time_start);
-                        memcpy(response, startPos, responseLen + 1);
-                        jstring message = store_env->NewStringUTF((const char*)&response);
+                        responseLen = endPosition - startPosition;
+                        response = read_buffer.substr(startPosition, responseLen+1);
+                        response = response + '\0';
+                        read_buffer = read_buffer.substr(responseLen+1);
+                        jstring message = store_env->NewStringUTF(response.c_str());
                         store_env->CallVoidMethod(store_Wlistener, store_method, message);
-                        LOGD("response starts with %d and ends with %d\n", response[0],
-                               response[responseLen]);
+                        LOGD("response starts with %d and ends with %d\n",
+                             response[0],
+                             response[responseLen]);
                         std::cout << "duration = " << duration.count() << std::endl;
-                        /***********************************************************************************/
-                        /* if there is any thin left in the buffer after the end, move it to the beginning */
-                        /***********************************************************************************/
-                        LOGD("Comparing %x > %x", bufferPos, endPos+1);
-                        if(bufferPos > endPos + 1) {
-                            int len = bufferPos - endPos;
-                            LOGD("partial response found: len = %d, endPos = %d", len, *(endPos));
-                            bufferPos = endPos + 1;
-                            LOGD("Preparing to move %d bytes from %x to %x", len, bufferPos,
-                                 read_buffer);
-                            LOGD("bufferPos[0] = %d\n", bufferPos[0]);
-                            memcpy(read_buffer, bufferPos, len);
-                            read_buffer[len] = '\0';
-                            bufferPos = read_buffer;
-                            LOGD("After memcpy/set read_buffer = %d/%d", read_buffer[0], read_buffer[len]);
-                            LOGD("read_buffer = '%s'\n", read_buffer);
-                        }
                         end_found = false;
                         start_found = false;
+                        startPosition = -1;
+                        endPosition = -1;
                         totalBytesRead = 0;
                         break;
                     }
                 }
+
             } else {
-                if(!running) {
+                if (!running) {
                     break;
                 }
                 //LOGE("nothing read\n");

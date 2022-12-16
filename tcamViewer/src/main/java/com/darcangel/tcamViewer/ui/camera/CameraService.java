@@ -146,7 +146,7 @@ public class CameraService implements Parcelable {
      * startStreaming
      */
     public void startStreaming() {
-        String args = String.format(Constants.ARGS_SET_STREAM_ON, 250, 4);
+        String args = String.format(Constants.ARGS_SET_STREAM_ON, 0, 0);
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
         mainActivity.getCameraServiceJNI().sendCommand(command);
     }
