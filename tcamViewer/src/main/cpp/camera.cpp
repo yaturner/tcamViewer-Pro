@@ -238,7 +238,7 @@ void isDataAvailable() {
     int totalBytesRead = 0;
     bytes_read = 0;
     while (connected && running) {
-        usleep(250);
+        ////usleep(250);
         //LOGD("running = %s", running?"true":"false");
         /* wait for data to be available */
         event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, 30000);

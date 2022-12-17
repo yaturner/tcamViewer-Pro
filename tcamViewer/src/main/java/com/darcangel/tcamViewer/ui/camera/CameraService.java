@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.util.concurrent.Future;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import timber.log.Timber;
 
@@ -37,6 +38,7 @@ public class CameraService implements Parcelable {
         mainActivity = MainActivity.getInstance();
         jni = mainActivity.getCameraServiceJNI();
         imageChannel = PublishSubject.create();
+        imageChannel.toFlowable(BackpressureStrategy.BUFFER);
         jniListener = new MainActivity.JNIListener() {
             @Override
             public void onAcceptResponse(String response) {

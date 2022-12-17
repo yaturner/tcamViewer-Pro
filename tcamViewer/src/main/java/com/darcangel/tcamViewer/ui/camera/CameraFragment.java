@@ -230,7 +230,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         });
         disposable = cameraService.getImageChannel()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(obj -> handleCameraResponse(obj));
+                .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
 
         drawScreen();
     }
