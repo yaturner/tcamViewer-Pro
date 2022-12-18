@@ -97,7 +97,7 @@ public class CameraService implements Parcelable {
     /**
      * connect
      */
-    public void connect() {
+    public Boolean connect() {
         cameraTask = new Runnable() {
             @Override
             public void run() {
@@ -107,10 +107,16 @@ public class CameraService implements Parcelable {
                 jni.startListening();
             }
         };
-        jni.connect(jniListener);
+        if(!jni.connect(jniListener, ipAddress)) {
+            return false;
+        }
         if(jni.isConnected()) {
             jniTask = mainActivity.getExecutor().submit(cameraTask);
+        } else {
+            return false;
         }
+
+        return true;
     }
 
     public void stopListening() {
@@ -172,8 +178,8 @@ public class CameraService implements Parcelable {
     JSONObject parseResponse(String response) {
         try {
             if (response != null) {
-                Timber.d("parseResponse starts with %s and ends with %s",
-                        response.substring(0, 1), response.substring(response.length()-1));
+//                Timber.d("parseResponse starts with %s and ends with %s",
+//                        response.substring(0, 1), response.substring(response.length()-1));
                 //strip out start/stop bytes
                 response = response.substring(1, response.length() - 1);
                 return new JSONObject(response);

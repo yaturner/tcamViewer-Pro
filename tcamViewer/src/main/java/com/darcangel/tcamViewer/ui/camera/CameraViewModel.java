@@ -81,12 +81,17 @@ public class CameraViewModel extends ViewModel {
      * connectToCamera
      * this is called when the camera is connected
      */
-    public void connectToCamera() {
+    public Boolean connectToCamera() {
         try {
-            cameraService.connect();
+            if(!cameraService.connect()) {
+                return false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+
+        return true;
     }
 
     /**

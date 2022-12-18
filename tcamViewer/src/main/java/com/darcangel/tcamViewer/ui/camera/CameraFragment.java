@@ -59,6 +59,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private Disposable disposable;
     private MainActivity mainActivity = null;
 
+    private         long startMillis = -1;
+
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
@@ -77,8 +79,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         switch (menuItem.getItemId()) {
             case R.id.action_connect: {
                 isConnectingToCamera = true;
-                cameraViewModel.connectToCamera();
-                mainActivity.invalidateOptionsMenu();
+                if(!cameraViewModel.connectToCamera()) {
+
+                } else {
+                    mainActivity.invalidateOptionsMenu();
+                }
                 break;
             }
             case R.id.action_disconnect:
@@ -243,11 +248,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 //        3	Command bad - the command was incorrectly formatted or was not a json string.
 //        4	Internal Error - the camera detected an internal error. See the information string for more information.
 //        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
-
         Iterator<String> it = obj.keys();
         if (it.hasNext()) {
             String response = it.next();
-            Timber.d("Response String is %s", response);
+            ///Timber.d("Response String is %s", response);
             //error handling
             if (response.equalsIgnoreCase("error")) {
                 String msg = new JSONObject(obj.getString("error")).getString("message");
@@ -346,11 +350,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 //get image
             } else if (response.equalsIgnoreCase("metadata")) {
-                //Timber.d("Received onNext");
+                long millis = System.currentTimeMillis();
+                long diff;
+                if(startMillis != -1) {
+                    diff = millis - startMillis;
+                    Timber.d("Received onNext at %d", diff);
+                }
+                startMillis = millis;
                 cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                 drawScreen();
-                mainActivity.invalidateOptionsMenu();
-                mainActivity.dismissProgressDialog();
+                /////mainActivity.invalidateOptionsMenu();
             }
         }
     }
@@ -368,8 +377,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         //Do we need to recreate the image
                         if (cameraViewModel.isRemapNeeded()) {
                             cameraViewModel.setRemapNeeded(false);
-                            imageDto.remapImage();
-                        }
+                            imageDto.remapImage();                        }
                         if (settings.getDisplaySpotmeter().getValue()) {
                             image = imageDto.drawHotspot();
                             binding.tvSpotmeter.setText(createTemperatureString(imageDto.
