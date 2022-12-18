@@ -80,7 +80,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             case R.id.action_connect: {
                 isConnectingToCamera = true;
                 if(!cameraViewModel.connectToCamera()) {
-
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
+                            .setCancelable(true)
+                            .setPositiveButton(R.string.ok, ((dialog, which) -> {
+                                dialog.dismiss();
+                            }))
+                            .setTitle(R.string.title_error)
+                            .setMessage(R.string.error_can_not_connect);
+                    builder.create().show();
                 } else {
                     mainActivity.invalidateOptionsMenu();
                 }

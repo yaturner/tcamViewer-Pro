@@ -183,30 +183,13 @@ bool sockConnect(const char *ipAddress) {
     serv_addr.sin_addr.s_addr = inet_addr(ipAddress);
     serv_addr.sin_port = htons(PORT);
 
-    //set the socket in non-blocking
-    unsigned long iMode = 1;
-    int iResult = ioctl(sock_fd, FIONBIO, &iMode);
-    if (iResult != 0)
-    {
-        LOGE("ioctlsocket failed with error: %ld\n", iResult);
-        close(sock_fd);
-        return false;
-    }
     int b = connect(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (b < 0) {
         LOGE("Error: connect\n");
         close(sock_fd);
         return false;
     }
-    // restart the socket mode
-    iMode = 0;
-    iResult = ioctl(sock_fd, FIONBIO, &iMode);
-    if (iResult != 0)
-    {
-        LOGE("ioctlsocket failed with error: %ld\n", iResult);
-        close(sock_fd);
-        return false;
-    }
+
     epoll_fd = epoll_create1(0);
     if (epoll_fd == -1) {
         LOGE("Failed to create epoll file descriptor\n");
