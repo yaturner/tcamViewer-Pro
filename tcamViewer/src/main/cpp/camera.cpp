@@ -56,14 +56,12 @@ int bytes_read, totalBytesRead, prevBytesRead;
 //char read_buffer[BUFFER_LENGTH + 1] = {0};
 //char response[BUFFER_LENGTH + 1] = {0};
 string read_buffer;
-char temp[BUFFER_LENGTH];
+char temp[2];
 string response;
 struct epoll_event event, events[MAX_EVENTS];
 bool connected = false;
 bool start_found, end_found;
 char /**bufferPos*,*/ *startPos, *endPos, *tempPos;
-int startOffest, endOffest; //relative to start of read_buffer
-long responseLen;
 pthread_t pthread;
 int pid;
 const char *cmd_get_image = "\02{\"cmd\":\"get_image\"}\03";
@@ -256,6 +254,7 @@ void isDataAvailable() {
     prevBytesRead = 0;
     bytes_read = 0;
     response = "";
+    temp[1] = '\0';
     while (connected && running) {
         ////usleep(250);
         /* wait for data to be available */
@@ -288,11 +287,9 @@ void isDataAvailable() {
                     LOGD("found start temp[0] = %d", temp[0]);
                     start_found = true;
                     response.append((const char*)&temp[0]);
-                    response.append("\0");
                 } else if (start_found && !end_found && temp[0] == '\03') {
                     end_found = true;
                     response.append((const char*)&temp[0]);
-                    response.append("\0");
                     LOGD("found end, temp[0] = %d", temp[0]);
                     /* create the tjsn package and return it to java */
                     auto time_stop = std::chrono::high_resolution_clock::now();
@@ -306,13 +303,10 @@ void isDataAvailable() {
                     response = "";
                     end_found = false;
                     start_found = false;
-                    startOffest = -1;
-                    endOffest = -1;
                     totalBytesRead = 0;
                 } else {
                     if(start_found && !end_found) {
                         response.append((const char*)&temp[0]);
-                        response.append("\0");
                     }
                     totalBytesRead++;
                 }
