@@ -21,19 +21,19 @@
 
 #define PORT 5001
 #define BUFFER_LENGTH 65535
-#define MAX_EVENTS 100
-#define APP_NAME "Camera.cpp"
+#define MAX_EVENTS 1
+#define TAG "Camera.cpp"
 #undef DEBUG
 #ifdef DEBUG
 #define LOGD(x...) do { \
   char buf[512]; \
   sprintf(buf, x); \
-  __android_log_print(ANDROID_LOG_DEBUG,"camera.cpp", "%s | line %i", buf, __LINE__); \
+  __android_log_print(ANDROID_LOG_DEBUG,TAG, "%s | line %i", buf, __LINE__); \
 } while (0)
 #define LOGE(x...) do { \
   char buf[512]; \
   sprintf(buf, x); \
-  __android_log_print(ANDROID_LOG_ERROR,"camera.cpp", "%s | line%i", buf, __LINE__); \
+  __android_log_print(ANDROID_LOG_ERROR,TAG, "%s | line%i", buf, __LINE__); \
 } while (0)
 #else
 #define LOGD(x...)
@@ -47,12 +47,12 @@ jmethodID store_method;
 jweak store_Wlistener;
 
 struct sockaddr_in serv_addr;
-struct timeval timeout;
+//struct timeval timeout;
 int sock_fd = -1;
 int epoll_fd = -1;
 bool running = false;
 int event_count, i;
-int bytes_read;
+int bytes_read, totalBytesRead, prevBytesRead;
 //char read_buffer[BUFFER_LENGTH + 1] = {0};
 //char response[BUFFER_LENGTH + 1] = {0};
 string read_buffer;
@@ -61,8 +61,8 @@ string response;
 struct epoll_event event, events[MAX_EVENTS];
 bool connected = false;
 bool start_found, end_found;
-char *bufferPos, *startPos, *endPos;
-int startPosition, endPosition; //relative to start of read_buffer
+char /**bufferPos*,*/ *startPos, *endPos, *tempPos;
+int startOffest, endOffest; //relative to start of read_buffer
 long responseLen;
 pthread_t pthread;
 int pid;
@@ -71,7 +71,9 @@ const char *cmd_stream = "\02{\"cmd\":\"stream_on\", "
                          "\"args\":{\"delay_msec\":0, \"num_frames\":0}}\03";
 
 bool sockConnect(const char *ipAddress);
+
 bool sendCommand(const char *cmd);
+
 void isDataAvailable();
 
 int init();
@@ -94,15 +96,13 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
                                                            jobject jnilistener, jstring address) {
     bool ret = true;
     connected = false;
-    timeout.tv_sec = 30;
-    timeout.tv_usec = 0;
 
     env->GetJavaVM(&jvm); //store jvm reference for later call
 
     store_env = env;
 
     const jsize len = env->GetStringUTFLength(address);
-    const char* ipAddress = env->GetStringUTFChars(address, 0);
+    const char *ipAddress = env->GetStringUTFChars(address, 0);
 
     store_Wlistener = env->NewWeakGlobalRef(jnilistener);
     jclass clazz = env->GetObjectClass(store_Wlistener);
@@ -166,13 +166,18 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_isConnected(JNIEnv *env, jobj
     return connected;
 }
 
+void connect_alarm(int signum) {
+//TODO throw an error can not connect
+}
+
 /**
  * socketConnect
  * @return
  */
 bool sockConnect(const char *ipAddress) {
+
     if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        LOGD("\n Socket creation error \n");
+        LOGD("\n Socket creation error");
         return false;
     }
     serv_addr.sin_family = AF_INET;
@@ -183,12 +188,16 @@ bool sockConnect(const char *ipAddress) {
     serv_addr.sin_addr.s_addr = inet_addr(ipAddress);
     serv_addr.sin_port = htons(PORT);
 
+    signal(SIGALRM, connect_alarm); /* connect_alarm is you signal handler */
+    alarm(30); /* secs is your timeout in seconds */
     int b = connect(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (b < 0) {
         LOGE("Error: connect\n");
         close(sock_fd);
+        alarm(0);
         return false;
     }
+    alarm(0);
 
     epoll_fd = epoll_create1(0);
     if (epoll_fd == -1) {
@@ -220,7 +229,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
     // TODO: implement sendCommand()
     bool ret = true;
     const char *cmd = env->GetStringUTFChars(command, 0);
-    if (cmd == NULL || strlen(cmd) == 0) {
+    if (cmd == nullptr || strlen(cmd) == 0) {
         ret = false;
     }
     int bytes_sent = send(sock_fd, cmd, strlen(cmd), 0);
@@ -228,7 +237,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
         LOGE("Failed to send command");
         ret = false;
     } else {
-        LOGD("'%s' sent\n", cmd);
+        LOGD("'%s' sent", cmd);
         ret = true;
     }
     env->ReleaseStringUTFChars(command, cmd);
@@ -239,12 +248,14 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
  *
  */
 void isDataAvailable() {
-    jint res = jvm->AttachCurrentThread(&store_env, (void *) NULL);
+    jint res = jvm->AttachCurrentThread(&store_env, (void *) nullptr);
     if (res < 0) {
-
+        return;
     }
-    int totalBytesRead = 0;
+    totalBytesRead = 0;
+    prevBytesRead = 0;
     bytes_read = 0;
+    response = "";
     while (connected && running) {
         ////usleep(250);
         /* wait for data to be available */
@@ -254,72 +265,59 @@ void isDataAvailable() {
             continue;
         }
 
-        //LOGD("%d ready events\n", event_count);
+        /////LOGD("%d read events", event_count);
         /* read all of the available data */
         auto time_start = std::chrono::high_resolution_clock::now();
         for (i = 0; i < event_count; i++) {
             if (!running) {
                 break;
             }
-            //LOGD("Reading file descriptor '%d' -- ", events[i].data.fd);
-            /* read a data packet */
-            bytes_read = recv(events[i].data.fd, temp, BUFFER_LENGTH-1, 0);
-
-            /* if we read anything */
-            if (bytes_read > 0) {
-                temp[bytes_read] = 0;
-                read_buffer = read_buffer + temp;
-                totalBytesRead = totalBytesRead + bytes_read;
-                //LOGD("%d bytes read, total = %d.\n", bytes_read, totalBytesRead);
+            /////LOGD("Read %d events", event_count);
+            /* read a data packet only if we have extract all of the commands in the current packet */
+            do {
+                bytes_read = recv(events[i].data.fd, &temp[0], 1, 0);
+                /* if we read anything */
+                LOGD("%d bytes read, total = %d", bytes_read, totalBytesRead);
                 /* next buffer read position */
                 /* scan the buffer for start and end markers*/
-                /* tjsn start */
-                if (!start_found) {
-                    startPos = strchr((char *const) &read_buffer[0], '\02');
-                    if (startPos != NULL) {
-                        startPosition = startPos-&read_buffer[0];
-                        LOGD("found start at buffer position %d, value = %d\n", startPosition, startPos[0]);
-                        start_found = true;
-                    }
-                }
-                /* tjsn end */
-                if (start_found && !end_found) {
-                    endPos = strchr((char *const) &read_buffer[0], '\03');
-                    if (endPos != NULL) {
-                        end_found = true;
-                        endPosition = endPos-&read_buffer[0];
-                        LOGD("found end at buffer position %d, value = %d\n", endPosition, endPos[0]);
-                        /* create the tjsn package and return it to java */
-                        auto time_stop = std::chrono::high_resolution_clock::now();
-                        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-                                time_stop - time_start);
-                        responseLen = endPosition - startPosition;
-                        response = read_buffer.substr(startPosition, responseLen+1);
-                        response = response + '\0';
-                        read_buffer = read_buffer.substr(responseLen+1);
-                        jstring message = store_env->NewStringUTF(response.c_str());
-                        store_env->CallVoidMethod(store_Wlistener, store_method, message);
-                        LOGD("response starts with %d and ends with %d\n",
-                             response[0],
-                             response[responseLen]);
-                        LOGD("duration = %d\n",duration.count());
-                        end_found = false;
-                        start_found = false;
-                        startPosition = -1;
-                        endPosition = -1;
-                        totalBytesRead = 0;
-                        break;
-                    }
-                }
-
-            } else {
-                if (!running) {
+                /* response start */
+                if (bytes_read == 0) {
                     break;
                 }
-                //LOGE("nothing read\n");
-            }
+                if (!start_found && temp[0] == '\02') {
+                    LOGD("found start temp[0] = %d", temp[0]);
+                    start_found = true;
+                    response.append((const char*)&temp[0]);
+                    response.append("\0");
+                } else if (start_found && !end_found && temp[0] == '\03') {
+                    end_found = true;
+                    response.append((const char*)&temp[0]);
+                    response.append("\0");
+                    LOGD("found end, temp[0] = %d", temp[0]);
+                    /* create the tjsn package and return it to java */
+                    auto time_stop = std::chrono::high_resolution_clock::now();
+                    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                            time_stop - time_start);
+                    LOGD("response starts with %d and ends with %d",
+                         response[0],
+                         response[response.length()-1]);
+                    jstring message = store_env->NewStringUTF(response.c_str());
+                    store_env->CallVoidMethod(store_Wlistener, store_method, message);
+                    response = "";
+                    end_found = false;
+                    start_found = false;
+                    startOffest = -1;
+                    endOffest = -1;
+                    totalBytesRead = 0;
+                } else {
+                    if(start_found && !end_found) {
+                        response.append((const char*)&temp[0]);
+                        response.append("\0");
+                    }
+                    totalBytesRead++;
+                }
+            } while (bytes_read > 0);
         }
-    };
-    return;
+    }
 }
 

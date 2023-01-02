@@ -129,7 +129,6 @@ public class CameraService implements Parcelable {
     public void disconnect() {
         jni.disconnect();
         jniTask.cancel(true);
-        //TODO jni.disconnect();
     }
 
     /**
@@ -182,7 +181,8 @@ public class CameraService implements Parcelable {
 //                        response.substring(0, 1), response.substring(response.length()-1));
                 //strip out start/stop bytes
                 response = response.substring(1, response.length() - 1);
-                return new JSONObject(response);
+                JSONObject result = new JSONObject(response);
+                return result;
             }
         } catch (JSONException e) {
             handleError(e);
