@@ -23,6 +23,7 @@
 #define BUFFER_LENGTH 65535
 #define MAX_EVENTS 1
 #define TAG "Camera.cpp"
+//#define DEBUG
 #undef DEBUG
 #ifdef DEBUG
 #define LOGD(x...) do { \
@@ -55,7 +56,7 @@ int event_count, i;
 int bytes_read, totalBytesRead, prevBytesRead;
 //char read_buffer[BUFFER_LENGTH + 1] = {0};
 //char response[BUFFER_LENGTH + 1] = {0};
-string read_buffer;
+char read_buffer[BUFFER_LENGTH];
 char temp[2];
 string response;
 struct epoll_event event, events[MAX_EVENTS];
@@ -112,7 +113,6 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
         ret = false;
     } else {
         LOGD("Connected");
-        read_buffer.reserve(BUFFER_LENGTH);
         response.reserve(BUFFER_LENGTH);
         end_found = false;
         start_found = false;
@@ -256,62 +256,37 @@ void isDataAvailable() {
     response = "";
     temp[1] = '\0';
     while (connected && running) {
-        ////usleep(250);
-        /* wait for data to be available */
-        event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, 30000);
-        if (event_count == 0) {
-            LOGD("epoll timeout");
-            continue;
-        }
-
-        /////LOGD("%d read events", event_count);
         /* read all of the available data */
         auto time_start = std::chrono::high_resolution_clock::now();
-        for (i = 0; i < event_count; i++) {
-            if (!running) {
-                break;
+        /* read a data packet only if we have extract all of the commands in the current packet */
+        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], BUFFER_LENGTH);
+        if (bytes_read == 0) {
+            break;
+        }
+        for (int index = 0; index < bytes_read; index++) {
+            temp[0] = read_buffer[index];
+            if (!start_found && temp[0] == '\02') {
+                LOGD("found start temp[0] = %d", temp[0]);
+                start_found = true;
+            } else if (start_found && !end_found && temp[0] == '\03') {
+                end_found = true;
+                jstring message = store_env->NewStringUTF(response.c_str());
+                store_env->CallVoidMethod(store_Wlistener, store_method, message);
+                response = "";
+                end_found = false;
+                start_found = false;
+                totalBytesRead = 0;
+                auto time_stop = std::chrono::high_resolution_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        time_stop - time_start);
+                __android_log_print(ANDROID_LOG_DEBUG, TAG, "duration = %d millis",
+                                    duration.count());
+            } else {
+                if (start_found && !end_found) {
+                    response.append((const char *) &temp[0]);
+                }
+                totalBytesRead++;
             }
-            /////LOGD("Read %d events", event_count);
-            /* read a data packet only if we have extract all of the commands in the current packet */
-            do {
-                bytes_read = recv(events[i].data.fd, &temp[0], 1, 0);
-                /* if we read anything */
-                LOGD("%d bytes read, total = %d", bytes_read, totalBytesRead);
-                /* next buffer read position */
-                /* scan the buffer for start and end markers*/
-                /* response start */
-                if (bytes_read == 0) {
-                    break;
-                }
-                if (!start_found && temp[0] == '\02') {
-                    LOGD("found start temp[0] = %d", temp[0]);
-                    start_found = true;
-                    response.append((const char*)&temp[0]);
-                } else if (start_found && !end_found && temp[0] == '\03') {
-                    end_found = true;
-                    response.append((const char*)&temp[0]);
-                    LOGD("found end, temp[0] = %d", temp[0]);
-                    /* create the tjsn package and return it to java */
-                    auto time_stop = std::chrono::high_resolution_clock::now();
-                    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-                            time_stop - time_start);
-                    LOGD("response starts with %d and ends with %d",
-                         response[0],
-                         response[response.length()-1]);
-                    jstring message = store_env->NewStringUTF(response.c_str());
-                    store_env->CallVoidMethod(store_Wlistener, store_method, message);
-                    response = "";
-                    end_found = false;
-                    start_found = false;
-                    totalBytesRead = 0;
-                } else {
-                    if(start_found && !end_found) {
-                        response.append((const char*)&temp[0]);
-                    }
-                    totalBytesRead++;
-                }
-            } while (bytes_read > 0);
         }
     }
 }
-

@@ -12,9 +12,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
+import java.util.Observable;
 import java.util.concurrent.Future;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import timber.log.Timber;
 
@@ -38,7 +42,8 @@ public class CameraService implements Parcelable {
         mainActivity = MainActivity.getInstance();
         jni = mainActivity.getCameraServiceJNI();
         imageChannel = PublishSubject.create();
-        imageChannel.toFlowable(BackpressureStrategy.BUFFER);
+        imageChannel.observeOn(AndroidSchedulers.mainThread())
+                .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {}, BackpressureOverflowStrategy.DROP_OLDEST);
         jniListener = new MainActivity.JNIListener() {
             @Override
             public void onAcceptResponse(String response) {
@@ -180,7 +185,7 @@ public class CameraService implements Parcelable {
 //                Timber.d("parseResponse starts with %s and ends with %s",
 //                        response.substring(0, 1), response.substring(response.length()-1));
                 //strip out start/stop bytes
-                response = response.substring(1, response.length() - 1);
+                //response = response.substring(1, response.length() - 1);
                 JSONObject result = new JSONObject(response);
                 return result;
             }

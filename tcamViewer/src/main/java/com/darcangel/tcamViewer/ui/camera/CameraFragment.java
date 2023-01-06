@@ -59,7 +59,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private Disposable disposable;
     private MainActivity mainActivity = null;
 
-    private         long startMillis = -1;
+    private long startMillis = -1;
+    private long startNano;
+    private long endNano;
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
@@ -255,6 +257,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 //        3	Command bad - the command was incorrectly formatted or was not a json string.
 //        4	Internal Error - the camera detected an internal error. See the information string for more information.
 //        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
+        startNano = System.nanoTime();
+
         Iterator<String> it = obj.keys();
         if (it.hasNext()) {
             String response = it.next();
@@ -365,6 +369,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 startMillis = millis;
                 cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
+                endNano = System.nanoTime();
+                Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
                 drawScreen();
                 /////mainActivity.invalidateOptionsMenu();
             }
@@ -372,7 +378,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     }
 
     private void drawScreen() {
-        mainActivity.runOnUiThread(() -> {
+        startNano = System.nanoTime();
+
             Bitmap image = null;
             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
             if (binding != null && binding.ivColorBar != null && imageDto != null) {
@@ -407,7 +414,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     e.printStackTrace();
                 }
             }
-        });
+            endNano = System.nanoTime();
+            Timber.d("\\\\Timing\\\\ drawScreen took %5.2f millis", (float)((endNano-startNano)/1000000.0));
     }
 
 
