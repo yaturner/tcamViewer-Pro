@@ -365,7 +365,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 long diff;
                 if(startMillis != -1) {
                     diff = millis - startMillis;
-                    Timber.d("Received onNext at %d", diff);
+                    Timber.d("Received onNext at %d millis", diff);
                 }
                 startMillis = millis;
                 cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));

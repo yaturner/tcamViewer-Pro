@@ -58,7 +58,7 @@ int bytes_read, totalBytesRead, prevBytesRead;
 //char response[BUFFER_LENGTH + 1] = {0};
 char read_buffer[BUFFER_LENGTH];
 char temp[2];
-string response;
+char response[BUFFER_LENGTH];
 struct epoll_event event, events[MAX_EVENTS];
 bool connected = false;
 bool start_found, end_found;
@@ -113,7 +113,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
         ret = false;
     } else {
         LOGD("Connected");
-        response.reserve(BUFFER_LENGTH);
+        ////response.reserve(BUFFER_LENGTH);
         end_found = false;
         start_found = false;
         connected = true;
@@ -250,10 +250,11 @@ void isDataAvailable() {
     if (res < 0) {
         return;
     }
+    int responsePos = 0;
     totalBytesRead = 0;
     prevBytesRead = 0;
     bytes_read = 0;
-    response = "";
+    response[0] = 0;
     temp[1] = '\0';
     while (connected && running) {
         /* read all of the available data */
@@ -270,9 +271,11 @@ void isDataAvailable() {
                 start_found = true;
             } else if (start_found && !end_found && temp[0] == '\03') {
                 end_found = true;
-                jstring message = store_env->NewStringUTF(response.c_str());
+                response[responsePos] = 0;
+                jstring message = store_env->NewStringUTF(&response[0]);
                 store_env->CallVoidMethod(store_Wlistener, store_method, message);
-                response = "";
+                response[0] = 0;
+                responsePos = 0;
                 end_found = false;
                 start_found = false;
                 totalBytesRead = 0;
@@ -283,7 +286,7 @@ void isDataAvailable() {
                                     duration.count());
             } else {
                 if (start_found && !end_found) {
-                    response.append((const char *) &temp[0]);
+                    response[responsePos++] = temp[0];
                 }
                 totalBytesRead++;
             }
