@@ -37,7 +37,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import rxdogtag2.RxDogTag;
 import timber.log.Timber;
+
+
 
 @AndroidEntryPoint
 public class MainActivity extends AppCompatActivity implements ViewModelStoreOwner {
@@ -76,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         _instance = this;
 
         System.loadLibrary("camera");
+        RxDogTag.install();
 
         if (savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);

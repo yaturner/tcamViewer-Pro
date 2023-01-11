@@ -258,7 +258,7 @@ void isDataAvailable() {
     temp[1] = '\0';
     while (connected && running) {
         /* read all of the available data */
-        auto time_start = std::chrono::high_resolution_clock::now();
+//        auto time_start = std::chrono::high_resolution_clock::now();
         /* read a data packet only if we have extract all of the commands in the current packet */
         bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], BUFFER_LENGTH);
         if (bytes_read == 0) {
@@ -280,10 +280,10 @@ void isDataAvailable() {
                 start_found = false;
                 totalBytesRead = 0;
                 auto time_stop = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        time_stop - time_start);
-                __android_log_print(ANDROID_LOG_DEBUG, TAG, "duration = %d millis",
-                                    duration.count());
+//                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+//                        time_stop - time_start);
+//                __android_log_print(ANDROID_LOG_DEBUG, TAG, "duration = %d millis",
+//                                    duration.count());
             } else {
                 if (start_found && !end_found) {
                     response[responsePos++] = temp[0];
