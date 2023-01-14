@@ -102,15 +102,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         getPermissions();
         getSettings();
 
-        navController.addOnDestinationChangedListener((navController1, navDestination, bundle) -> {
-            if (navDestination.getId() == R.id.navigation_settings ||
-                    navDestination.getId() == R.id.wifiSettingsFragment) {
-                getNavView().setVisibility(View.GONE);
-            } else {
-                getNavView().setVisibility(View.VISIBLE);
-            }
-        });
-
         //For debugging only, catch unclosed resources
         try {
             Class.forName("dalvik.system.CloseGuard")
@@ -159,7 +150,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
                                              @Nullable Bundle bundle) {
                 Timber.d("New Destination is %s", navDestination.toString());
                 BottomNavigationView navBar = findViewById(R.id.nav_view);
-                if(navDestination.getId() == R.id.navigation_librarySlideShowFragment) {
+                if(navDestination.getId() == R.id.navigation_librarySlideShowFragment ||
+                        navDestination.getId() == R.id.navigation_settings ||
+                        navDestination.getId() == R.id.wifiSettingsFragment) {
                     navBar.setVisibility(View.GONE);
                 } else {
                     navBar.setVisibility(View.VISIBLE);

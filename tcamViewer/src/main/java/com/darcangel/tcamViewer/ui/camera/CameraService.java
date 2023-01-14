@@ -12,15 +12,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.util.Observable;
 import java.util.concurrent.Future;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
-import timber.log.Timber;
 
 public class CameraService implements Parcelable {
 
@@ -120,7 +117,6 @@ public class CameraService implements Parcelable {
         } else {
             return false;
         }
-
         return true;
     }
 

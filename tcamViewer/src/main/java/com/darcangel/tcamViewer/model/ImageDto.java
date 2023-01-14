@@ -5,21 +5,15 @@ import android.graphics.Rect;
 import android.util.Pair;
 
 import com.darcangel.tcamViewer.MainActivity;
-import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Date;
-
-import manifold.ext.rt.api.Extension;
-import manifold.ext.rt.api.This;
 
 public class ImageDto {
 
@@ -40,6 +34,7 @@ public class ImageDto {
     private Date creationDate;
 
     private JSONObject jsonObject;
+    private JSONObject metadata;
     private String filename;
     private String tjsnString;
     private int[][] palette;
@@ -59,7 +54,7 @@ public class ImageDto {
     public ImageDto(String filename, String paletteName) {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         this.filename = filename;
-        String tjsnString = cameraUtils.readTjsnFile(filename);
+        tjsnString = cameraUtils.readTjsnFile(filename);
         if (!tjsnString.isEmpty()) {
             try {
                 jsonObject = new JSONObject(tjsnString);
@@ -73,7 +68,7 @@ public class ImageDto {
     private void init(final String paletteName) {
         try {
             //add the palette name to the metadata if it isn't there already
-            JSONObject metadata = jsonObject.getJSONObject("metadata");
+            metadata = jsonObject.getJSONObject("metadata");
             if (!metadata.has("palette")) {
                 metadata.put("palette", paletteName);
                 this.paletteName = paletteName;
@@ -86,6 +81,11 @@ public class ImageDto {
             e.printStackTrace();
         }
         creationDate = new Date();
+    }
+
+    public void parse(JSONObject obj, String PaletteName) {
+        jsonObject = obj;
+        init(paletteName);
     }
 
     public JSONObject getJsonObject() {

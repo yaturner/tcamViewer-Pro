@@ -21,7 +21,6 @@
 
 #define PORT 5001
 #define BUFFER_LENGTH 65535
-#define MAX_EVENTS 1
 #define TAG "Camera.cpp"
 //#define DEBUG
 #undef DEBUG
@@ -52,39 +51,16 @@ struct sockaddr_in serv_addr;
 int sock_fd = -1;
 int epoll_fd = -1;
 bool running = false;
-int event_count, i;
-int bytes_read, totalBytesRead, prevBytesRead;
-//char read_buffer[BUFFER_LENGTH + 1] = {0};
-//char response[BUFFER_LENGTH + 1] = {0};
+int bytes_read, totalBytesRead, responsePos;
 char read_buffer[BUFFER_LENGTH];
 char temp[2];
 char response[BUFFER_LENGTH];
-struct epoll_event event, events[MAX_EVENTS];
+struct epoll_event event;
 bool connected = false;
 bool start_found, end_found;
-char /**bufferPos*,*/ *startPos, *endPos, *tempPos;
-pthread_t pthread;
-int pid;
-const char *cmd_get_image = "\02{\"cmd\":\"get_image\"}\03";
-const char *cmd_stream = "\02{\"cmd\":\"stream_on\", "
-                         "\"args\":{\"delay_msec\":0, \"num_frames\":0}}\03";
-
 bool sockConnect(const char *ipAddress);
-
-bool sendCommand(const char *cmd);
-
 void isDataAvailable();
-
-int init();
-
-/**
- * main
- */
-//int main(int argc, char *argv[]) {
-//  exit(init());
-//}
-
-void responseCallback(JNIEnv *env, const _jstring *message_);
+void resetBuffers();
 
 /**
  * connect
@@ -101,7 +77,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
     store_env = env;
 
     const jsize len = env->GetStringUTFLength(address);
-    const char *ipAddress = env->GetStringUTFChars(address, 0);
+    const char *ipAddress = env->GetStringUTFChars(address, nullptr);
 
     store_Wlistener = env->NewWeakGlobalRef(jnilistener);
     jclass clazz = env->GetObjectClass(store_Wlistener);
@@ -213,7 +189,6 @@ bool sockConnect(const char *ipAddress) {
         close(sock_fd);
         return false;
     }
-
     return true;
 }
 
@@ -222,11 +197,9 @@ bool sockConnect(const char *ipAddress) {
  */
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobject thiz,
-                                                               jstring command) {
-    // TODO: implement sendCommand()
+Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobject thiz, jstring command) {
     bool ret = true;
-    const char *cmd = env->GetStringUTFChars(command, 0);
+    const char *cmd = env->GetStringUTFChars(command, nullptr);
     if (cmd == nullptr || strlen(cmd) == 0) {
         ret = false;
     }
@@ -250,9 +223,7 @@ void isDataAvailable() {
     if (res < 0) {
         return;
     }
-    int responsePos = 0;
     totalBytesRead = 0;
-    prevBytesRead = 0;
     bytes_read = 0;
     response[0] = 0;
     temp[1] = '\0';
@@ -266,24 +237,26 @@ void isDataAvailable() {
         }
         for (int index = 0; index < bytes_read; index++) {
             temp[0] = read_buffer[index];
-            if (!start_found && temp[0] == '\02') {
+            if (temp[0] == '\02') {
+                if(start_found) {
+                    //second in a row, we lost the '03', start over
+                    responsePos = 0;
+                } else {
+                    start_found = true;
+                }
                 LOGD("found start temp[0] = %d", temp[0]);
-                start_found = true;
             } else if (start_found && !end_found && temp[0] == '\03') {
                 end_found = true;
                 response[responsePos] = 0;
                 jstring message = store_env->NewStringUTF(&response[0]);
                 store_env->CallVoidMethod(store_Wlistener, store_method, message);
-                response[0] = 0;
-                responsePos = 0;
-                end_found = false;
-                start_found = false;
-                totalBytesRead = 0;
+                resetBuffers();
                 auto time_stop = std::chrono::high_resolution_clock::now();
 //                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
 //                        time_stop - time_start);
 //                __android_log_print(ANDROID_LOG_DEBUG, TAG, "duration = %d millis",
 //                                    duration.count());
+                sched_yield();
             } else {
                 if (start_found && !end_found) {
                     response[responsePos++] = temp[0];
@@ -292,4 +265,12 @@ void isDataAvailable() {
             }
         }
     }
+}
+
+void resetBuffers() {
+    response[0] = 0;
+    responsePos = 0;
+    end_found = false;
+    start_found = false;
+    totalBytesRead = 0;
 }

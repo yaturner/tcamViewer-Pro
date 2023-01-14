@@ -72,7 +72,6 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         if(settings == null) {
             settings = mainActivity.getSettings();
         }
-        cameraService = mainActivity.getCameraService();
         binding.setSettings(settings);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
         binding.btnCancelSave.btnSave.setOnClickListener(this);

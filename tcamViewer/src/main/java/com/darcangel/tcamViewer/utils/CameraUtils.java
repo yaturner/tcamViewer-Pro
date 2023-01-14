@@ -54,6 +54,7 @@ public class CameraUtils extends BaseObservable {
 
     private static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+    private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
     private static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
     private static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
@@ -62,7 +63,6 @@ public class CameraUtils extends BaseObservable {
     }
 
     public void processImageResponse(ImageDto imageDto) throws JSONException {
-        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
         int[][] palette = imageDto.getPalette();
         int diff = 0;
 

@@ -109,8 +109,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
                     mediaPlayer.start();
                 }
-                mainActivity.showProgressDialog(getString(R.string.acquiring), "");
                 cameraViewModel.getImageFromCamera();
+                enableSaveMenuItem(true);
                 break;
             }
             case R.id.action_palette: {
@@ -368,7 +368,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     Timber.d("Received onNext at %d millis", diff);
                 }
                 startMillis = millis;
-                cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
+                if(cameraViewModel.getImageDto().getValue() != null) {
+                    cameraViewModel.getImageDto().getValue().parse(obj, settings.getPalette().getValue());
+                } else {
+                    cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
+                }
                 endNano = System.nanoTime();
                 Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
                 drawScreen();
@@ -519,6 +523,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             stringBuilder.append("F");
         }
         return stringBuilder.toString();
+    }
+
+    private void enableSaveMenuItem(boolean enable) {
+
+//        MenuItem itemSave = menu.findItem(R.id.action_save);
+//
+//        if (enable) {
+//            itemSave.setEnabled(false); //only true if there is an image
+//        } else {
+//            itemSave.setEnabled(true);
+//        }
     }
 
     @Override
