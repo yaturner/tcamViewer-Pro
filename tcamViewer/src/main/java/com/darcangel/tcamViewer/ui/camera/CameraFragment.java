@@ -365,7 +365,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 long diff;
                 if(startMillis != -1) {
                     diff = millis - startMillis;
-                    Timber.d("Received onNext at %d millis", diff);
+                    //Timing Timber.d("\\\\Timing\\\\ Received onNext at %d millis", diff);
                 }
                 startMillis = millis;
                 if(cameraViewModel.getImageDto().getValue() != null) {
@@ -374,7 +374,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                 }
                 endNano = System.nanoTime();
-                Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
+                //Timing Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
                 drawScreen();
                 /////mainActivity.invalidateOptionsMenu();
             }
@@ -419,7 +419,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
             }
             endNano = System.nanoTime();
-            Timber.d("\\\\Timing\\\\ drawScreen took %5.2f millis", (float)((endNano-startNano)/1000000.0));
+            //Timing Timber.d("\\\\Timing\\\\ drawScreen took %5.2f millis", (float)((endNano-startNano)/1000000.0));
     }
 
 

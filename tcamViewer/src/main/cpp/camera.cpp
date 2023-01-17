@@ -58,8 +58,10 @@ char response[BUFFER_LENGTH];
 struct epoll_event event;
 bool connected = false;
 bool start_found, end_found;
+pthread_t dataListenerThread;
+
 bool sockConnect(const char *ipAddress);
-void isDataAvailable();
+void * isDataAvailable(void *pVoid);
 void resetBuffers();
 
 /**
@@ -107,7 +109,9 @@ JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_startListening(JNIEnv *env, jobject thiz) {
     running = true;
     LOGD("running = %s", running ? "true" : "false");
-    isDataAvailable();
+
+    pthread_create(&dataListenerThread, NULL, isDataAvailable, NULL);
+    //env->DetachCurrentThread()
 }
 
 /**
@@ -130,6 +134,7 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_disconnect(JNIEnv *env, jobje
     connected = false;
     close(sock_fd);
     sock_fd = -1;
+
 }
 /**
  * isConnected
@@ -218,11 +223,11 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_sendCommand(JNIEnv *env, jobj
 /**
  *
  */
-void isDataAvailable() {
+void * isDataAvailable(void *pVoid) {
     jint res = jvm->AttachCurrentThread(&store_env, (void *) nullptr);
-    if (res < 0) {
-        return;
-    }
+//    if (res < 0) {
+//        return;
+//    }
     totalBytesRead = 0;
     bytes_read = 0;
     response[0] = 0;
@@ -231,7 +236,7 @@ void isDataAvailable() {
         /* read all of the available data */
 //        auto time_start = std::chrono::high_resolution_clock::now();
         /* read a data packet only if we have extract all of the commands in the current packet */
-        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], BUFFER_LENGTH);
+        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], 4096);
         if (bytes_read == 0) {
             break;
         }

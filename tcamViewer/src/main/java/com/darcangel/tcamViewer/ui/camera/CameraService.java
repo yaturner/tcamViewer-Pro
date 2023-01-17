@@ -100,20 +100,11 @@ public class CameraService implements Parcelable {
      * connect
      */
     public Boolean connect() {
-        cameraTask = new Runnable() {
-            @Override
-            public void run() {
-                if(Thread.currentThread().isInterrupted()) {
-                    jni.stopListening();
-                }
-                jni.startListening();
-            }
-        };
         if(!jni.connect(jniListener, ipAddress)) {
             return false;
         }
         if(jni.isConnected()) {
-            jniTask = mainActivity.getExecutor().submit(cameraTask);
+            jni.startListening();
         } else {
             return false;
         }
@@ -128,8 +119,9 @@ public class CameraService implements Parcelable {
      * disconnect
      */
     public void disconnect() {
+        stopStreaming();
+        stopListening();
         jni.disconnect();
-        jniTask.cancel(true);
     }
 
     /**

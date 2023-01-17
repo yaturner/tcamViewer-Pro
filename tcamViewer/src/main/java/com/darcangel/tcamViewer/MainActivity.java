@@ -25,6 +25,7 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
+import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.ui.library.LibraryViewModel;
 import com.darcangel.tcamViewer.ui.settings.SettingsViewModel;
@@ -238,9 +239,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return cameraViewModel;
     }
 
-    public com.darcangel.tcamViewer.ui.camera.CameraService getCameraService() {
+    public CameraService getCameraService() {
         if(cameraService == null) {
-            cameraService = new com.darcangel.tcamViewer.ui.camera.CameraService();
+            cameraService = new CameraService();
         }
         return cameraService;
     }

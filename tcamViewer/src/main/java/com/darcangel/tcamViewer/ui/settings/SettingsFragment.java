@@ -76,6 +76,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         cameraUtils = mainActivity.getCameraUtils();
         settingsViewModel = mainActivity.getSettingsViewModel();
         cameraViewModel = mainActivity.getCameraViewModel();
+        cameraService = mainActivity.getCameraService();
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
 
