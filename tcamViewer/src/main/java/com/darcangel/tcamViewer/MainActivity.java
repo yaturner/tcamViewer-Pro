@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         _instance = this;
 
         System.loadLibrary("camera");
-        RxDogTag.install();
+        ////RxDogTag.install();
 
         if (savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);

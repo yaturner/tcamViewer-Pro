@@ -236,7 +236,7 @@ void * isDataAvailable(void *pVoid) {
         /* read all of the available data */
 //        auto time_start = std::chrono::high_resolution_clock::now();
         /* read a data packet only if we have extract all of the commands in the current packet */
-        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], 4096);
+        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], 1024);
         if (bytes_read == 0) {
             break;
         }
@@ -270,6 +270,7 @@ void * isDataAvailable(void *pVoid) {
             }
         }
     }
+    return nullptr;
 }
 
 void resetBuffers() {

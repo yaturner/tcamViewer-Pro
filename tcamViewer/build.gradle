@@ -9,7 +9,7 @@ android {
     dataBinding {
         enabled true
     }
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.darcangel.tcamViewer"
@@ -81,13 +81,13 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.appcompat:appcompat:1.6.0'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment:2.5.3'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation "androidx.navigation:navigation-dynamic-features-fragment:2.5.3"
-    implementation 'androidx.databinding:databinding-ktx:7.3.1'
+    implementation 'androidx.databinding:databinding-ktx:7.4.0'
     implementation 'com.jakewharton.timber:timber:5.0.1'
     implementation 'com.google.dagger:hilt-android:2.44.2'
     implementation 'com.google.dagger:dagger:2.44.2'
@@ -114,5 +114,5 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+    /////debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
 }
