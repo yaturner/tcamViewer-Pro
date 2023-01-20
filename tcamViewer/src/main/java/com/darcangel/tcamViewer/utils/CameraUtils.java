@@ -111,11 +111,15 @@ public class CameraUtils extends BaseObservable {
         Integer y2 = telemetryData[offsetC+56]&0xffff;
         imageDto.setSpotmeterLocation(new Rect(x1, y1, x2, y2));
 
+        int minTemperature = Integer.MAX_VALUE;
+        int maxTemperature = Integer.MIN_VALUE;
         for (int i = 0, j = 0; i < imageLen; i = i + 2, j++) {
             imageData[j] = ((imageBytes[i + 1] & 0xff) << 8) | (imageBytes[i] & 0xff);
+            minTemperature = Math.min(imageData[j], minTemperature);
+            maxTemperature = Math.max(imageData[j], maxTemperature);
         }
-
-        setTemperatureRange(imageDto);
+        imageDto.setMinTemperature(minTemperature);
+        imageDto.setMaxTemperature(maxTemperature);
 
         if(imageDto.isAGC()) {
             for (int i = 0; i < pixels.length; i++) {
@@ -308,31 +312,6 @@ public class CameraUtils extends BaseObservable {
         }
 
         return image;
-    }
-
-    /**
-     * setTemperatureRange
-     *
-     * sets the min & max temperature in radiometric
-     *
-     * there is an edge condition where if Manual Range is set in Prefs but there is no image yet,
-     * the radiometric data for the min/max is useless, so we always recalculate it from settings
-     */
-    private void setTemperatureRange(ImageDto imageDto) {
-        //Timber.d("\\\\ManualRange\\\\setTemperatureRange\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
-//        if(isManualRange()) {
-//            imageDto.setMinTemperature(convertToRadiometric(imageDto, getManualRangeMin()));
-//            imageDto.setMaxTemperature(convertToRadiometric(imageDto, getManualRangeMax()));
-//        } else {
-            int minTemperature = Integer.MAX_VALUE;
-            int maxTemperature = Integer.MIN_VALUE;
-            for (int i = 0; i < imageData.length; i++) {
-                minTemperature = Math.min(imageData[i], minTemperature);
-                maxTemperature = Math.max(imageData[i], maxTemperature);
-            }
-            imageDto.setMinTemperature(minTemperature);
-            imageDto.setMaxTemperature(maxTemperature);
-//        }
     }
 
     public void remapImage(ImageDto imageDto) {
@@ -585,9 +564,5 @@ public class CameraUtils extends BaseObservable {
     public void setSpotmeterLocation(ImageDto imageDto, Rect rect) {
         imageDto.setSpotmeterLocation(rect);
     }
-
-//    public boolean isAGC(ImageDto imageDto) {
-//        return AGC;
-//    }
 
 }

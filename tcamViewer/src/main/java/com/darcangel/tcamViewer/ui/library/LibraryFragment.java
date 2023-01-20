@@ -88,8 +88,6 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             assetManager = mainActivity.getAssets();
         }
         libraryViewModel = mainActivity.getLibraryViewModel();
-        librarySections = new ArrayList<>();
-        selectedImages = new ArrayList<>();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,

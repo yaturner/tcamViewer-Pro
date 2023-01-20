@@ -134,9 +134,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     }
 
     private void shareImage(final int position) {
-        String filename = "";
-        String tjsnString = "";
-        JSONObject jsonObject = null;
         ImageDto imageDto = imageDtos.get(position);
         try {
             Intent shareIntent = new Intent();
@@ -151,8 +148,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 Uri imageUri = FileProvider.getUriForFile(mainActivity, "com.darcangel.fileprovider", newFile);
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                shareIntent.setType(mainActivity.getContentResolver().getType(imageUri));
-                shareIntent.setData(imageUri);
+                shareIntent.setDataAndType(imageUri, mainActivity.getContentResolver().getType(imageUri));
                 shareIntent.setClipData(ClipData.newRawUri("", imageUri));
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT, Constants.SHARED_IMAGE_FILENAME);
                 shareIntent.addFlags(

@@ -91,7 +91,6 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
         ret = false;
     } else {
         LOGD("Connected");
-        ////response.reserve(BUFFER_LENGTH);
         end_found = false;
         start_found = false;
         connected = true;

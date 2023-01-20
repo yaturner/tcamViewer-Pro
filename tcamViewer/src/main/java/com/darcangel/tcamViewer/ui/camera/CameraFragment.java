@@ -81,7 +81,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         switch (menuItem.getItemId()) {
             case R.id.action_connect: {
                 isConnectingToCamera = true;
-                if(!cameraViewModel.connectToCamera()) {
+                if (!cameraViewModel.connectToCamera()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
                             .setCancelable(true)
                             .setPositiveButton(R.string.ok, ((dialog, which) -> {
@@ -110,7 +110,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     mediaPlayer.start();
                 }
                 cameraViewModel.getImageFromCamera();
-                enableSaveMenuItem(true);
                 break;
             }
             case R.id.action_palette: {
@@ -264,7 +263,27 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             String response = it.next();
             ///Timber.d("Response String is %s", response);
             //error handling
-            if (response.equalsIgnoreCase("error")) {
+            //get image
+            if (response.equalsIgnoreCase("metadata")) {
+//                long millis = System.currentTimeMillis();
+//                long diff;
+//                if (startMillis != -1) {
+//                    diff = millis - startMillis;
+//                    //Timing Timber.d("\\\\Timing\\\\ Received onNext at %d millis", diff);
+//                }
+//                startMillis = millis;
+                if (cameraViewModel.getImageDto().getValue() != null) {
+                    cameraViewModel.getImageDto().getValue().parse(obj, settings.getPalette().getValue());
+                } else {
+                    cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
+                }
+                //endNano = System.nanoTime();
+                //Timing Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
+                drawScreen();
+                if(!cameraViewModel.getStreaming()) {
+                    mainActivity.invalidateOptionsMenu();
+                }
+            } else if (response.equalsIgnoreCase("error")) {
                 String msg = new JSONObject(obj.getString("error")).getString("message");
                 mainActivity.dismissProgressDialog(); //just in case
                 if (msg.startsWith("java.net.SocketTimeoutException") ||
@@ -359,24 +378,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 } else {
                     settings.setSSID(settings.getStaticSSID());
                 }
-                //get image
-            } else if (response.equalsIgnoreCase("metadata")) {
-                long millis = System.currentTimeMillis();
-                long diff;
-                if(startMillis != -1) {
-                    diff = millis - startMillis;
-                    //Timing Timber.d("\\\\Timing\\\\ Received onNext at %d millis", diff);
-                }
-                startMillis = millis;
-                if(cameraViewModel.getImageDto().getValue() != null) {
-                    cameraViewModel.getImageDto().getValue().parse(obj, settings.getPalette().getValue());
-                } else {
-                    cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
-                }
-                endNano = System.nanoTime();
-                //Timing Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
-                drawScreen();
-                /////mainActivity.invalidateOptionsMenu();
             }
         }
     }
@@ -384,42 +385,43 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private void drawScreen() {
         startNano = System.nanoTime();
 
-            Bitmap image = null;
-            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-            if (binding != null && binding.ivColorBar != null && imageDto != null) {
-                try {
-                    int[][] palette = imageDto.getPalette();
-                    binding.ivColorBar.setVisibility(View.VISIBLE);
-                    binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
-                    if (imageDto.getBitmap() != null) {
-                        //Do we need to recreate the image
-                        if (cameraViewModel.isRemapNeeded()) {
-                            cameraViewModel.setRemapNeeded(false);
-                            imageDto.remapImage();                        }
-                        if (settings.getDisplaySpotmeter().getValue()) {
-                            image = imageDto.drawHotspot();
-                            binding.tvSpotmeter.setText(createTemperatureString(imageDto.
-                                    getMeanTemperatureAtSpotmeter()));
-                            imageDto.setBitmap(image);
-                        }
-                        binding.ivCamera.setImageBitmap(image);
-                        //Always get AGC for the current image, when settings are changed it refers to the next get
-                        if (imageDto.isAGC()) {
-                            binding.tvMaxTemperature.setText("AGC");
-                            binding.tvMinTemperature.setText("AGC");
-                        } else {
-                            Pair<Float, Float> temps = imageDto.getTemperatures();
-                            binding.tvMinTemperature.setText(createTemperatureString(temps.first));
-                            binding.tvMaxTemperature.setText(createTemperatureString(temps.second));
-                        }
-                        binding.ivHistogram.setImageBitmap(imageDto.createHistogram());
+        Bitmap image = null;
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+        if (binding != null && binding.ivColorBar != null && imageDto != null) {
+            try {
+                int[][] palette = imageDto.getPalette();
+                binding.ivColorBar.setVisibility(View.VISIBLE);
+                binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
+                if (imageDto.getBitmap() != null) {
+                    //Do we need to recreate the image
+                    if (cameraViewModel.isRemapNeeded()) {
+                        cameraViewModel.setRemapNeeded(false);
+                        imageDto.remapImage();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                    if (settings.getDisplaySpotmeter().getValue()) {
+                        image = imageDto.drawHotspot();
+                        binding.tvSpotmeter.setText(createTemperatureString(imageDto.
+                                getMeanTemperatureAtSpotmeter()));
+                        imageDto.setBitmap(image);
+                    }
+                    binding.ivCamera.setImageBitmap(image);
+                    //Always get AGC for the current image, when settings are changed it refers to the next get
+                    if (imageDto.isAGC()) {
+                        binding.tvMaxTemperature.setText("AGC");
+                        binding.tvMinTemperature.setText("AGC");
+                    } else {
+                        Pair<Float, Float> temps = imageDto.getTemperatures();
+                        binding.tvMinTemperature.setText(createTemperatureString(temps.first));
+                        binding.tvMaxTemperature.setText(createTemperatureString(temps.second));
+                    }
+                    binding.ivHistogram.setImageBitmap(imageDto.createHistogram());
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            endNano = System.nanoTime();
-            //Timing Timber.d("\\\\Timing\\\\ drawScreen took %5.2f millis", (float)((endNano-startNano)/1000000.0));
+        }
+        endNano = System.nanoTime();
+        //Timing Timber.d("\\\\Timing\\\\ drawScreen took %5.2f millis", (float)((endNano-startNano)/1000000.0));
     }
 
 
@@ -485,7 +487,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         }
         itemPalette.setEnabled(true);
         itemSave.setVisible(true);
-        if (imageDto == null || imageDto.getBitmap() == null) {
+        if (!isConnectingToCamera || cameraViewModel.getStreaming() ||
+                imageDto == null || imageDto.getBitmap() == null) {
             itemSave.setEnabled(false); //only true if there is an image
         } else {
             itemSave.setEnabled(true);
@@ -523,17 +526,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             stringBuilder.append("F");
         }
         return stringBuilder.toString();
-    }
-
-    private void enableSaveMenuItem(boolean enable) {
-
-//        MenuItem itemSave = menu.findItem(R.id.action_save);
-//
-//        if (enable) {
-//            itemSave.setEnabled(false); //only true if there is an image
-//        } else {
-//            itemSave.setEnabled(true);
-//        }
     }
 
     @Override

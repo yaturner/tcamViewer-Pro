@@ -36,3 +36,5 @@ tcamViewer/.cxx/
 tcamViewer/debug/output-metadata.json
 *.apk
 *.properties
+tcamViewer/release/output-metadata.json
+tcamViewer/release/output-metadata.json
