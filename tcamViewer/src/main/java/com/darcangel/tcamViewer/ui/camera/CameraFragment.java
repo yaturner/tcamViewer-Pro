@@ -441,9 +441,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     imageViewY,
                     imageViewY + 1);
             String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
-            if (cameraViewModel.getStreaming()) {
-                cameraService.stopStreaming();
-            }
             cameraService.sendCmd(cmd);
             imageDto.setSpotmeterLocation(new Rect(
                     imageViewX,
@@ -452,12 +449,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     imageViewY + 1));
             if (settings.getDisplaySpotmeter().getValue()) {
                 imageDto.setBitmap(imageDto.drawHotspot());
-            }
-            if (cameraViewModel.getStreaming()) {
-                cameraService.startStreaming();
-            } else {
-                cameraViewModel.setRemapNeeded(true);
-                drawScreen();
             }
         }
         return true;
