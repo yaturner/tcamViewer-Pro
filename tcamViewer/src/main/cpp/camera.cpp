@@ -16,6 +16,7 @@
 #include <chrono>
 #include <jni.h>
 #include <pthread.h>
+#include <sched.h>
 #include <chrono>
 #include <android/log.h>
 
@@ -106,10 +107,18 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_connect(JNIEnv *env, jobject 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_startListening(JNIEnv *env, jobject thiz) {
+    sched_param param;
+    pthread_attr_t attr;
+    int ret;
+
     running = true;
     LOGD("running = %s", running ? "true" : "false");
+    ret = pthread_attr_init(&attr);
+    ret = pthread_attr_getschedparam(&attr, &param);
+    param.sched_priority = 20;
+    ret = pthread_attr_setschedparam(&attr, &param);
+    ret = pthread_create(&dataListenerThread, &attr, isDataAvailable, NULL);
 
-    pthread_create(&dataListenerThread, NULL, isDataAvailable, NULL);
     //env->DetachCurrentThread()
 }
 
@@ -237,7 +246,9 @@ void * isDataAvailable(void *pVoid) {
         /* read a data packet only if we have extract all of the commands in the current packet */
         bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], 1024);
         if (bytes_read == 0) {
-            break;
+            sched_yield();
+            usleep(10);
+            continue;
         }
         for (int index = 0; index < bytes_read; index++) {
             temp[0] = read_buffer[index];
