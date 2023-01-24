@@ -247,7 +247,7 @@ void * isDataAvailable(void *pVoid) {
         bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], 1024);
         if (bytes_read == 0) {
             sched_yield();
-            usleep(10);
+            usleep(10000);
             continue;
         }
         for (int index = 0; index < bytes_read; index++) {
