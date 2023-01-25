@@ -29,24 +29,23 @@ public class CameraService implements Parcelable {
     private TreeTypeAdapter streamThread;
     private String ipAddress;
     private PublishSubject<JSONObject> imageChannel;
-    private MainActivity mainActivity;
+    private final MainActivity mainActivity;
     private CameraServiceJNI jni;
-    private MainActivity.JNIListener jniListener;
-    private Runnable cameraTask;
-    private Future<?> jniTask;
+    private final MainActivity.JNIListener jniListener;
+    private JSONObject jsonObject;
 
     public CameraService() {
         mainActivity = MainActivity.getInstance();
         jni = mainActivity.getCameraServiceJNI();
         imageChannel = PublishSubject.create();
         imageChannel.observeOn(AndroidSchedulers.mainThread())
-                .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {}, BackpressureOverflowStrategy.DROP_OLDEST);
+                .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {}, BackpressureOverflowStrategy.DROP_LATEST);
         jniListener = new MainActivity.JNIListener() {
             @Override
             public void onAcceptResponse(String response) {
-                JSONObject obj = parseResponse(response);
-                response = null;
-                imageChannel.onNext(obj);
+//                JSONObject obj = parseResponse(response);
+//                response = null;
+                imageChannel.onNext(parseResponse(response));
             }
         };
 
@@ -180,6 +179,7 @@ public class CameraService implements Parcelable {
             }
         } catch (JSONException e) {
             handleError(e);
+            return new JSONObject();
         }
         return new JSONObject();
     }

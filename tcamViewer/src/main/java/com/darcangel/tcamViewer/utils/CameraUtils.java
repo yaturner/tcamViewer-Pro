@@ -47,19 +47,45 @@ public class CameraUtils extends BaseObservable {
 
     private Settings settings;
     private CameraViewModel cameraViewModel;
+    private final MainActivity mainActivity = MainActivity.getInstance();
+
 
     private final static int offsetA = 0;
     private final static int offsetB = 80;
     private final static int offsetC = 160;
 
+    private final Paint black;
+    private final Paint paint;
+    private final Paint paintWhite;
+    private final Paint paintBlack;
+
+
     private static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-    private SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
     private static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("yy_MM_dd");
     private static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
     //default constructor
     public CameraUtils() {
+        black = new Paint();
+        paint = new Paint();
+        paintWhite = new Paint();
+        paintBlack = new Paint();
+
+        black.setColor(0xff202020);
+        black.setStyle(Paint.Style.FILL);
+
+        paint.setColor(0xffffffff);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(1.0f);
+
+        paintWhite.setColor(0xffffffff);
+        paintWhite.setStyle(Paint.Style.STROKE);
+        paintWhite.setStrokeWidth(1f);
+        paintBlack.setColor(0xff000000);
+        paintBlack.setStyle(Paint.Style.STROKE);
+        paintBlack.setStrokeWidth(1f);
     }
 
     public void processImageResponse(ImageDto imageDto) throws JSONException {
@@ -244,16 +270,7 @@ public class CameraUtils extends BaseObservable {
         int[][] palette = imageDto.getPalette();
         int[] bin = new int[256];
         int maxBinCount = -1;
-        Paint black = new Paint();
-        Paint paint = new Paint();
         Rect fill = new Rect(0, 0, width, Constants.COLORBAR_HEIGHT);
-
-        black.setColor(0xff202020);
-        black.setStyle(Paint.Style.FILL);
-
-        paint.setColor(0xffffffff);
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(1.0f);
 
         int b = -1, d = -1, v = -1;
         //Timber.d("\\\\ManualRange\\\\createHistogram\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
@@ -356,15 +373,6 @@ public class CameraUtils extends BaseObservable {
     }
 
     public Bitmap drawHotspot(ImageDto imageDto) {
-        Paint paintWhite = new Paint();
-        Paint paintBlack = new Paint();
-        paintWhite.setColor(0xffffffff);
-        paintWhite.setStyle(Paint.Style.STROKE);
-        paintWhite.setStrokeWidth(1f);
-        paintBlack.setColor(0xff000000);
-        paintBlack.setStyle(Paint.Style.STROKE);
-        paintBlack.setStrokeWidth(1f);
-
         int imageX = imageDto.getSpotmeterLocation().left;
         int imageY = imageDto.getSpotmeterLocation().top;
         //Create a new image bitmap and attach a brand new canvas to it
@@ -382,7 +390,6 @@ public class CameraUtils extends BaseObservable {
 
     public void rotateColormap(ImageDto imageDto) {
         String pal = imageDto.getPaletteName();
-        MainActivity mainActivity = MainActivity.getInstance();
         String[] paletteNames = mainActivity.getPaletteFactory().getPaletteNames();
         for (int index = 0; index < paletteNames.length; index++) {
             if (pal.equalsIgnoreCase(paletteNames[index])) {

@@ -22,6 +22,7 @@
 
 #define PORT 5001
 #define BUFFER_LENGTH 65535
+#define READ_BUFFER_LENGTH 512
 #define TAG "Camera.cpp"
 //#define DEBUG
 #undef DEBUG
@@ -53,7 +54,7 @@ int sock_fd = -1;
 int epoll_fd = -1;
 bool running = false;
 int bytes_read, totalBytesRead, responsePos;
-char read_buffer[BUFFER_LENGTH];
+char read_buffer[READ_BUFFER_LENGTH];
 char temp[2];
 char response[BUFFER_LENGTH];
 struct epoll_event event;
@@ -245,10 +246,10 @@ void * isDataAvailable(void *pVoid) {
         /* read all of the available data */
 //        auto time_start = std::chrono::high_resolution_clock::now();
         /* read a data packet only if we have extract all of the commands in the current packet */
-        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], 1024);
+        bytes_read = read(sock_fd/*events[i].data.fd*/, &read_buffer[0], READ_BUFFER_LENGTH);
         if (bytes_read == 0) {
-            sched_yield();
-            usleep(10000);
+            //%$sched_yield();
+            usleep(1000);
             continue;
         }
         for (int index = 0; index < bytes_read; index++) {
@@ -273,8 +274,8 @@ void * isDataAvailable(void *pVoid) {
 //                        time_stop - time_start);
 //                __android_log_print(ANDROID_LOG_DEBUG, TAG, "duration = %d millis",
 //                                    duration.count());
-                sched_yield();
-                usleep(10000);
+                //sched_yield();
+                //usleep(10000);
             } else {
                 if (start_found && !end_found) {
                     response[responsePos++] = temp[0];
