@@ -26,7 +26,8 @@ public class CameraViewModel extends ViewModel {
     private float manualMaxTemperature;
     private float manualMinTemperature;
     private boolean unitsCelsius;
-    private boolean isStreaming = false;
+    private boolean isStreaming = false;        //are we currently streaming
+    private boolean isInStreamingMode = false;  //should we resume streaming after onPause etc.
     private boolean isRemapNeeded = false;
     private boolean isManualRange;
 
@@ -191,15 +192,14 @@ public class CameraViewModel extends ViewModel {
         }
     }
 
-    public void startStreaming(Boolean flag) {
+    public void startStreaming(Boolean on) {
         try {
-            if(flag) {
-
+            if(on) {
                 cameraService.startStreaming();
             } else {
                 cameraService.stopStreaming();
             }
-            isStreaming = flag;
+            isStreaming = on;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -211,6 +211,16 @@ public class CameraViewModel extends ViewModel {
 
     public void setStreaming(Boolean streaming) {
         isStreaming = streaming;
+    }
+
+    //If this is true, then we should resume streaming if, for example,
+    // we went to a different fragment and returned to camera
+    public boolean isInStreamingMode() {
+        return isInStreamingMode;
+    }
+
+    public void setInStreamingMode(boolean inStreamingMode) {
+        isInStreamingMode = inStreamingMode;
     }
 
     public boolean isRemapNeeded() {

@@ -98,6 +98,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             case R.id.action_disconnect:
                 if (cameraViewModel.getStreaming()) {
                     cameraViewModel.setStreaming(false);
+                    cameraViewModel.setInStreamingMode(false);
                     cameraService.stopStreaming();
                 }
                 cameraViewModel.disconnectFromCamera();
@@ -141,11 +142,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             case R.id.action_stream_off: {
                 cameraViewModel.startStreaming(false);
+                cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
             case R.id.action_stream_on: {
                 cameraViewModel.startStreaming(true);
+                cameraViewModel.setInStreamingMode(true);
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
@@ -280,6 +283,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 //endNano = System.nanoTime();
                 //Timing Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
                 drawScreen();
+                //if we are not streaming and have an image, enable save
                 if(!cameraViewModel.getStreaming()) {
                     mainActivity.invalidateOptionsMenu();
                 }
@@ -537,14 +541,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         super.onPause();
         if (cameraViewModel.getStreaming()) {
             cameraService.stopStreaming();
+            cameraViewModel.setStreaming(false);
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (cameraViewModel.getStreaming()) {
+        if (cameraViewModel.isInStreamingMode()) {
             cameraService.startStreaming();
+            cameraViewModel.setStreaming(true);
         }
     }
 
@@ -553,11 +559,19 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         super.onDestroyView();
         if (cameraViewModel.getStreaming()) {
             cameraService.stopStreaming();
+            cameraViewModel.setStreaming(false);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (cameraViewModel.getStreaming()) {
+            cameraService.stopStreaming();
+            cameraViewModel.setStreaming(false);
         }
         if (disposable != null && !disposable.isDisposed()) {
             disposable.dispose();
         }
-        binding = null;
-        cameraService.stopListening();
     }
 }
