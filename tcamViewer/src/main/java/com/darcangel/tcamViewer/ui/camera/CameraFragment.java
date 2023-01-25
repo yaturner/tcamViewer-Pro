@@ -51,8 +51,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private CameraService cameraService;
     private CameraViewModel cameraViewModel;
     private View root = null;
-    private boolean isConnectingToCamera = false;
-    private final boolean isVisibleToUser = false;
+    private boolean isConnectingToCamera;
     private String[] paletteNames = null;
     private CameraUtils cameraUtils;
     private Settings settings;
@@ -167,13 +166,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     e.printStackTrace();
                     //TODO handle error
                 }
-//                if(settings.getAGC().getValue()) {
-//                    settings.setAGC(false);
-//                    settings.persist();
-//                    imageDto.setAGC(false);
-//                    cameraViewModel.setRemapNeeded(true);
-//                    drawScreen();
-//                }
                 break;
         }
 
@@ -483,7 +475,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         }
         itemPalette.setEnabled(true);
         itemSave.setVisible(true);
-        if (!isConnectingToCamera || cameraViewModel.getStreaming() ||
+        if (cameraViewModel.getStreaming() ||
                 imageDto == null || imageDto.getBitmap() == null) {
             itemSave.setEnabled(false); //only true if there is an image
         } else {
