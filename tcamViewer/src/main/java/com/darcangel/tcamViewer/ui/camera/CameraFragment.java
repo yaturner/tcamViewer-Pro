@@ -283,6 +283,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 if(!cameraViewModel.getStreaming()) {
                     mainActivity.invalidateOptionsMenu();
                 }
+                obj = null;
             } else if (response.equalsIgnoreCase("error")) {
                 String msg = new JSONObject(obj.getString("error")).getString("message");
                 mainActivity.dismissProgressDialog(); //just in case

@@ -60,6 +60,7 @@ struct epoll_event event;
 bool connected = false;
 bool start_found, end_found;
 pthread_t dataListenerThread;
+jstring message;
 
 bool sockConnect(const char *ipAddress);
 void * isDataAvailable(void *pVoid);
@@ -263,15 +264,17 @@ void * isDataAvailable(void *pVoid) {
             } else if (start_found && !end_found && temp[0] == '\03') {
                 end_found = true;
                 response[responsePos] = 0;
-                jstring message = store_env->NewStringUTF(&response[0]);
+                message = store_env->NewStringUTF(&response[0]);
                 store_env->CallVoidMethod(store_Wlistener, store_method, message);
+                store_env->DeleteLocalRef(message);
                 resetBuffers();
-                auto time_stop = std::chrono::high_resolution_clock::now();
+//                auto time_stop = std::chrono::high_resolution_clock::now();
 //                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
 //                        time_stop - time_start);
 //                __android_log_print(ANDROID_LOG_DEBUG, TAG, "duration = %d millis",
 //                                    duration.count());
                 sched_yield();
+                usleep(10000);
             } else {
                 if (start_found && !end_found) {
                     response[responsePos++] = temp[0];
