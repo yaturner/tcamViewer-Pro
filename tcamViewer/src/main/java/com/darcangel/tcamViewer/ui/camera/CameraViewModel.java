@@ -132,7 +132,7 @@ public class CameraViewModel extends ViewModel {
 
         String cmd = String.format(Constants.CMD_SET_TIME, args);
         try {
-            cameraService.sendCmd(cmd);
+            cameraService.sendCommand(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -152,7 +152,7 @@ public class CameraViewModel extends ViewModel {
             String cmd = String.format(Constants.CMD_SET_CONFIG, args);
             //isConnectingToCamera = false;
             try {
-                cameraService.sendCmd(cmd);
+                cameraService.sendCommand(cmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -163,7 +163,7 @@ public class CameraViewModel extends ViewModel {
         if(cameraService.isConnected()) {
             String cmd = Constants.CMD_GET_CONFIG;
             try {
-                cameraService.sendCmd(cmd);
+                cameraService.sendCommand(cmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -174,7 +174,7 @@ public class CameraViewModel extends ViewModel {
         if(cameraService.isConnected()) {
             String cmd = Constants.CMD_GET_WIFI;
             try {
-                cameraService.sendCmd(cmd);
+                cameraService.sendCommand(cmd);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -186,7 +186,7 @@ public class CameraViewModel extends ViewModel {
      */
     public void getImageFromCamera() {
         try {
-            cameraService.sendCmd(Constants.CMD_GET_IMAGE);
+            cameraService.sendCommand(Constants.CMD_GET_IMAGE);
         } catch (Exception e) {
             e.printStackTrace();
         }

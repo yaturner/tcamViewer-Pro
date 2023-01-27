@@ -1,83 +1,77 @@
 package com.darcangel.tcamViewer.ui.camera;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
 
-import com.darcangel.tcamViewer.JNI.CameraServiceJNI;
+import androidx.annotation.Nullable;
+
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.google.gson.internal.bind.TreeTypeAdapter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.util.concurrent.Future;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import timber.log.Timber;
 
-public class CameraService implements Parcelable {
+public class CameraService extends Service {
 
-    ////private Socket cameraSocket;
+    private Socket cameraSocket;
     private String response;
     private String command;
-    private BufferedInputStream bufferedInputStream;
+    private BufferedReader inFromCamera;
+    private DataOutputStream outToCamera;
+    private IBinder mBinder = new MyBinder();
     private Boolean isStreaming = false;
-    private TreeTypeAdapter streamThread;
+    private Boolean isListening = false;
     private String ipAddress;
     private PublishSubject<JSONObject> imageChannel;
-    private final MainActivity mainActivity;
-    private CameraServiceJNI jni;
-    private final MainActivity.JNIListener jniListener;
+    private MainActivity mainActivity;
     private JSONObject jsonObject;
 
-    public CameraService() {
+    @Override
+    public void onCreate() {
         mainActivity = MainActivity.getInstance();
-        jni = mainActivity.getCameraServiceJNI();
         imageChannel = PublishSubject.create();
         imageChannel.observeOn(AndroidSchedulers.mainThread())
-                .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {}, BackpressureOverflowStrategy.DROP_LATEST);
-        jniListener = new MainActivity.JNIListener() {
-            @Override
-            public void onAcceptResponse(String response) {
-//                JSONObject obj = parseResponse(response);
-//                response = null;
-                imageChannel.onNext(parseResponse(response));
-            }
-        };
-
+                .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {
+                }, BackpressureOverflowStrategy.DROP_LATEST);
     }
 
-    public CameraService(Parcel in) {
-        mainActivity = MainActivity.getInstance();
-        jni = mainActivity.getCameraServiceJNI();
-        jniListener = new MainActivity.JNIListener() {
-            @Override
-            public void onAcceptResponse(String response) {
-                imageChannel.onNext(parseResponse(response));
-            }
-        };
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mBinder;
     }
-
-    public static final Creator<CameraService> CREATOR = new Creator<CameraService>() {
-        @Override
-        public CameraService createFromParcel(Parcel in) {
-            return new CameraService(in);
-        }
-
-        @Override
-        public CameraService[] newArray(int size) {
-            return new CameraService[size];
-        }
-    };
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(ipAddress);
-        dest.writeInt(isStreaming ? 1 : 0);
+    public void onRebind(Intent intent) {
+        Timber.v("in onRebind");
+        super.onRebind(intent);
+    }
+    @Override
+    public boolean onUnbind(Intent intent) {
+        Timber.v("in onUnbind");
+        return true;
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Timber.v("in onDestroy");
+        stopStreaming();
+        stopListening();
     }
 
     /***************User APi methods***************/
@@ -101,19 +95,37 @@ public class CameraService implements Parcelable {
      * connect
      */
     public Boolean connect() {
-        if(!jni.connect(jniListener, ipAddress)) {
+        try {
+            cameraSocket = new Socket(ipAddress, 5001);
+            if (cameraSocket == null) {
+                return false;
+            }
+            if (cameraSocket.isConnected()) {
+                startListening();
+            } else {
+                return false;
+            }
+
+            inFromCamera = new BufferedReader(new InputStreamReader(cameraSocket.getInputStream()));
+            outToCamera = new DataOutputStream(cameraSocket.getOutputStream());
+
+            return true;
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
-        if(jni.isConnected()) {
-            jni.startListening();
-        } else {
-            return false;
-        }
+    }
+
+    public boolean startListening() {
+        isListening = true;
         return true;
     }
 
     public void stopListening() {
-        jni.stopListening();
+        isListening = false;
     }
 
     /**
@@ -122,16 +134,22 @@ public class CameraService implements Parcelable {
     public void disconnect() {
         stopStreaming();
         stopListening();
-        jni.disconnect();
+        disconnect();
     }
 
     /**
-     * sendCmd
+     * sendCommand
      *
      * @param cmd
      */
-    public void sendCmd(final String cmd) {
-        jni.sendCommand(cmd);
+    public boolean sendCommand(final String cmd) {
+        try {
+            outToCamera.writeChars(cmd);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -140,7 +158,7 @@ public class CameraService implements Parcelable {
      * @return
      */
     public boolean isConnected() {
-        return jni.isConnected();
+        return cameraSocket.isConnected();
     }
 
     /**
@@ -149,17 +167,12 @@ public class CameraService implements Parcelable {
     public void startStreaming() {
         String args = String.format(Constants.ARGS_SET_STREAM_ON, 0, 0);
         command = String.format(Constants.CMD_SET_STREAM_ON, args);
-        mainActivity.getCameraServiceJNI().sendCommand(command);
+        sendCommand(command);
     }
 
     public void stopStreaming() {
         isStreaming = false;
-        sendCmd(Constants.CMD_SET_STREAM_OFF);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
+        sendCommand(Constants.CMD_SET_STREAM_OFF);
     }
 
     /**
@@ -168,13 +181,9 @@ public class CameraService implements Parcelable {
      * @param response
      * @return
      */
-    JSONObject parseResponse(String response) {
+    private JSONObject parseResponse(String response) {
         try {
             if (response != null) {
-//                Timber.d("parseResponse starts with %s and ends with %s",
-//                        response.substring(0, 1), response.substring(response.length()-1));
-                //strip out start/stop bytes
-                //response = response.substring(1, response.length() - 1);
                 return new JSONObject(response);
             }
         } catch (JSONException e) {
@@ -196,6 +205,12 @@ public class CameraService implements Parcelable {
 
     public PublishSubject<JSONObject> getImageChannel() {
         return imageChannel;
+    }
+
+    public class MyBinder extends Binder {
+        public CameraService getService() {
+            return CameraService.this;
+        }
     }
 }
 

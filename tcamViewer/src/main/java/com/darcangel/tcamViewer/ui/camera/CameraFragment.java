@@ -214,7 +214,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         super.onViewCreated(view, savedInstanceState);
         settings.getCameraAddress().observe(mainActivity, address -> {
             Timber.d("Camera ip address is now %s", address);
-            if (!address.equals(cameraService.getIpAddress())) {
+            if (mainActivity.isServiceConnected() && !address.equals(cameraService.getIpAddress())) {
                 cameraService.setIpAddress(address);
                 mainActivity.invalidateOptionsMenu();
             }
@@ -236,10 +236,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             imageDto.rotateColormap();
             drawScreen();
         });
-        disposable = cameraService.getImageChannel()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
-
+//        disposable = cameraService.getImageChannel()
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
+//
         drawScreen();
     }
 
@@ -438,7 +438,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     imageViewY,
                     imageViewY + 1);
             String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
-            cameraService.sendCmd(cmd);
+            cameraService.sendCommand(cmd);
             imageDto.setSpotmeterLocation(new Rect(
                     imageViewX,
                     imageViewY,

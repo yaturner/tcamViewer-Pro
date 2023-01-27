@@ -4,12 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,13 +23,12 @@ import androidx.navigation.Navigation;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.io.IOException;
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -92,7 +86,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         //get the wifi settings
         String cmd = new String(Constants.CMD_GET_WIFI);
         try {
-            mainActivity.getCameraService().sendCmd(cmd);
+            mainActivity.getCameraService().sendCommand(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -188,7 +182,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
             throw new IllegalArgumentException();
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
-        cameraService.sendCmd(cmd);
+        cameraService.sendCommand(cmd);
         //Set_wifi disconnects the camera
         cameraService.disconnect();
         mainActivity.invalidateOptionsMenu();

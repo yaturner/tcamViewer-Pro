@@ -2,9 +2,14 @@ package com.darcangel.tcamViewer;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -61,7 +66,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private SharedPreferences sharedPreferences;
     private PaletteFactory paletteFactory;
 
-    private com.darcangel.tcamViewer.ui.camera.CameraService cameraService;
+    private CameraService cameraService;
+    private boolean isServiceConnected = false;
     private CameraUtils cameraUtils;
     private Utils utils;
 
@@ -69,18 +75,17 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private NavController navController;
     private ThreadPoolExecutor executor;
-    private CameraServiceJNI cameraServiceJNI;
-    public interface JNIListener {
-        void onAcceptResponse(String response);
-    }
+//    private CameraServiceJNI cameraServiceJNI;
+//    public interface JNIListener {
+//        void onAcceptResponse(String response);
+//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _instance = this;
 
-        System.loadLibrary("camera");
-        ////RxDogTag.install();
+        RxDogTag.install();
 
         if (savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
         //order is important, do this before setting the view
         ViewModelProvider viewModelProvider = new ViewModelProvider(this);
-        cameraServiceJNI = new CameraServiceJNI();
+//        cameraServiceJNI = new CameraServiceJNI();
         settingsViewModel = viewModelProvider.get(SettingsViewModel.class);
         libraryViewModel = viewModelProvider.get(LibraryViewModel.class);
         cameraViewModel = viewModelProvider.get(CameraViewModel.class);
@@ -121,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(Constants.KEY_SETTINGS, settings);
-        outState.putParcelable(Constants.KEY_CAMERASERVICE, cameraService);
         super.onSaveInstanceState(outState);
     }
 
@@ -240,10 +244,43 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public CameraService getCameraService() {
-        if(cameraService == null) {
-            cameraService = new CameraService();
-        }
         return cameraService;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent intent = new Intent(this, CameraService.class);
+        startService(intent);
+        bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (isServiceConnected) {
+            unbindService(mServiceConnection);
+            isServiceConnected = false;
+        }
+    }
+    private ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isServiceConnected = false;
+        }
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            CameraService.MyBinder myBinder = (CameraService.MyBinder) service;
+            cameraService = myBinder.getService();
+            isServiceConnected = true;
+        }
+    };
+
+    public boolean isServiceConnected() {
+        return isServiceConnected;
+    }
+
+    public void setServiceConnected(boolean serviceBound) {
+        isServiceConnected = serviceBound;
     }
 
     public CameraUtils getCameraUtils() {
@@ -286,9 +323,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         return executor;
     }
 
-    public CameraServiceJNI getCameraServiceJNI() {
-        return cameraServiceJNI;
-    }
+//    public CameraServiceJNI getCameraServiceJNI() {
+//        return cameraServiceJNI;
+//    }
 
     @Override
     protected void onPause() {
