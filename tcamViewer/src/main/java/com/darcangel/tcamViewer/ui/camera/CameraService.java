@@ -43,12 +43,9 @@ public class CameraService implements Parcelable {
         jniListener = new MainActivity.JNIListener() {
             @Override
             public void onAcceptResponse(String response) {
-//                JSONObject obj = parseResponse(response);
-//                response = null;
                 imageChannel.onNext(parseResponse(response));
             }
         };
-
     }
 
     public CameraService(Parcel in) {
