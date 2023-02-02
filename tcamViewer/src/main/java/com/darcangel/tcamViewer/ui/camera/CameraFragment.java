@@ -51,7 +51,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private CameraService cameraService;
     private CameraViewModel cameraViewModel;
     private View root = null;
-    private boolean isConnectingToCamera;
     private String[] paletteNames = null;
     private CameraUtils cameraUtils;
     private Settings settings;
@@ -79,7 +78,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         // command switch
         switch (menuItem.getItemId()) {
             case R.id.action_connect: {
-                isConnectingToCamera = true;
+                // Connect
                 if (!cameraViewModel.connectToCamera()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity)
                             .setCancelable(true)
@@ -95,16 +94,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 break;
             }
             case R.id.action_disconnect:
+                // Disconnect
                 if (cameraViewModel.getStreaming()) {
                     cameraViewModel.setStreaming(false);
                     cameraViewModel.setInStreamingMode(false);
                     cameraService.stopStreaming();
                 }
                 cameraViewModel.disconnectFromCamera();
-                isConnectingToCamera = false;
                 mainActivity.invalidateOptionsMenu();
                 break;
             case R.id.action_get: {
+                // Get
                 if (settings.getShutterSound().getValue()) {
                     MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
                     mediaPlayer.start();
@@ -113,9 +113,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 break;
             }
             case R.id.action_palette: {
-                String title = ((SupportMenuItem) menuItem).getTitle().toString();
+                // Palette
+                SupportMenuItem item = ((SupportMenuItem) menuItem);
+                String title = item.getTitle().toString();
                 if (!title.equalsIgnoreCase("Palette") &&
                         !title.equalsIgnoreCase(imageDto.getPaletteName())) {
+                    if(imageDto != null && imageDto.getBitmap() != null) {
+                        title = imageDto.getPaletteName();
+                    } else {
+                        title = settings.getPalette().getValue();
+                    }
+                    item.setTitle(title);
+                    mainActivity.invalidateMenu();
                     settings.setPalette(title);
                     settings.persist();
                     mainActivity.runOnUiThread(new Runnable() {
@@ -140,12 +149,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 break;
             }
             case R.id.action_stream_off: {
+                // stop streaming
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
                 break;
             }
             case R.id.action_stream_on: {
+                // start streaming
                 cameraViewModel.startStreaming(true);
                 cameraViewModel.setInStreamingMode(true);
                 mainActivity.invalidateOptionsMenu();
@@ -153,6 +164,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             // file menu items
             case R.id.action_save:
+                // save
                 if (settings.getShutterSound().getValue()) {
                     MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
                     mediaPlayer.start();
@@ -234,6 +246,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         binding.ivColorBar.setOnClickListener(v -> {
             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
             imageDto.rotateColormap();
+            mainActivity.invalidateMenu();
             drawScreen();
         });
         disposable = cameraService.getImageChannel()
@@ -257,7 +270,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (it.hasNext()) {
             String response = it.next();
             ///Timber.d("Response String is %s", response);
-            //error handling
             //get image
             if (response.equalsIgnoreCase("metadata")) {
 //                long millis = System.currentTimeMillis();
@@ -276,7 +288,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 //Timing Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
                 drawScreen();
                 //if we are not streaming and have an image, enable save
-                if(!cameraViewModel.getStreaming()) {
+                if (!cameraViewModel.getStreaming()) {
                     mainActivity.invalidateOptionsMenu();
                 }
                 obj = null;
@@ -298,82 +310,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             } else if (response.equalsIgnoreCase("connected")) {
                 String value = obj.getString("connected");
                 if (value.equalsIgnoreCase("true")) {
-                    if (isConnectingToCamera) {
+                    if (cameraService.isConnected()) {
                         cameraViewModel.setTime();
                     }
                     mainActivity.invalidateOptionsMenu();
                 } else {
                     //TODO JMT ERROR
                     mainActivity.invalidateOptionsMenu();
-                }
-                //camera settings commands
-            } else if (response.equalsIgnoreCase("cam_info")) {
-                //multiple response have "cam_info"
-                JSONObject info = obj.getJSONObject("cam_info");
-                if (info.has("info_string")) {
-                    String infoType = info.getString("info_string");
-                    if (infoType.equalsIgnoreCase("set_time success")) {
-                        if (isConnectingToCamera) {
-                            cameraViewModel.getConfig();
-                        }
-                    } else if (infoType.equalsIgnoreCase("set_config success")) {
-                        //do nothing
-                    }
-                }
-                //get_config
-            } else if (response.equalsIgnoreCase("config")) {
-                JSONObject config = obj.getJSONObject("config");
-                if (config.has("agc_enabled")) {
-                    settings.setAGC(config.getInt("agc_enabled") == 1);
-                }
-                if (config.has("emissivity")) {
-                    settings.setEmissivity(config.getInt("emissivity"));
-                }
-                if (config.has("gain_mode")) {
-                    switch (config.getInt("gain_mode")) {
-                        case 0:
-                            settings.setGainHigh(true);
-                            break;
-                        case 1:
-                            settings.setGainLow(true);
-                            break;
-                        case 2:
-                            settings.setGainAuto(true);
-                            break;
-                    }
-                }
-                settings.persist();
-                //get wifi
-            } else if (response.equalsIgnoreCase("wifi")) {
-                int flags = 0;
-                JSONObject wifi = obj.getJSONObject("wifi");
-                if (wifi.has("ap_ssid")) {
-                    settings.setApSSID(wifi.getString("ap_ssid"));
-                }
-                if (wifi.has("sta_ssid")) {
-                    settings.setStaticSSID(wifi.getString("sta_ssid"));
-                }
-                if (wifi.has("ap_ip_addr")) {
-                    settings.setApIPAddress(wifi.getString("ap_ip_addr"));
-                }
-                if (wifi.has("sta_ip_addr")) {
-                    settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
-                }
-                if (wifi.has("sta_netmask")) {
-                    settings.setStaticNetmask(wifi.getString("sta_netmask"));
-                }
-                if (wifi.has("flags")) {
-                    flags = wifi.getInt("flags") & 0xff;
-                    settings.setFlags(flags);
-                }
-                //parse flags and set values
-                settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
-                        == 0);
-                settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) == Constants.WIFI_MASK_STATIC_IP);
-                if (settings.getCameraIsAccessPoint().getValue()) {
-                    settings.setSSID(settings.getApSSID());
-                } else {
-                    settings.setSSID(settings.getStaticSSID());
                 }
             }
         }
@@ -452,6 +395,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     }
 
     private void setMenuItems(Menu menu) {
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
         MenuItem itemSave = menu.findItem(R.id.action_save);
         MenuItem itemConnect = menu.findItem(R.id.action_connect);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
@@ -461,7 +405,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemStreamStart = menu.findItem(R.id.action_stream_on);
         MenuItem itemStreamStop = menu.findItem(R.id.action_stream_off);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
-        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+        if(imageDto != null && !imageDto.getPaletteName().isEmpty()) {
+            paletteSubMenu.setHeaderTitle(imageDto.getPaletteName());
+        }
 
 
         if (settings.getPalette() != null && !settings.getPalette().getValue().isEmpty()) {

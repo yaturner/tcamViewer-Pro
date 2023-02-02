@@ -332,6 +332,9 @@ public class CameraUtils extends BaseObservable {
     }
 
     public void remapImage(ImageDto imageDto) {
+        if(imageDto == null || imageDto.getBitmap() == null) {
+            return;
+        }
         int[][] palette = imageDto.getPalette();
         int diff;
         if(imageDto.isAGC()) {
@@ -498,6 +501,7 @@ public class CameraUtils extends BaseObservable {
         }
         File tjsn = new File(path, file);
         FileOutputStream fileOutputStream = new FileOutputStream(tjsn);
+        imageDto.setFilename(tjsn.getName());
         if(!tjsn.exists()) {
             tjsn.createNewFile();
         }

@@ -105,14 +105,6 @@ public class LibrarySection extends Section {
         imageDto = new ImageDto(path, settings.getPalette().getValue());
         imageDtos.add(position, imageDto);
         Bitmap image = imageDto.getBitmap();
-//        if(itemHolder.isSelected()) {
-//            itemHolder.getImageView().setBackground(mainActivity.getResources().
-//                    getDrawable(R.drawable.library_item_highlight_selector, null));
-//        } else {
-//            itemHolder.getImageView().setBackgroundColor(mainActivity.getResources().
-//                    getColor(R.color.white,null));
-//
-//        }
         itemHolder.getImageView().setImageBitmap(image);
         itemHolder.setImagePath(path);
         if (imageName != null && !imageName.isEmpty()) {

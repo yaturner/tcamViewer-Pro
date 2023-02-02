@@ -12,7 +12,7 @@
         android:padding="2dp"
         android:cropToPadding="true"
         android:clickable="true"
-          android:background="@drawable/library_item_highlight_selector"
+        android:background="@drawable/library_item_highlight_selector"
         android:scaleType="fitXY">
 
     </ImageView>

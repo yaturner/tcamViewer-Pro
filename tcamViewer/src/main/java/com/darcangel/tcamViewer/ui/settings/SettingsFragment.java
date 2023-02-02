@@ -27,19 +27,29 @@ import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.EmissivityDialogListAdapter;
+import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Iterator;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
 
 @AndroidEntryPoint
@@ -47,7 +57,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         RadioGroup.OnCheckedChangeListener,
         CompoundButton.OnCheckedChangeListener
 {
-
+    private Disposable disposable;
     private FragmentSettingsBinding binding;
     private ViewGroup container;
     private SettingsViewModel settingsViewModel;
@@ -92,7 +102,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         emValues = mainActivity.getResources().getIntArray(R.array.emissivity_values);
 
         /*
-         * only update the camera address in the settings, service when the focus changes
+         * only update the camera address in the settings when the focus changes
          *   otherwise we get called after each char is typed
          */
         binding.cameraIPAddress.setOnFocusChangeListener((v, hasFocus) -> {
@@ -126,6 +136,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        disposable = cameraService.getImageChannel()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
+
+
         if (mainActivity.getCameraService().isConnected()) {
             binding.btnNavWiFiSettings.setEnabled(true);
             binding.btnNavWiFiSettings.setOnClickListener(this);
@@ -179,6 +194,90 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         }
     }
 
+    private void handleCameraResponse(JSONObject obj) throws JSONException {
+//        info_value:
+//        0	Command NACK - the command failed. See the information string for more information.
+//        1	Command ACK - the command succeeded.
+//        2	Command unimplemented - the camera firmware does not implement the command.
+//        3	Command bad - the command was incorrectly formatted or was not a json string.
+//        4	Internal Error - the camera detected an internal error. See the information string for more information.
+//        5	Debug Message - The information string contains an internal debug message from the camera (not normally generated).
+
+        Iterator<String> it = obj.keys();
+        if (it.hasNext()) {
+            String response = it.next();
+            if (response.equalsIgnoreCase("cam_info")) {
+                //multiple responses have "cam_info"
+                JSONObject info = obj.getJSONObject("cam_info");
+                if (info.has("info_string")) {
+                    String infoType = info.getString("info_string");
+                    if (infoType.equalsIgnoreCase("set_time success")) {
+                        if (cameraService.isConnected()) {
+                            cameraViewModel.getConfig();
+                        }
+                    } else if (infoType.equalsIgnoreCase("set_config success")) {
+                        //do nothing
+                    }
+                }
+                //get_config
+            } else if (response.equalsIgnoreCase("config")) {
+                JSONObject config = obj.getJSONObject("config");
+                if (config.has("agc_enabled")) {
+                    settings.setAGC(config.getInt("agc_enabled") == 1);
+                }
+                if (config.has("emissivity")) {
+                    settings.setEmissivity(config.getInt("emissivity"));
+                }
+                if (config.has("gain_mode")) {
+                    switch (config.getInt("gain_mode")) {
+                        case 0:
+                            settings.setGainHigh(true);
+                            break;
+                        case 1:
+                            settings.setGainLow(true);
+                            break;
+                        case 2:
+                            settings.setGainAuto(true);
+                            break;
+                    }
+                }
+                settings.persist();
+                //get wifi
+            } else if (response.equalsIgnoreCase("wifi")) {
+                int flags = 0;
+                JSONObject wifi = obj.getJSONObject("wifi");
+                if (wifi.has("ap_ssid")) {
+                    settings.setApSSID(wifi.getString("ap_ssid"));
+                }
+                if (wifi.has("sta_ssid")) {
+                    settings.setStaticSSID(wifi.getString("sta_ssid"));
+                }
+                if (wifi.has("ap_ip_addr")) {
+                    settings.setApIPAddress(wifi.getString("ap_ip_addr"));
+                }
+                if (wifi.has("sta_ip_addr")) {
+                    settings.setStaticIPAddress(wifi.getString("sta_ip_addr"));
+                }
+                if (wifi.has("sta_netmask")) {
+                    settings.setStaticNetmask(wifi.getString("sta_netmask"));
+                }
+                if (wifi.has("flags")) {
+                    flags = wifi.getInt("flags") & 0xff;
+                    settings.setFlags(flags);
+                }
+                //parse flags and set values
+                settings.setCameraIsAccessPoint((flags & Constants.WIFI_MASK_CLIENT_MODE)
+                        == 0);
+                settings.setUseStaticIPWhenClient((flags & Constants.WIFI_MASK_STATIC_IP) == Constants.WIFI_MASK_STATIC_IP);
+                if (settings.getCameraIsAccessPoint().getValue()) {
+                    settings.setSSID(settings.getApSSID());
+                } else {
+                    settings.setSSID(settings.getStaticSSID());
+                }
+            }
+        }
+    }
+
     private Dialog createSaveDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
         builder.setTitle(R.string.title_settings)
@@ -215,8 +314,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     //if palette changed
                     if(selectedPalette != null && !selectedPalette.equalsIgnoreCase(settings.getPalette().getValue())) {
                         settings.setPalette(selectedPalette);
+                        settings.persist();
+                        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+                        if (imageDto != null && imageDto.getBitmap() != null) {
+                            imageDto.setPaletteName(selectedPalette);
+                        }
                     }
-                    settings.persist();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
                     Navigation.findNavController(root).popBackStack();
@@ -254,12 +357,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         int checkedItem;
         int id = v.getId();
         if (id == R.id.btn_privacy) {
+            // Privacy
             navDirections = SettingsFragmentDirections.actionNavigationSettingsToPrivacyDisclosure();
             mainActivity.getNavController().navigate(navDirections);
         } else if (id == R.id.btnNavWiFiSettings) {
+            //WiFi Settings
             navDirections = SettingsFragmentDirections.actionNavigationSettingsToWiFiSettingsFragment();
             mainActivity.getNavController().navigate(navDirections);
         } else if (id == R.id.btnEmissivityHint) {
+            // Emissivity
             builder = new AlertDialog.Builder(getActivity());
             builder.setTitle("Select Emissivity")
                     .setAdapter(new EmissivityDialogListAdapter(getActivity()),
@@ -272,6 +378,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             dialog = builder.create();
             dialog.show();
         } else if (id == R.id.btnPalette) {
+            //Palette
             // setup the alert builder
             builder = new AlertDialog.Builder(getContext());
             builder.setTitle("Select Palette");

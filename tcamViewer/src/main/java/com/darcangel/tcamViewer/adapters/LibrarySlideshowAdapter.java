@@ -2,24 +2,19 @@ package com.darcangel.tcamViewer.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.provider.ContactsContract;
 import android.util.Pair;
 import android.view.LayoutInflater;
-        import android.view.View;
-        import android.view.ViewGroup;
-        import android.widget.ImageView;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-        import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.model.ImageDto;
-import com.darcangel.tcamViewer.ui.library.LibrarySlideShowFragment;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.io.File;

@@ -1,13 +1,8 @@
 package com.darcangel.tcamViewer.ui.library;
 
 import android.app.AlertDialog;
-import android.content.ClipData;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -18,13 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.FileProvider;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
@@ -32,6 +22,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
+import androidx.recyclerview.selection.SelectionTracker.SelectionObserver;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,17 +31,11 @@ import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySection;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
-import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
-import com.darcangel.tcamViewer.ui.settings.SettingsFragmentDirections;
-import com.darcangel.tcamViewer.utils.CameraUtils;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -58,7 +43,7 @@ import java.util.Iterator;
 
 import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
 
-public class LibraryFragment extends Fragment implements MenuProvider {
+public class LibraryFragment extends Fragment implements MenuProvider  {
 
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
@@ -107,8 +92,7 @@ public class LibraryFragment extends Fragment implements MenuProvider {
         selectedImages = new ArrayList<>();
         imageFolder = new ArrayList<File>();
 
-        gridLayoutManager = new GridLayoutManager(MainActivity.getInstance(), 1);
-        binding.rvLibrary.setLayoutManager(gridLayoutManager);
+        gridLayoutManager = new GridLayoutManager(mainActivity, 1);
 
         File dir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File list[] = dir.listFiles();
@@ -139,6 +123,24 @@ public class LibraryFragment extends Fragment implements MenuProvider {
                 StorageStrategy.createLongStorage())
                 .withSelectionPredicate(new LibrarySelectionAdapter.Predicate())
                 .build();
+
+        selectionTracker.addObserver(new SelectionObserver<Long>() {
+            @Override
+            public void onItemStateChanged(@NonNull Long key, boolean selected) {
+                super.onItemStateChanged(key, selected);
+                LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key.intValue());
+                if(selected) {
+                    selectionTracker.select(key);
+                } else {
+                    selectionTracker.deselect(key);
+                }
+            }
+
+            @Override
+            public void onSelectionChanged() {
+                super.onSelectionChanged();
+            }
+        });
 
         // Add your Sections only if the directory is not empty
         //  or in the free version only movie files
@@ -225,9 +227,8 @@ public class LibraryFragment extends Fragment implements MenuProvider {
             section.deleteItem(position);
             sectionAdapter.notifyItemRemoved(position);
         }
-        libraryViewModel.clearAllSelectedImages();
         deselectAll();
-        initRecyclerView();
+        /////initRecyclerView();
         root.requestLayout();
     }
 
