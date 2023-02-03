@@ -225,10 +225,10 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 file.delete();
             }
             section.deleteItem(position);
-            sectionAdapter.notifyItemRemoved(position);
+            sectionAdapter.notifyItemRemoved(key);
         }
         deselectAll();
-        /////initRecyclerView();
+        initRecyclerView();
         root.requestLayout();
     }
 

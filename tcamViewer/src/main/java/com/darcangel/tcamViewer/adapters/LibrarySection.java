@@ -1,11 +1,9 @@
 package com.darcangel.tcamViewer.adapters;
 
 import android.content.res.AssetManager;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.view.View;
 
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,13 +15,7 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.viewholders.LibraryHeaderViewHolder;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -121,6 +113,7 @@ public class LibrarySection extends Section {
                 itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
 
 
+        //TODO this is the position within the section
         itemHolder.bind(Long.valueOf(position));
     }
 

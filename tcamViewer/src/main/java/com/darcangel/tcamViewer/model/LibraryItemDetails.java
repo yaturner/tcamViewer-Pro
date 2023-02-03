@@ -21,6 +21,7 @@ public class LibraryItemDetails extends ItemDetailsLookup.ItemDetails<Long> {
     @Nullable
     @Override
     public Long getSelectionKey() {
+        //TODO this is not the same as the position
         return Long.valueOf(position);
     }
 

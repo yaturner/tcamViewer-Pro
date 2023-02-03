@@ -45,6 +45,7 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
 
         @Override
         public int getPosition(@NonNull Long key) {
+            //TODO this is not the same as the key
             return key.intValue();
         }
     }
