@@ -53,6 +53,7 @@ public class LibrarySlideshowAdapter
         Bitmap bitmap = imageDto.drawHotspot();
         imageDto.remapImage();
         holder.ivImageView.setImageBitmap(bitmap);
+        holder.ivImageView.setTag(this);
         String path = imageDto.getFilename();
         String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
         holder.position = position;
@@ -65,6 +66,7 @@ public class LibrarySlideshowAdapter
         holder.tvMaxTemperature.setText(String.format(Locale.US, "%.2f", temps.second));
         holder.tvMinTemperature.setText(String.format(Locale.US, "%.2f", temps.first));
         holder.imageDto = imageDto;
+
     }
 
     // This Method returns the size of the Array

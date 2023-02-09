@@ -29,32 +29,32 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
-import com.darcangel.tcamViewer.adapters.LibrarySection;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
-import com.google.android.material.navigation.NavigationBarView;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
+import timber.log.Timber;
 
 public class LibraryFragment extends Fragment implements MenuProvider  {
 
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
-    private LibrarySelectionAdapter sectionAdapter;
-    private ArrayList<LibrarySection> librarySections;
-
+    private RecyclerView recyclerView;
+    private LibrarySelectionAdapter librarySelectionAdapter;
     private AssetManager assetManager;
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
+    private ArrayList<String> imageFile;
     private ArrayList<ImageDto> selectedImages;
 
     private View root;
@@ -88,33 +88,20 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     }
 
     private void initRecyclerView() {
-        librarySections = new ArrayList<>();
         selectedImages = new ArrayList<>();
         imageFolder = new ArrayList<File>();
+        imageFile = new ArrayList<String>();
 
-        gridLayoutManager = new GridLayoutManager(mainActivity, 1);
+        recyclerView = binding.rvLibrary;
+        gridLayoutManager = new GridLayoutManager(mainActivity, 2);
 
-        File dir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        File list[] = dir.listFiles();
-        imageFolder.addAll(Arrays.asList(list));
-
-        // Create an instance of SectionedRecyclerViewAdapter
-        sectionAdapter = new LibrarySelectionAdapter();
+        initDataSet();
+        librarySelectionAdapter = new LibrarySelectionAdapter(imageFile);
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
-        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(final int position) {
-                if (sectionAdapter.getSectionItemViewType(position) == SectionedRecyclerViewAdapter.VIEW_TYPE_HEADER) {
-                    return 2;
-                } else {
-                    return 1;
-                }
-            }
-        });
         binding.rvLibrary.setLayoutManager(gridLayoutManager);
-        binding.rvLibrary.setAdapter(sectionAdapter);
+        binding.rvLibrary.setAdapter(librarySelectionAdapter);
 
         selectionTracker = new SelectionTracker.Builder<Long>("librarySelection",
                 binding.rvLibrary,
@@ -128,7 +115,8 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             @Override
             public void onItemStateChanged(@NonNull Long key, boolean selected) {
                 super.onItemStateChanged(key, selected);
-                LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key.intValue());
+                Timber.d("\\\\selection\\\\onItemSelectionChanged: key %d %s selected",
+                        key, (selected?"is":"is not"));
                 if(selected) {
                     selectionTracker.select(key);
                 } else {
@@ -139,26 +127,11 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             @Override
             public void onSelectionChanged() {
                 super.onSelectionChanged();
+                Timber.d("\\\\Selection\\\\onSelectionChanged");
             }
         });
 
-        // Add your Sections only if the directory is not empty
-        //  or in the free version only movie files
-        librarySections.clear();
-        try {
-            for (int iFolder = 0; iFolder < imageFolder.size(); iFolder++) {
-                if (hasImages(imageFolder.get(iFolder).toString())) {
-                    LibrarySection section = new LibrarySection(imageFolder.get(iFolder).toString(), selectionTracker);
-                    librarySections.add(section);
-                    sectionAdapter.addSection(section);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            //TODO handle error
-        }
-
-        sectionAdapter.setSelectionTracker(selectionTracker);
+        librarySelectionAdapter.setSelectionTracker(selectionTracker);
     }
 
     @Override
@@ -171,6 +144,39 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         MenuItem itemSlideShow = menu.findItem(R.id.action_slideshow);
         itemDelete.setEnabled(true);
         itemSlideShow.setEnabled(true);
+    }
+
+    private void initDataSet() {
+        imageFile = new ArrayList<>();
+        try {
+            File pictureDirectory = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            File directoryList[] = pictureDirectory.listFiles();
+            File[] imageFileList;
+            imageFolder.addAll(Arrays.asList(directoryList));
+
+            for (int iFolder = 0; iFolder < imageFolder.size(); iFolder++) {
+                if (hasImages(imageFolder.get(iFolder).toString())) {
+                    imageFileList = directoryList[iFolder].listFiles(new FileFilter() {
+                        @Override
+                        public boolean accept(File pathname) {
+                            if(pathname.getName().endsWith(".tjsn")) {
+                                imageFile.add(pathname.getAbsolutePath());
+                                return true;
+                            } else {
+                                return false;
+                            }
+
+                        }
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            //TODO handle error
+        }
+
+        //TODO Section librarySelectionAdapter.setSelectionTracker(selectionTracker);
+
     }
 
     private Boolean hasImages(String imageFolder) {
@@ -216,20 +222,12 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         }
         keys.sort(Comparator.reverseOrder());
         for (Integer key : keys) {
-            int position = sectionAdapter.getPositionInSection(key);
-            LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-            imageFile = section.getImageFile();
-            filename = imageFile.get(position);
-            File file = new File(filename);
-            if (file.exists()) {
-                file.delete();
-            }
-            section.deleteItem(position);
-            sectionAdapter.notifyItemRemoved(key);
+            //TODO Section
+            librarySelectionAdapter.removeAt(key);
         }
         deselectAll();
-        initRecyclerView();
-        root.requestLayout();
+//        initRecyclerView();
+//        root.requestLayout();
     }
 
     private void deselectAll() {
@@ -277,10 +275,11 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 Iterator<Long> it = selection.iterator();
                 while (it.hasNext()) {
                     key = it.next().intValue();
-                    position = sectionAdapter.getPositionInSection(key);
-                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-                    ImageDto imageDto = section.getImages().get(position);
-                    selectedImages.add(imageDto);
+//TODO Section
+//                    position = sectionAdapter.getPositionInSection(key);
+//                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
+//                    ImageDto imageDto = section.getImages().get(position);
+//                    selectedImages.add(imageDto);
                 }
                 libraryViewModel.setSelectedImages(selectedImages);
                 NavDirections navDirections = LibraryFragmentDirections.actionNavigationLibraryToNavigationLibrarySlideShowFragment();

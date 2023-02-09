@@ -1,7 +1,10 @@
 package com.darcangel.tcamViewer.adapters;
 
+import android.content.res.AssetManager;
+import android.graphics.Bitmap;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,15 +13,94 @@ import androidx.recyclerview.selection.ItemKeyProvider;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
-import io.github.luizgrp.sectionedrecyclerviewadapter.SectionedRecyclerViewAdapter;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
+import timber.log.Timber;
+
+public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
     private SelectionTracker<Long> selectionTracker;
+    private ArrayList<String> imageFileList;
+    private ArrayList<ImageDto> imageDtos;
 
-    public LibrarySelectionAdapter() {
+    private final AssetManager assetManager;
+    private final MainActivity mainActivity;
+    private final CameraUtils cameraUtils;
+    private final Settings settings;
+    private int itemCount;
+
+    private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
+
+
+
+
+    public LibrarySelectionAdapter(ArrayList<String> imageFileList) {
         super();
+        this.imageFileList = imageFileList;
+
+        mainActivity = MainActivity.getInstance();
+        cameraUtils = mainActivity.getCameraUtils();
+        assetManager = mainActivity.getAssets();
+        settings = mainActivity.getSettings();
+
+        imageDtos = new ArrayList<ImageDto>();
+    }
+
+    @NonNull
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = mainActivity.getLayoutInflater().inflate(R.layout.library_item_view, parent, false);
+        return new LibraryItemViewHolder(view, selectionTracker);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        LibraryItemViewHolder itemHolder = (LibraryItemViewHolder) holder;
+        String json = "";
+        String line;
+        String  imageName;
+        String path = imageFileList.get(position);
+        ImageDto imageDto;
+
+        String[] words = path.split("/");
+        int nWords = words.length;
+        imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
+        imageDto = new ImageDto(path, settings.getPalette().getValue());
+        imageDtos.add(position, imageDto);
+        Bitmap image = imageDto.getBitmap();
+        itemHolder.getImageView().setImageBitmap(image);
+        itemHolder.setImagePath(path);
+        if (imageName != null && !imageName.isEmpty()) {
+            Matcher matcher = PATTERN.matcher(imageName);
+            if(matcher.find()) {
+                itemHolder.getTitleView().setText(matcher.group(1));
+            } else {
+                itemHolder.getTitleView().setText("");
+            }
+        } else {
+            itemHolder.getTitleView().setText("");
+        }
+        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
+                itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
+
+
+        //TODO this is the position within the section
+        itemHolder.bind(Long.valueOf(position));
+
+    }
+
+    @Override
+    public int getItemCount() {
+        return imageFileList.size();
     }
 
     public void setSelectionTracker(SelectionTracker<Long> selectionTracker) {
@@ -27,6 +109,17 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
 
     public SelectionTracker<Long> getSelectionTracker() {
         return selectionTracker;
+    }
+
+    @Override
+    public void onClick(View v) {
+
+    }
+
+    public void removeAt(int position) {
+        imageFileList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, imageFileList.size());
     }
 
     static public class KeyProvider extends ItemKeyProvider<Long> {
@@ -45,8 +138,8 @@ public class LibrarySelectionAdapter extends SectionedRecyclerViewAdapter {
 
         @Override
         public int getPosition(@NonNull Long key) {
-            //TODO this is not the same as the key
-            return key.intValue();
+            long value = key;
+            return (int)value;
         }
     }
 

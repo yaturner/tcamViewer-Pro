@@ -18,10 +18,11 @@ public class LibraryItemDetails extends ItemDetailsLookup.ItemDetails<Long> {
         return position.intValue();
     }
 
+    public void setPosition(Long position) { this.position = position; }
+
     @Nullable
     @Override
     public Long getSelectionKey() {
-        //TODO this is not the same as the position
         return Long.valueOf(position);
     }
 

@@ -71,13 +71,15 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bind(final Long position) {
-        this.position = (long) getAbsoluteAdapterPosition();
+        this.position = (long) position;
         if(selectionTracker.isSelected(this.position)) {
             imageView.setBackground(mainActivity.getResources().getDrawable(R.drawable.image_border));
             imageView.setActivated(true);
+            imageView.setSelected(true);
         } else {
             imageView.setBackgroundColor(mainActivity.getResources().getColor(R.color.white, null));
             imageView.setActivated(false);
+            imageView.setSelected(false);
         }
     }
 }
