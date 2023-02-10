@@ -44,7 +44,7 @@
         android:id="@+id/action_palette"
         android:icon="@drawable/palette_30_30"
         android:title="@string/palette"
-        app:showAsAction="ifRoom|withText">
+        app:showAsAction="always|withText">
         <menu></menu>
     </item>
 </menu>

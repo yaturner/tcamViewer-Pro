@@ -55,7 +55,7 @@ public class ImageDto {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         this.filename = filename;
         tjsnString = cameraUtils.readTjsnFile(filename);
-        if (!tjsnString.isEmpty()) {
+        if (tjsnString != null && !tjsnString.isEmpty()) {
             try {
                 jsonObject = new JSONObject(tjsnString);
             } catch (JSONException e) {

@@ -78,6 +78,7 @@
         <item>82</item>
     </integer-array>
 
+    <!-- if a palette is added here, the id must be added to the arrays below -->
     <string-array name="palette_names">
         <item>Arctic</item>
         <item>Banded</item>
@@ -90,15 +91,24 @@
         <item>Sepia</item>
     </string-array>
 
+    <item name="palette_arctic" type="id" />
+    <item name="palette_banded" type="id" />
+    <item name="palette_blackhot" type="id" />
+    <item name="palette_doubleRainbow" type="id" />
+    <item name="palette_fusion" type="id" />
+    <item name="palette_gray" type="id" />
+    <item name="palette_ironblack" type="id" />
+    <item name="palette_sepia" type="id" />
+palette_
     <integer-array name="palette_ids">
-        <item name="arctic" type="id" />
-        <item name="banded" type="id" />
-        <item name="blackhot" type="id" />
-        <item name="doubleRainbow" type="id" />
-        <item name="fusion" type="id" />
-        <item name="gray" type="id" />
-        <item name="ironblack" type="id" />
-        <item name="sepia" type="id" />
+        <item>@id/palette_arctic</item>
+        <item>@id/palette_banded</item>
+        <item>@id/palette_blackhot</item>
+        <item>@id/palette_doubleRainbow</item>
+        <item>@id/palette_fusion</item>
+        <item>@id/palette_gray</item>
+        <item>@id/palette_ironblack</item>
+        <item>@id/palette_sepia</item>
     </integer-array>
 
     <string-array name="resolution_strings">

@@ -3,6 +3,7 @@ package com.darcangel.tcamViewer.ui.camera;
 import android.app.AlertDialog;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
@@ -110,44 +111,49 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     mediaPlayer.start();
                 }
                 cameraViewModel.getImageFromCamera();
+                drawScreen();
                 break;
             }
-            case R.id.action_palette: {
-                // Palette
-                SupportMenuItem item = ((SupportMenuItem) menuItem);
-                String title = item.getTitle().toString();
-                if (!title.equalsIgnoreCase("Palette") &&
-                        !title.equalsIgnoreCase(imageDto.getPaletteName())) {
-                    if(imageDto != null && imageDto.getBitmap() != null) {
-                        title = imageDto.getPaletteName();
-                    } else {
-                        title = settings.getPalette().getValue();
-                    }
-                    item.setTitle(title);
-                    mainActivity.invalidateMenu();
-                    settings.setPalette(title);
-                    settings.persist();
-                    mainActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-                            int[][] palette = mainActivity.getPaletteFactory()
-                                    .getPaletteByName(imageDto.getPaletteName());
-                            if (palette != null) {
-                                imageDto.setPalette(palette);
-                                binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
-                                if (cameraViewModel.getImageDto().getValue() != null) {
-                                    cameraUtils.remapImage(cameraViewModel.getImageDto().getValue());
-                                    drawScreen();
-                                }
-                            }
-                        }
-                    });
+            case R.id.palette_arctic:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Arctic")) {
+                    setPaletteFromMenu("Arctic", menuItem);
                 }
-                binding.ivCamera.getRootView().setOnTouchListener(this);
-                mainActivity.invalidateOptionsMenu();
                 break;
-            }
+            case R.id.palette_banded:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Banded")) {
+                    setPaletteFromMenu("Banded", menuItem);
+                }
+                break;
+            case R.id.palette_blackhot:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Blackhot")) {
+                    setPaletteFromMenu("Blackhot", menuItem);
+                }
+                break;
+            case R.id.palette_doubleRainbow:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("DoubleRainbow")) {
+                    setPaletteFromMenu("DoubleRainbow", menuItem);
+                }
+                break;
+            case R.id.palette_fusion:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Fusion")) {
+                    setPaletteFromMenu("Fusion", menuItem);
+                }
+                break;
+            case R.id.palette_gray:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Gray")) {
+                    setPaletteFromMenu("Gray", menuItem);
+                }
+                break;
+            case R.id.palette_ironblack:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Ironblack")) {
+                    setPaletteFromMenu("Ironblack", menuItem);
+                }
+                break;
+            case R.id.palette_sepia:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Sepia")) {
+                    setPaletteFromMenu("Sepia", menuItem);
+                }
+                break;
             case R.id.action_stream_off: {
                 // stop streaming
                 cameraViewModel.startStreaming(false);
@@ -183,6 +189,39 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
         return true;
     }
+
+    private void setPaletteFromMenu(final String paletteName, final MenuItem menuItem) {
+        SupportMenuItem item = ((SupportMenuItem) menuItem);
+        item.setTitle(paletteName);
+        //this will trigger the observer and set the palette in the ImageDTO
+        settings.setPalette(paletteName);
+        settings.persist();
+        mainActivity.invalidateMenu();
+
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+        int[][] palette;
+        if (imageDto != null) {
+            palette = mainActivity.getPaletteFactory()
+                    .getPaletteByName(imageDto.getPaletteName());
+            if (palette == null) {
+                palette = mainActivity.getPaletteFactory()
+                        .getPaletteByName(settings.getPalette().getValue());
+            }
+            imageDto.setPalette(palette);
+            imageDto.remapImage();
+            try {
+                imageDto.saveTjsn();
+            } catch (IOException e) {
+                e.printStackTrace();
+                //TODO handle error
+            }
+            binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
+            binding.ivCamera.getRootView().setOnTouchListener(this);
+            mainActivity.invalidateOptionsMenu();
+            drawScreen();
+        }
+    }
+
 
     @Override
     public void onMenuClosed(@NonNull Menu menu) {
@@ -405,20 +444,24 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemStreamStart = menu.findItem(R.id.action_stream_on);
         MenuItem itemStreamStop = menu.findItem(R.id.action_stream_off);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
-        if(imageDto != null && !imageDto.getPaletteName().isEmpty()) {
+        if (imageDto != null && !imageDto.getPaletteName().isEmpty()) {
             paletteSubMenu.setHeaderTitle(imageDto.getPaletteName());
         }
-
 
         if (settings.getPalette() != null && !settings.getPalette().getValue().isEmpty()) {
             itemPalette.setTitle(settings.getPalette().getValue());
         }
 
+        TypedArray resIds = getActivity().getResources().obtainTypedArray(R.array.palette_ids);
+
         //since this fragment can be recreated, prevent multiple items
         paletteSubMenu.clear();
         for (int i = 0; i < paletteNames.length; i++) {
-            paletteSubMenu.add(Menu.NONE, R.id.action_palette, Menu.NONE, paletteNames[i]);
+            int resId = resIds.getResourceId(i, 0);
+            paletteSubMenu.add(Menu.NONE, resId, Menu.NONE, paletteNames[i]);
         }
+        resIds.recycle();
+
         itemPalette.setEnabled(true);
         itemSave.setVisible(true);
         if (cameraViewModel.getStreaming() ||
