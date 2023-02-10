@@ -73,16 +73,19 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         String[] words = path.split("/");
         int nWords = words.length;
+        String imageDate = words[nWords-2].replace("_", "/");
         imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
         imageDto = new ImageDto(path, settings.getPalette().getValue());
         imageDtos.add(position, imageDto);
         Bitmap image = imageDto.getBitmap();
         itemHolder.getImageView().setImageBitmap(image);
         itemHolder.setImagePath(path);
+        itemHolder.setImageDto(imageDto);
         if (imageName != null && !imageName.isEmpty()) {
             Matcher matcher = PATTERN.matcher(imageName);
             if(matcher.find()) {
-                itemHolder.getTitleView().setText(matcher.group(1));
+                String imageTime = matcher.group(1).replace("_", ":");
+                itemHolder.getTitleView().setText(imageDate + '\n' + imageTime);
             } else {
                 itemHolder.getTitleView().setText("");
             }

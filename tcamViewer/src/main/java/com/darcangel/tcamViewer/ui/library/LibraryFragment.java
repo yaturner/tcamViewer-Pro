@@ -32,6 +32,7 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -56,6 +57,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     private ArrayList<File> imageFolder;
     private ArrayList<String> imageFile;
     private ArrayList<ImageDto> selectedImages;
+    private ArrayList<String> deletedFile;
 
     private View root;
     private int nFolders = 0;
@@ -174,9 +176,6 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             e.printStackTrace();
             //TODO handle error
         }
-
-        //TODO Section librarySelectionAdapter.setSelectionTracker(selectionTracker);
-
     }
 
     private Boolean hasImages(String imageFolder) {
@@ -205,6 +204,13 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                     })
                     .setPositiveButton("OK", (dlg, which) -> {
                         deleteImages(selection);
+                        for(String path : deletedFile) {
+                            File file = new File(path);
+                            if (file.exists()) {
+                                file.delete();
+                            }
+                        }
+                        deletedFile.clear();
                     })
                     .show();
         } else {
@@ -216,18 +222,22 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         String filename;
         ArrayList<String> imageFile;
         ArrayList<Integer> keys = new ArrayList<>(selection.size());
+        if(deletedFile == null) {
+            deletedFile = new ArrayList<String>();
+        }
         Iterator<Long> it = selection.iterator();
         while (it.hasNext()) {
-            keys.add(it.next().intValue());
+            int key = it.next().intValue();
+            keys.add(key);
+            LibraryItemViewHolder libraryItemViewHolder = (LibraryItemViewHolder) recyclerView.findViewHolderForAdapterPosition(key);
+            String path = libraryItemViewHolder.getImagePath();
+            deletedFile.add(path);
         }
         keys.sort(Comparator.reverseOrder());
         for (Integer key : keys) {
-            //TODO Section
             librarySelectionAdapter.removeAt(key);
+            librarySelectionAdapter.notifyItemRemoved(key);
         }
-        deselectAll();
-//        initRecyclerView();
-//        root.requestLayout();
     }
 
     private void deselectAll() {
@@ -270,16 +280,12 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         } else if (id == R.id.action_slideshow) {
             //Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
             if (!selection.isEmpty()) {
-                int key, position;
-                ArrayList<String> imageFile;
+                int key;
                 Iterator<Long> it = selection.iterator();
                 while (it.hasNext()) {
                     key = it.next().intValue();
-//TODO Section
-//                    position = sectionAdapter.getPositionInSection(key);
-//                    LibrarySection section = (LibrarySection) sectionAdapter.getSectionForPosition(key);
-//                    ImageDto imageDto = section.getImages().get(position);
-//                    selectedImages.add(imageDto);
+                    LibraryItemViewHolder libraryItemViewHolder = (LibraryItemViewHolder) recyclerView.findViewHolderForAdapterPosition(key);
+                    selectedImages.add(libraryItemViewHolder.getImageDto());
                 }
                 libraryViewModel.setSelectedImages(selectedImages);
                 NavDirections navDirections = LibraryFragmentDirections.actionNavigationLibraryToNavigationLibrarySlideShowFragment();

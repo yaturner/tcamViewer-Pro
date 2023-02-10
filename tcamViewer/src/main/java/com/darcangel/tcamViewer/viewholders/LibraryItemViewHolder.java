@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.LibraryItemDetails;
 
 public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
@@ -18,7 +19,7 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final TextView titleView;
     private final View rootView;
     private ItemDetailsLookup.ItemDetails<Long> itemDetails;
-
+    private ImageDto imageDto;
     private String imagePath;
     private Long position;
     private SelectionTracker selectionTracker;
@@ -50,13 +51,21 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
         this.imagePath = imagePath;
     }
 
-    public View getRootView() {
-        return rootView;
+    public ImageDto getImageDto() {
+        return imageDto;
     }
 
-    public void setPosition(Long position) {
-        this.position = position;
+    public void setImageDto(ImageDto imageDto) {
+        this.imageDto = imageDto;
     }
+
+    //    public View getRootView() {
+//        return rootView;
+//    }
+//
+//    public void setPosition(Long position) {
+//        this.position = position;
+//    }
 
     public boolean isSelected() {
         if (selectionTracker != null) {
