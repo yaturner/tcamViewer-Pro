@@ -417,6 +417,9 @@ public class CameraUtils extends BaseObservable {
 
 
     public boolean isUnitsCelsius() {
+        if(cameraViewModel == null) {
+            cameraViewModel = MainActivity.getInstance().getCameraViewModel();
+        }
         return cameraViewModel.isUnitsCelsius();
     }
 
