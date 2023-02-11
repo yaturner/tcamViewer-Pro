@@ -283,7 +283,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         builder.setTitle(R.string.title_settings)
                 .setMessage("Do you wish to save your settings")
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
-                    saveCameraSettings();
                     if(!cameraService.getIpAddress().
                             equalsIgnoreCase(settings.getCameraAddress().getValue())) {
                         cameraService.setIpAddress(settings.getCameraAddress().getValue());
@@ -320,6 +319,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                             imageDto.setPaletteName(selectedPalette);
                         }
                     }
+                    saveCameraSettings();
                     dialog.dismiss();
                     onBackPressedCallback.setEnabled(false);
                     Navigation.findNavController(root).popBackStack();
@@ -341,11 +341,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             cameraService.setIpAddress(binding.cameraIPAddress.getText().toString());
             settings.setCameraAddress(binding.cameraIPAddress.getText().toString());
         }
-        if (settings.getSaveToCamera().getValue()) {
             //save the config
             cameraViewModel.setConfig();
             settings.setSaveToCamera(false);
-        }
     }
 
     @Override
