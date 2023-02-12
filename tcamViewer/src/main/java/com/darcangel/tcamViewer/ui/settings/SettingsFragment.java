@@ -314,9 +314,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     if(selectedPalette != null && !selectedPalette.equalsIgnoreCase(settings.getPalette().getValue())) {
                         settings.setPalette(selectedPalette);
                         settings.persist();
+                        cameraViewModel.setRemapNeeded(true);
                         ImageDto imageDto = cameraViewModel.getImageDto().getValue();
                         if (imageDto != null && imageDto.getBitmap() != null) {
                             imageDto.setPaletteName(selectedPalette);
+                            imageDto.setPalette(mainActivity.getPaletteFactory().getPaletteByName(selectedPalette));
                         }
                     }
                     saveCameraSettings();

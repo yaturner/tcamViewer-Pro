@@ -382,8 +382,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         binding.tvSpotmeter.setText(createTemperatureString(imageDto.
                                 getMeanTemperatureAtSpotmeter()));
                         imageDto.setBitmap(image);
+                    } else {
+                        //In case the spot meter was in the bitmap, clear it out
+                        imageDto.remapImage();
                     }
-                    binding.ivCamera.setImageBitmap(image);
+                    binding.ivCamera.setImageBitmap(imageDto.getBitmap());
                     //Always get AGC for the current image, when settings are changed it refers to the next get
                     if (imageDto.isAGC()) {
                         binding.tvMaxTemperature.setText("AGC");
