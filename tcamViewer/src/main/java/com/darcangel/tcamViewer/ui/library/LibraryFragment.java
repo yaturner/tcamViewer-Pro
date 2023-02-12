@@ -238,6 +238,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             librarySelectionAdapter.removeAt(key);
             librarySelectionAdapter.notifyItemRemoved(key);
         }
+        deselectAll();
     }
 
     private void deselectAll() {
