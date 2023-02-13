@@ -466,10 +466,15 @@ public class CameraUtils extends BaseObservable {
 
     public float getMeanTemperatureAtSpotmeter(ImageDto imageDto) {
         Rect spotmeter = imageDto.getSpotmeterLocation();
+        int offset = 1;
+        //if we are at the edge of the image, go to the left/top
+        if(spotmeter.bottom == 119 || spotmeter.right == 159) {
+            offset = -1;
+        }
         int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
-        int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + 1];
+        int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + offset];
         int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
-        int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right +1];
+        int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right + offset];
         return convertToDisplayUnits(imageDto, (topLeft + topRight + bottomLeft + bottomRight)/4);
     }
 

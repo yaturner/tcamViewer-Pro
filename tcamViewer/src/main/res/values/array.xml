@@ -97,8 +97,8 @@
     <item name="palette_doubleRainbow" type="id" />
     <item name="palette_fusion" type="id" />
     <item name="palette_gray" type="id" />
-    <item name="palette_rainbow" type="id" />
     <item name="palette_ironblack" type="id" />
+    <item name="palette_rainbow" type="id" />
     <item name="palette_sepia" type="id" />
 palette_
     <integer-array name="palette_ids">
@@ -108,8 +108,8 @@ palette_
         <item>@id/palette_doubleRainbow</item>
         <item>@id/palette_fusion</item>
         <item>@id/palette_gray</item>
-        <item>@id/palette_rainbow</item>
         <item>@id/palette_ironblack</item>
+        <item>@id/palette_rainbow</item>
         <item>@id/palette_sepia</item>
     </integer-array>
 

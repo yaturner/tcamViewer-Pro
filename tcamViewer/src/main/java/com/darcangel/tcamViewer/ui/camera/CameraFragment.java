@@ -149,6 +149,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     setPaletteFromMenu("Ironblack", menuItem);
                 }
                 break;
+            case R.id.palette_rainbow:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Rainbow")) {
+                    setPaletteFromMenu("Rainbow", menuItem);
+                }
+                break;
             case R.id.palette_sepia:
                 if (!settings.getPalette().getValue().equalsIgnoreCase("Sepia")) {
                     setPaletteFromMenu("Sepia", menuItem);
@@ -209,12 +214,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             imageDto.setPalette(palette);
             imageDto.remapImage();
-            try {
-                imageDto.saveTjsn();
-            } catch (IOException e) {
-                e.printStackTrace();
-                //TODO handle error
-            }
             binding.ivColorBar.setImageBitmap(imageDto.createColorBar());
             binding.ivCamera.getRootView().setOnTouchListener(this);
             mainActivity.invalidateOptionsMenu();

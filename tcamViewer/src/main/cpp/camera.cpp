@@ -50,13 +50,11 @@ jweak store_Wlistener;
 
 struct sockaddr_in serv_addr;
 int sock_fd = -1;
-int epoll_fd = -1;
 bool running = false;
 int bytes_read, totalBytesRead, responsePos;
 char read_buffer[READ_BUFFER_LENGTH];
 char temp[2];
 char response[BUFFER_LENGTH];
-struct epoll_event event;
 bool connected = false;
 bool start_found, end_found;
 pthread_t dataListenerThread;
@@ -174,7 +172,7 @@ bool sockConnect(const char *ipAddress) {
 
     long arg;
     int tries = 6;
-    int period[] = {1,2,5,5,5,6};
+    unsigned int period[] = {1,2,5,5,5,6};
     arg = fcntl(sock_fd, F_GETFL, NULL);
     arg = arg | O_NONBLOCK;
     int ret = fcntl(sock_fd, F_SETFL, arg);
@@ -184,7 +182,7 @@ bool sockConnect(const char *ipAddress) {
         LOGE("Error: connect %d\n", errno);
         if (errno == EINPROGRESS) {
             for (tries = 6; tries > 0; tries--) {
-                sleep(period[tries]);
+                sleep(period[6-tries]);
                 b = connect(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
                 if (b == 0) {
                     break;
@@ -196,23 +194,6 @@ bool sockConnect(const char *ipAddress) {
                 return false;
             }
         }
-    }
-
-    epoll_fd = epoll_create1(0);
-    if (epoll_fd == -1) {
-        LOGE("Failed to create epoll file descriptor\n");
-        close(sock_fd);
-        return false;
-    }
-
-    event.events = EPOLLIN;
-    event.data.fd = sock_fd;
-
-    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock_fd, &event)) {
-        LOGE("Failed to add file descriptor to epoll\n");
-        close(epoll_fd);
-        close(sock_fd);
-        return false;
     }
     return true;
 }

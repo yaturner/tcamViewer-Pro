@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         versionCode 1
-        versionName "0.27"
+        versionName "0.27.3"
         externalNativeBuild {
             cmake {
                 cppFlags '-O0 -ggdb'
