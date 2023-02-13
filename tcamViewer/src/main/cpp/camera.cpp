@@ -25,7 +25,7 @@
 #define READ_BUFFER_LENGTH 512
 #define TAG "Camera.cpp"
 //#define DEBUG
-#undef DEBUG
+#define DEBUG
 #ifdef DEBUG
 #define LOGD(x...) do { \
   char buf[512]; \
@@ -49,7 +49,6 @@ jmethodID store_method;
 jweak store_Wlistener;
 
 struct sockaddr_in serv_addr;
-//struct timeval timeout;
 int sock_fd = -1;
 int epoll_fd = -1;
 bool running = false;
@@ -155,10 +154,6 @@ Java_com_darcangel_tcamViewer_JNI_CameraServiceJNI_isConnected(JNIEnv *env, jobj
     return connected;
 }
 
-void connect_alarm(int signum) {
-//TODO throw an error can not connect
-}
-
 /**
  * socketConnect
  * @return
@@ -177,16 +172,31 @@ bool sockConnect(const char *ipAddress) {
     serv_addr.sin_addr.s_addr = inet_addr(ipAddress);
     serv_addr.sin_port = htons(PORT);
 
-    signal(SIGALRM, connect_alarm); /* connect_alarm is you signal handler */
-    alarm(30); /* secs is your timeout in seconds */
+    long arg;
+    int tries = 6;
+    int period[] = {1,2,5,5,5,6};
+    arg = fcntl(sock_fd, F_GETFL, NULL);
+    arg = arg | O_NONBLOCK;
+    int ret = fcntl(sock_fd, F_SETFL, arg);
     int b = connect(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
     if (b < 0) {
-        LOGE("Error: connect\n");
-        close(sock_fd);
-        alarm(0);
-        return false;
+        int tries;
+        LOGE("Error: connect %d\n", errno);
+        if (errno == EINPROGRESS) {
+            for (tries = 6; tries > 0; tries--) {
+                sleep(period[tries]);
+                b = connect(sock_fd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+                if (b == 0) {
+                    break;
+                }
+            }
+            if (tries == 0) {
+                close(sock_fd);
+                alarm(0);
+                return false;
+            }
+        }
     }
-    alarm(0);
 
     epoll_fd = epoll_create1(0);
     if (epoll_fd == -1) {
