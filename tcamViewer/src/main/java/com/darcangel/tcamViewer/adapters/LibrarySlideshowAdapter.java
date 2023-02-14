@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Pair;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -23,7 +24,7 @@ import java.util.Locale;
 
 public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
-    private static ClickListener clickListener;
+    private static TouchListener touchListener;
 
     // Array of images
     private final ArrayList<ImageDto> imageDtos;
@@ -82,17 +83,17 @@ public class LibrarySlideshowAdapter
         }
     }
 
-    public void setOnItemClickListener(ClickListener clickListener) {
-        LibrarySlideshowAdapter.clickListener = clickListener;
+    public void setOnTouchListener(TouchListener touchListener) {
+        LibrarySlideshowAdapter.touchListener = touchListener;
     }
 
-    public interface ClickListener {
-        void onItemClick(ImageDto imageDto, int position, View v);
-        void onItemLongClick(ImageDto imageDto, int position, View v);
+    public interface TouchListener {
+        void onTouch(ImageDto imageDto, View v, MotionEvent event);
     }
 
     // The ViewHolder class holds the view
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener{
+    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnTouchListener
+    {
         int position;
         String imageFilename;
         ImageView ivImageView;
@@ -111,17 +112,12 @@ public class LibrarySlideshowAdapter
             ivColorBar = itemView.findViewById(R.id.ivColorBar);
             tvMinTemperature = itemView.findViewById(R.id.tvMinTemperature);
             tvFilename = itemView.findViewById(R.id.tvFilename);
-            ivColorBar.setOnClickListener(this);
-            ivColorBar.setOnLongClickListener(this);
+            ivColorBar.setOnTouchListener(this);
         }
 
         @Override
-        public void onClick(View v) {
-            LibrarySlideshowAdapter.clickListener.onItemClick(imageDto, position, v);
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
+        public boolean onTouch(View v, MotionEvent event) {
+            LibrarySlideshowAdapter.touchListener.onTouch(imageDto, v, event);
             return false;
         }
     }

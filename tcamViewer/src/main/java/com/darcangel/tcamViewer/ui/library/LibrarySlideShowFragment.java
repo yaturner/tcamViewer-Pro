@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -91,19 +92,20 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         libraryViewModel = mainActivity.getLibraryViewModel();
         this.imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
-        slideshowAdapter.setOnItemClickListener(new LibrarySlideshowAdapter.ClickListener() {
-            @Override
-            public void onItemClick(ImageDto imageDto, int position, View v) {
-                Timber.d("clicked on colorbar");
-                imageDto.rotateColormap(Constants.ROTATE_FORWARD);
-                v.getRootView().invalidate();
-                //slideshowAdapter.notifyDataSetChanged();
-                slideshowAdapter.notifyItemChanged(position);
-            }
 
+        slideshowAdapter.setOnTouchListener(new LibrarySlideshowAdapter.TouchListener() {
             @Override
-            public void onItemLongClick(ImageDto imageDto, int position, View v) {
-
+            public void onTouch(ImageDto imageDto, View v, MotionEvent event) {
+                int h = v.getHeight();
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getY() > (h / 2)) {
+                        imageDto.rotateColormap(Constants.ROTATE_FORWARD);
+                    } else {
+                        imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+                    }
+                    v.getRootView().invalidate();
+                    slideshowAdapter.notifyDataSetChanged();
+                }
             }
         });
     }
