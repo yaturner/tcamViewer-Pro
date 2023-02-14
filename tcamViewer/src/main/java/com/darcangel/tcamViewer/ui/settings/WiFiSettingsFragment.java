@@ -64,6 +64,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
             mainActivity = MainActivity.getInstance();
         }
 
+        cameraService = mainActivity.getCameraService();
         settingsViewModel = mainActivity.getSettingsViewModel();
         cameraViewModel = mainActivity.getCameraViewModel();
         binding = FragmentWifiSettingsBinding.inflate(inflater, container, false);
@@ -92,7 +93,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         //get the wifi settings
         String cmd = new String(Constants.CMD_GET_WIFI);
         try {
-            mainActivity.getCameraService().sendCmd(cmd);
+            cameraService.sendCmd(cmd);
         } catch (Exception e) {
             e.printStackTrace();
         }
