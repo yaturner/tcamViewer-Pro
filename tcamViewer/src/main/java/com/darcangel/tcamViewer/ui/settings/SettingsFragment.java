@@ -224,6 +224,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 JSONObject config = obj.getJSONObject("config");
                 if (config.has("agc_enabled")) {
                     settings.setAGC(config.getInt("agc_enabled") == 1);
+                    binding.switchAGC.setChecked(config.getInt("agc_enabled") == 1);
                 }
                 if (config.has("emissivity")) {
                     settings.setEmissivity(config.getInt("emissivity"));
