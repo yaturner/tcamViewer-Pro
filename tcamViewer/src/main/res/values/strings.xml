@@ -79,4 +79,5 @@
     <string name="start">start</string>
     <string name="stop">stop</string>
     <string name="stream">Stream</string>
+    <string name="warning_ssid">Invalid or missing SSID name</string>
 </resources>

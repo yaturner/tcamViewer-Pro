@@ -206,9 +206,11 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
                 Navigation.findNavController(root).popBackStack();
                 break;
             case R.id.btnSave:
+                boolean pass = true;
                 //TODO send config settings to camera, password is required
                 String password = binding.etPassword.getText().toString();
-                if(password == null || password.isEmpty()) {
+                if(password == null || password.isEmpty() || password.length() < 8 || password.length() > 32) {
+                    pass = false;
                     MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
                             .setCancelable(true)
                             .setTitle(R.string.title_error)
@@ -217,7 +219,20 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
                             })
                             .setMessage(R.string.warning_password);
                     builder.create().show();
-                } else {
+                }
+                String ssid = binding.etSSID.getText().toString();
+                if(ssid == null || ssid.isEmpty() || ssid.length() > 32) {
+                    pass = false;
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(mainActivity)
+                            .setCancelable(true)
+                            .setTitle(R.string.title_error)
+                            .setPositiveButton(R.string.ok, (dialog, which) -> {
+                                dialog.dismiss();
+                            })
+                            .setMessage(R.string.warning_ssid);
+                    builder.create().show();
+                }
+                if(pass) {
                     createSaveDialog().show();
                 }
                 break;
