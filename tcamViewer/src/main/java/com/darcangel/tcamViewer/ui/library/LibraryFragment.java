@@ -39,6 +39,8 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -279,7 +281,6 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         if (id == R.id.action_item_delete) {
             deleteImage(selection);
         } else if (id == R.id.action_slideshow) {
-            //Toast.makeText(mainActivity, selectionTracker.getSelection().toString(), Toast.LENGTH_LONG).show();
             if (!selection.isEmpty()) {
                 int key;
                 Iterator<Long> it = selection.iterator();
