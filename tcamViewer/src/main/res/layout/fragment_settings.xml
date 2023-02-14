@@ -51,7 +51,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:visibility="visible"
-                    app:constraint_referenced_ids="settingsHeading,switchAGC,emissivityHeading,etEmissivity,btnEmissivityHint,gainHeading,rgGroup"/>
+                    app:constraint_referenced_ids="settingsHeading,switchAGC,emissivityHeading,etEmissivity,btnEmissivityHint,gainHeading,rgGroup,btnNavWiFiHeading,btnNavWiFiSettings"/>
 
                 <!--Heading-->
                 <TextView
@@ -133,6 +133,7 @@
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
+                        android:id="@+id/btnNavWiFiHeading"
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
                         android:text="@string/wifi_network" />
