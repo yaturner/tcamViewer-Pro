@@ -31,7 +31,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.regex.Pattern;
 
@@ -391,15 +395,26 @@ public class CameraUtils extends BaseObservable {
         return tempBitmap;
     }
 
-    public void rotateColormap(ImageDto imageDto) {
+    public void rotateColormap(ImageDto imageDto, int direction) {
         String pal = imageDto.getPaletteName();
-        String[] paletteNames = mainActivity.getPaletteFactory().getPaletteNames();
-        for (int index = 0; index < paletteNames.length; index++) {
-            if (pal.equalsIgnoreCase(paletteNames[index])) {
-                if (index == paletteNames.length - 1) {
+        ArrayList<String> paletteNames = new
+                ArrayList<String>(Arrays.asList(mainActivity.getPaletteFactory().getPaletteNames()));
+        Collections.sort(paletteNames, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                if (direction == Constants.ROTATE_FORWARD) {
+                    return o1.compareTo(o2);
+                } else {
+                    return o2.compareTo(o1);
+                }
+            }
+        });
+        for (int index = 0; index < paletteNames.size(); index++) {
+            if (pal.equalsIgnoreCase(paletteNames.get(index))) {
+                if (index == paletteNames.size() - 1) {
                     index = -1;
                 }
-                String paletteName = paletteNames[index + 1];
+                String paletteName = paletteNames.get(index + 1);
                 if(settings == null) {
                     settings = MainActivity.getInstance().getSettings();
                 }

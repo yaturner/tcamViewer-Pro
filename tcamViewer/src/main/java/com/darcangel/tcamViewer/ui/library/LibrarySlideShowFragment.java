@@ -40,8 +40,6 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -97,7 +95,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             @Override
             public void onItemClick(ImageDto imageDto, int position, View v) {
                 Timber.d("clicked on colorbar");
-                imageDto.rotateColormap();
+                imageDto.rotateColormap(Constants.ROTATE_FORWARD);
                 v.getRootView().invalidate();
                 //slideshowAdapter.notifyDataSetChanged();
                 slideshowAdapter.notifyItemChanged(position);
@@ -130,7 +128,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         if (navBar != null) {
             navBar.setVisibility(View.GONE);
         }
-
     }
 
     private void shareImage(final int position) {

@@ -119,6 +119,12 @@ public final class Constants {
     public final static int WIFI_MASK_STATIC_IP = (1<<3);
     public final static int WIFI_MASK_WIFI_ENABLED = 1;
 
+    public static final int SORT_ORDER_ASCENDING = 1;
+    public static final int SORT_ORDER_DESCENDING = 2;
+
+    public static final int ROTATE_FORWARD = 1;
+    public static final int ROTATE_BACKWARD = -1;
+
     private Constants() {
     }
 }

@@ -256,6 +256,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
+        binding.ivColorBar.setOnTouchListener(this);
         return root;
     }
 
@@ -281,12 +282,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         });
 
         //watch for palette rotation requests
-        binding.ivColorBar.setOnClickListener(v -> {
-            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-            imageDto.rotateColormap();
-            mainActivity.invalidateMenu();
-            drawScreen();
-        });
+//        binding.ivColorBar.setOnClickListener(v -> {
+//            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+//            imageDto.rotateColormap();
+//            mainActivity.invalidateMenu();
+//            drawScreen();
+//        });
         disposable = cameraService.getImageChannel()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
@@ -408,30 +409,45 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if(v.getId() == R.id.ivCamera) {
+            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
             float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
             float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
-            float scaleX = 160.0f / displayImageWidth;
-            float scaleY = 120.0f / displayImageHeight;
+            float scaleX = Constants.IMAGE_WIDTH / displayImageWidth;
+            float scaleY = Constants.IMAGE_HEIGHT / displayImageHeight;
             int imageViewX = (int) (event.getX() * scaleX);
             int imageViewY = (int) (event.getY() * scaleY);
-            String args = String.format(Locale.US, Constants.ARGS_SET_SPOTMETER,
-                    imageViewX,
-                    imageViewX + 1,
-                    imageViewY,
-                    imageViewY + 1);
-            String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
-            cameraService.sendCmd(cmd);
-            imageDto.setSpotmeterLocation(new Rect(
-                    imageViewX,
-                    imageViewY,
-                    imageViewX + 1,
-                    imageViewY + 1));
-            if (settings.getDisplaySpotmeter().getValue()) {
-                imageDto.setBitmap(imageDto.drawHotspot());
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                String args = String.format(Locale.US, Constants.ARGS_SET_SPOTMETER,
+                        imageViewX,
+                        imageViewX + 1,
+                        imageViewY,
+                        imageViewY + 1);
+                String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
+                cameraService.sendCmd(cmd);
+                imageDto.setSpotmeterLocation(new Rect(
+                        imageViewX,
+                        imageViewY,
+                        imageViewX + 1,
+                        imageViewY + 1));
+                if (settings.getDisplaySpotmeter().getValue()) {
+                    imageDto.setBitmap(imageDto.drawHotspot());
+                }
+            }
+        } else if(v.getId() == R.id.ivColorBar) {
+            int h = binding.ivColorBar.getHeight();
+            if(event.getAction() == MotionEvent.ACTION_UP) {
+                ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+                if(event.getY() > (h/2)) {
+                    imageDto.rotateColormap(Constants.ROTATE_FORWARD);
+                } else {
+                    imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+                }
+                mainActivity.invalidateMenu();
+                drawScreen();
             }
         }
+
         return true;
     }
 
