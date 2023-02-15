@@ -54,7 +54,6 @@ public class Utils {
         String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
         File myDir = new File(root);
         myDir.mkdirs();
-        ;
         OutputStream out = null;
         File imageFile = new File(root, imageName);
         saveImage(bitmap, root, imageName);
@@ -137,8 +136,10 @@ public class Utils {
         tvMinTemperature.setTextSize(textSize);
 
         if (!settings.getExportMetaData().getValue()) {
-            return imageDto.getBitmap();
+            //scale to resolution in settings
+            return Bitmap.createScaledBitmap(imageDto.getBitmap(), width[res], height[res], false);
         }
+
         LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
         tvLogo.setText(R.string.appName);
         tvLogo.setTextSize(textSize);
