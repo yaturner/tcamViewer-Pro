@@ -17,6 +17,7 @@ import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,13 +60,20 @@ public class LibrarySlideshowAdapter
         String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
         holder.position = position;
         holder.tvFilename.setText(imageName);
-        holder.tvSpotmeterTemperature.setText(String.format(Locale.US, "%.2f", imageDto.getMeanTemperatureAtSpotmeter()));
+        holder.tvSpotmeterTemperature.setText(cameraUtils.createTemperatureString(imageDto.
+                getMeanTemperatureAtSpotmeter()));
         holder.tvSpotmeterTemperature.setTextColor(MainActivity.getInstance().getResources().getColor(R.color.white, null));
         Bitmap colorbar = imageDto.createColorBar();
         holder.ivColorBar.setImageBitmap(colorbar);
         Pair<Float, Float> temps = imageDto.getTemperatures();
-        holder.tvMaxTemperature.setText(String.format(Locale.US, "%.2f", temps.second));
-        holder.tvMinTemperature.setText(String.format(Locale.US, "%.2f", temps.first));
+        if (imageDto.isAGC()) {
+            holder.tvMaxTemperature.setText("AGC");
+            holder.tvMinTemperature.setText("AGC");
+        } else {
+            holder.tvMaxTemperature.setText(String.format(Locale.US, "%.2f", temps.second));
+            holder.tvMinTemperature.setText(String.format(Locale.US, "%.2f", temps.first));
+        }
+
         holder.imageDto = imageDto;
 
     }

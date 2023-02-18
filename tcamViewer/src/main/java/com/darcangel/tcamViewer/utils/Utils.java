@@ -38,10 +38,12 @@ import javax.inject.Singleton;
 public class Utils {
     private MainActivity mainActivity;
     private Settings settings;
+    private CameraUtils cameraUtils;
 
     public Utils() {
         mainActivity = MainActivity.getInstance();
         settings = mainActivity.getSettings();
+        cameraUtils = mainActivity.getCameraUtils();
     }
 
     public void exportImage(final ImageDto imageDto) throws FileNotFoundException {
@@ -112,9 +114,9 @@ public class Utils {
         /////textSize = textSize * scale;
 
         String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
-        String hotspotString = createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter());
-        String maxString = createTemperatureString(temps.second);
-        String minString = createTemperatureString(temps.first);
+        String hotspotString = cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter());
+        String maxString = cameraUtils.createTemperatureString(temps.second);
+        String minString = cameraUtils.createTemperatureString(temps.first);
         View inflatedFrame = mainActivity.getLayoutInflater().inflate(R.layout.export_library_image, null);
 
         tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);
@@ -225,17 +227,5 @@ public class Utils {
                 e.printStackTrace();
             }
         }
-    }
-
-    public String createTemperatureString(float temperature) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format(Locale.US, "%.01f", temperature));
-        stringBuilder.append("\u00B0");
-        if (mainActivity.getSettings().getUnitsC().getValue()) {
-            stringBuilder.append("C");
-        } else {
-            stringBuilder.append("F");
-        }
-        return stringBuilder.toString();
     }
 }

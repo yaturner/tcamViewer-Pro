@@ -61,6 +61,9 @@ public class ImageDto {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        } else {
+            //TODO Handle error
+            return;
         }
         init(paletteName);
     }

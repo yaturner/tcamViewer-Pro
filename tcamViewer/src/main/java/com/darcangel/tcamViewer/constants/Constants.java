@@ -94,8 +94,8 @@ public final class Constants {
             "   }";
 // If Camera is Access Point, send
     public final static String ARGS_SET_WIFI_AP = "{\n" +
-            "    \"ap_ssid\": \"%s\"\n" +
-            "    \"ap_pw: \"%s\"\n" +
+            "    \"ap_ssid\": \"%s\",\n" +
+            "    \"ap_pw\": \"%s\",\n" +
             "    \"flags\": 1\n" +
             "    }";
 // If Camera is NOT Access Point and NOT Use static IP when Client, send

@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
@@ -22,6 +23,8 @@ import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,9 +42,6 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
     private int itemCount;
 
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
-
-
-
 
     public LibrarySelectionAdapter(ArrayList<String> imageFileList) {
         super();
@@ -81,7 +81,7 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
         itemHolder.getImageView().setImageBitmap(image);
         itemHolder.setImagePath(path);
         itemHolder.setImageDto(imageDto);
-        if (imageName != null && !imageName.isEmpty()) {
+        if (!imageName.isEmpty()) {
             Matcher matcher = PATTERN.matcher(imageName);
             if(matcher.find()) {
                 String imageTime = matcher.group(1).replace("_", ":");
@@ -131,6 +131,19 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
         public KeyProvider(RecyclerView.Adapter adapter) {
             super(ItemKeyProvider.SCOPE_MAPPED);
             this.adapter = (LibrarySelectionAdapter) adapter;
+        }
+
+        private void sortImageDto(ArrayList<ImageDto> imageDtos, final int order) {
+            Collections.sort(imageDtos, new Comparator<ImageDto>() {
+                @Override
+                public int compare(ImageDto o1, ImageDto o2) {
+                    if (order == Constants.SORT_ORDER_ASCENDING) {
+                        return o1.getCreationDate().compareTo(o2.getCreationDate());
+                    } else {
+                        return o2.getCreationDate().compareTo(o1.getCreationDate());
+                    }
+                }
+            });
         }
 
         @Nullable

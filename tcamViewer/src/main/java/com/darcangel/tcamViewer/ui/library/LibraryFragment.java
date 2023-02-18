@@ -174,6 +174,14 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                     });
                 }
             }
+            //sort them
+            Collections.sort(imageFile, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    //newest first - descending
+                    return o2.compareTo(o1);
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
             //TODO handle error

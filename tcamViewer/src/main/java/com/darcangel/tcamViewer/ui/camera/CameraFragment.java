@@ -379,7 +379,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     }
                     if (settings.getDisplaySpotmeter().getValue()) {
                         image = imageDto.drawHotspot();
-                        binding.tvSpotmeter.setText(createTemperatureString(imageDto.
+                        binding.tvSpotmeter.setText(cameraUtils.createTemperatureString(imageDto.
                                 getMeanTemperatureAtSpotmeter()));
                         imageDto.setBitmap(image);
                     } else {
@@ -393,8 +393,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         binding.tvMinTemperature.setText("AGC");
                     } else {
                         Pair<Float, Float> temps = imageDto.getTemperatures();
-                        binding.tvMinTemperature.setText(createTemperatureString(temps.first));
-                        binding.tvMaxTemperature.setText(createTemperatureString(temps.second));
+                        binding.tvMinTemperature.setText(cameraUtils.createTemperatureString(temps.first));
+                        binding.tvMaxTemperature.setText(cameraUtils.createTemperatureString(temps.second));
                     }
                     binding.ivHistogram.setImageBitmap(imageDto.createHistogram());
                 }
@@ -409,7 +409,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if(v.getId() == R.id.ivCamera) {
+        if(v.getId() == R.id.ivCamera && Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
             float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
             float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
@@ -509,18 +509,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             itemStreamStart.setVisible(true);
             itemStreamStop.setVisible(false);
         }
-    }
-
-    private String createTemperatureString(float temperature) {
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(String.format(Locale.US, "%.01f", temperature));
-        stringBuilder.append("\u00B0");
-        if (mainActivity.getSettings().getUnitsC().getValue()) {
-            stringBuilder.append("C");
-        } else {
-            stringBuilder.append("F");
-        }
-        return stringBuilder.toString();
     }
 
     @Override

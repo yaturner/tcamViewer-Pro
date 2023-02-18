@@ -37,6 +37,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import timber.log.Timber;
@@ -335,6 +336,19 @@ public class CameraUtils extends BaseObservable {
         return image;
     }
 
+    public String createTemperatureString(float temperature) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(String.format(Locale.US, "%.01f", temperature));
+        stringBuilder.append("\u00B0");
+        if (mainActivity.getSettings().getUnitsC().getValue()) {
+            stringBuilder.append("C");
+        } else {
+            stringBuilder.append("F");
+        }
+        return stringBuilder.toString();
+    }
+
+
     public void remapImage(ImageDto imageDto) {
         if(imageDto == null || imageDto.getBitmap() == null) {
             return;
@@ -483,14 +497,19 @@ public class CameraUtils extends BaseObservable {
         Rect spotmeter = imageDto.getSpotmeterLocation();
         int offset = 1;
         //if we are at the edge of the image, go to the left/top
-        if(spotmeter.bottom == 119 || spotmeter.right == 159) {
+        if(spotmeter.bottom == Constants.IMAGE_HEIGHT-1 || spotmeter.right == Constants.IMAGE_WIDTH-1) {
             offset = -1;
         }
         int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
         int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + offset];
         int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
         int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right + offset];
-        return convertToDisplayUnits(imageDto, (topLeft + topRight + bottomLeft + bottomRight)/4);
+        if(imageDto.isAGC()) {
+            //get the value from telemetry
+            return convertToDisplayUnits(imageDto, imageDto.getSpotmeterMean());
+        } else {
+            return convertToDisplayUnits(imageDto, (topLeft + topRight + bottomLeft + bottomRight) / 4);
+        }
     }
 
     //Convert radiometric data to Celsius/Fahrenheit
@@ -528,7 +547,7 @@ public class CameraUtils extends BaseObservable {
         if(!tjsn.exists()) {
             tjsn.createNewFile();
         }
-        fileOutputStream.write(imageDto.getJsonObject().toString().getBytes(StandardCharsets.UTF_8));
+        fileOutputStream.write(imageDto.getJsonObject().toString().getBytes(StandardCharsets.US_ASCII));
         fileOutputStream.flush();
         fileOutputStream.close();
 
