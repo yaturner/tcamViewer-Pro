@@ -105,6 +105,8 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         }
 
         getWifi();
+
+        binding.etPassword.setText("");
     }
 
     private Dialog createSaveDialog () {

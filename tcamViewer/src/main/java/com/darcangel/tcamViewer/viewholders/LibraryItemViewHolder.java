@@ -59,14 +59,6 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
         this.imageDto = imageDto;
     }
 
-    //    public View getRootView() {
-//        return rootView;
-//    }
-//
-//    public void setPosition(Long position) {
-//        this.position = position;
-//    }
-
     public boolean isSelected() {
         if (selectionTracker != null) {
             return selectionTracker.isSelected((long) getAbsoluteAdapterPosition());

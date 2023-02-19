@@ -19,12 +19,17 @@
         android:id="@+id/action_item_more"
         android:title=""
         android:icon="@android:drawable/ic_menu_more"
-        android:visible="false"
+        android:visible="true"
         app:showAsAction="ifRoom">
         <menu>
             <item
                 android:id="@+id/action_select_all"
                 android:title="Select All"
+                android:visible="true"
+                app:showAsAction="ifRoom" />
+            <item
+                android:id="@+id/action_clear_all"
+                android:title="Clear All"
                 android:visible="true"
                 app:showAsAction="ifRoom" />
             <item

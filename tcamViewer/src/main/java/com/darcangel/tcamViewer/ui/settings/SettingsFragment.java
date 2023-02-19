@@ -206,6 +206,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         Iterator<String> it = obj.keys();
         if (it.hasNext()) {
             String response = it.next();
+            //Camera Info
             if (response.equalsIgnoreCase("cam_info")) {
                 //multiple responses have "cam_info"
                 JSONObject info = obj.getJSONObject("cam_info");
@@ -221,6 +222,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 }
                 //get_config
             } else if (response.equalsIgnoreCase("config")) {
+                //Config
                 JSONObject config = obj.getJSONObject("config");
                 if (config.has("agc_enabled")) {
                     settings.setAGC(config.getInt("agc_enabled") == 1);
@@ -245,6 +247,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 settings.persist();
                 //get wifi
             } else if (response.equalsIgnoreCase("wifi")) {
+                //WiFi
                 int flags = 0;
                 JSONObject wifi = obj.getJSONObject("wifi");
                 if (wifi.has("ap_ssid")) {

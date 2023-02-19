@@ -119,6 +119,13 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     }
 
+    public void setImageFileList(ArrayList<String> imageFileList) {
+        if (imageFileList != null) {
+            this.imageFileList = imageFileList;
+            notifyDataSetChanged();
+        }
+    }
+
     public void removeAt(int position) {
         imageFileList.remove(position);
         notifyItemRemoved(position);

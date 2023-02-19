@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
+import com.darcangel.tcamViewer.adapters.LibrarySlideshowAdapter;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
@@ -224,7 +225,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                     })
                     .show();
         } else {
-            Toast.makeText(mainActivity, R.string.nothing_to_delete, Toast.LENGTH_LONG).show();
+            Toast.makeText(mainActivity, R.string.nothing_to_selected_to_delete, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -300,9 +301,41 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 libraryViewModel.setSelectedImages(selectedImages);
                 NavDirections navDirections = LibraryFragmentDirections.actionNavigationLibraryToNavigationLibrarySlideShowFragment();
                 mainActivity.getNavController().navigate(navDirections);
+            } else {
+                Toast.makeText(mainActivity, R.string.nothing_selected_to_browse, Toast.LENGTH_LONG).show();
             }
+        } else if(id == R.id.action_select_all) {
+            int itemCount = binding.rvLibrary.getAdapter().getItemCount();
+            ArrayList<Long> keys = new ArrayList<>();
+            for(int index = 0; index < itemCount; index++) {
+                keys.add((long) index);
+            }
+            selectionTracker.setItemsSelected(keys, true);
+        } else if(id == R.id.action_clear_all) {
+            int itemCount = binding.rvLibrary.getAdapter().getItemCount();
+            ArrayList<Long> keys = new ArrayList<>();
+            for(int index = 0; index < itemCount; index++) {
+                keys.add((long) index);
+            }
+            selectionTracker.setItemsSelected(keys, false);
+        } else if(id == R.id.action_sort_ascending) {
+            Collections.sort(imageFile, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o1.compareTo(o2);
+                }
+            });
+            ((LibrarySelectionAdapter)binding.rvLibrary.getAdapter()).setImageFileList(imageFile);
+        } else if(id == R.id.action_sort_ascending) {
+            Collections.sort(imageFile, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o2.compareTo(o1);
+                }
+            });
+            ((LibrarySelectionAdapter) binding.rvLibrary.getAdapter()).setImageFileList(imageFile);
         }
-        return true;
+            return true;
     }
 
     @Override
