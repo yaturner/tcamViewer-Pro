@@ -46,7 +46,6 @@ import timber.log.Timber;
 public class CameraUtils extends BaseObservable {
 
     private int[] pixels;
-    private int[] imageData;
     private byte[] imageBytes;
     private int imageLen;
 
@@ -97,12 +96,6 @@ public class CameraUtils extends BaseObservable {
         int[][] palette = imageDto.getPalette();
         int diff = 0;
 
-        if(pixels != null) {
-            pixels = null;
-        }
-        if(imageData != null) {
-            imageData = null;
-        }
         imageDto.setMaxTemperature(Integer.MIN_VALUE);
         imageDto.setMinTemperature(Integer.MAX_VALUE);
 
@@ -122,7 +115,7 @@ public class CameraUtils extends BaseObservable {
         imageDto.setCreationDate(date);
 
         imageLen = imageBytes.length;
-        imageData = new int[imageLen / 2];
+        int[] imageData = new int[imageLen / 2];
         pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];
         int[] telemetryData;
 
@@ -149,6 +142,7 @@ public class CameraUtils extends BaseObservable {
             minTemperature = Math.min(imageData[j], minTemperature);
             maxTemperature = Math.max(imageData[j], maxTemperature);
         }
+        imageDto.setImageData(imageData);
         imageDto.setMinTemperature(minTemperature);
         imageDto.setMaxTemperature(maxTemperature);
 
@@ -274,6 +268,7 @@ public class CameraUtils extends BaseObservable {
         int width = Math.round(MainActivity.getInstance().getResources().getDimension(R.dimen.histogram_width));
         int[][] palette = imageDto.getPalette();
         int[] bin = new int[256];
+        int[] imageData = imageDto.getImageData();
         int maxBinCount = -1;
         Rect fill = new Rect(0, 0, width, Constants.COLORBAR_HEIGHT);
 
@@ -303,16 +298,9 @@ public class CameraUtils extends BaseObservable {
                 } else {
                     b = imageData[index];
                 }
-//                if(!isManualRange()) {
-//                    Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d, min = %d", b, v, d, min);
-//                }
                 if (b >= 0) {
                     bin[255 - b] = bin[255 - b] + 1;
                     maxBinCount = Math.max(bin[255 - b], maxBinCount);
-//                } else {
-//                    if(!isManualRange()) {
-//                        Timber.d("\\\\CreateHistogram\\\\ b = %d, v = %d, d = %d", b, v, d);
-//                    }
                 }
             }
         } catch(Exception e) {
@@ -353,6 +341,7 @@ public class CameraUtils extends BaseObservable {
         if(imageDto == null || imageDto.getBitmap() == null) {
             return;
         }
+        int[] imageData = imageDto.getImageData();
         int[][] palette = imageDto.getPalette();
         int diff;
         if(imageDto.isAGC()) {
@@ -479,7 +468,6 @@ public class CameraUtils extends BaseObservable {
      * @return min, max temperatures in radiometric values
      */
     public Pair<Integer, Integer> getRadiometricTemperatures(ImageDto imageDto) {
-        //Timber.d("\\\\ManualRange\\\\getRadiometricTemperatures\\\\ isManualRange() = %s", (isManualRange()?"true":"false"));
         if(isManualRange()) {
             return new Pair<>(convertToRadiometric(imageDto, cameraViewModel.getManualMinTemperature()),
                     convertToRadiometric(imageDto, cameraViewModel.getManualMaxTemperature()));
@@ -494,6 +482,7 @@ public class CameraUtils extends BaseObservable {
     }
 
     public float getMeanTemperatureAtSpotmeter(ImageDto imageDto) {
+        int[] imageData = imageDto.getImageData();
         Rect spotmeter = imageDto.getSpotmeterLocation();
         int offset = 1;
         //if we are at the edge of the image, go to the left/top
@@ -586,9 +575,10 @@ public class CameraUtils extends BaseObservable {
         String json = new String();
         String line;
         BufferedReader bufferedReader = null;
+        FileReader fileReader = null;
         try {
-            bufferedReader = new BufferedReader(
-                    new FileReader(new File(path)));
+            fileReader = new FileReader(new File(path));
+            bufferedReader = new BufferedReader(fileReader);
             do {
                 line = bufferedReader.readLine();
                 if (line != null) {
@@ -598,13 +588,14 @@ public class CameraUtils extends BaseObservable {
         } catch (IOException e) {
             e.printStackTrace();
             json = "";
-        } finally {
-            if (bufferedReader != null) {
-                try {
-                    bufferedReader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        }
+
+        if (bufferedReader != null) {
+            try {
+                fileReader.close();
+                bufferedReader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return json;
@@ -617,5 +608,4 @@ public class CameraUtils extends BaseObservable {
     public void setSpotmeterLocation(ImageDto imageDto, Rect rect) {
         imageDto.setSpotmeterLocation(rect);
     }
-
 }

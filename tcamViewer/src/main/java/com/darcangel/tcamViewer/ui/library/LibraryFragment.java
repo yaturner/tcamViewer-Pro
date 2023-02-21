@@ -22,7 +22,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.selection.SelectionTracker.SelectionObserver;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -30,17 +29,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
-import com.darcangel.tcamViewer.adapters.LibrarySlideshowAdapter;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -52,16 +49,17 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
+    private Settings settings;
     private RecyclerView recyclerView;
     private LibrarySelectionAdapter librarySelectionAdapter;
     private AssetManager assetManager;
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
-    private ArrayList<String> imageFile;
+//    private ArrayList<String> imageFile;
     private ArrayList<ImageDto> selectedImages;
+    private ArrayList<ImageDto> imageDtos;
     private ArrayList<String> deletedFile;
-
     private View root;
     private int nFolders = 0;
 
@@ -78,6 +76,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             assetManager = mainActivity.getAssets();
         }
         libraryViewModel = mainActivity.getLibraryViewModel();
+        settings = mainActivity.getSettings();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -95,13 +94,13 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     private void initRecyclerView() {
         selectedImages = new ArrayList<>();
         imageFolder = new ArrayList<File>();
-        imageFile = new ArrayList<String>();
+//        imageFile = new ArrayList<String>();
 
         recyclerView = binding.rvLibrary;
         gridLayoutManager = new GridLayoutManager(mainActivity, 2);
 
         initDataSet();
-        librarySelectionAdapter = new LibrarySelectionAdapter(imageFile);
+        librarySelectionAdapter = new LibrarySelectionAdapter(imageDtos);
 
         // Set up your RecyclerView with the SectionedRecyclerViewAdapter
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 2);
@@ -115,27 +114,6 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 StorageStrategy.createLongStorage())
                 .withSelectionPredicate(new LibrarySelectionAdapter.Predicate())
                 .build();
-
-        selectionTracker.addObserver(new SelectionObserver<Long>() {
-            @Override
-            public void onItemStateChanged(@NonNull Long key, boolean selected) {
-                super.onItemStateChanged(key, selected);
-                Timber.d("\\\\selection\\\\onItemSelectionChanged: key %d %s selected",
-                        key, (selected?"is":"is not"));
-                if(selected) {
-                    selectionTracker.select(key);
-                } else {
-                    selectionTracker.deselect(key);
-                }
-            }
-
-            @Override
-            public void onSelectionChanged() {
-                super.onSelectionChanged();
-                Timber.d("\\\\Selection\\\\onSelectionChanged");
-            }
-        });
-
         librarySelectionAdapter.setSelectionTracker(selectionTracker);
     }
 
@@ -152,7 +130,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     }
 
     private void initDataSet() {
-        imageFile = new ArrayList<>();
+        imageDtos = new ArrayList<ImageDto>();
         try {
             File pictureDirectory = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
             File directoryList[] = pictureDirectory.listFiles();
@@ -165,22 +143,22 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                         @Override
                         public boolean accept(File pathname) {
                             if(pathname.getName().endsWith(".tjsn")) {
-                                imageFile.add(pathname.getAbsolutePath());
+                                ImageDto imageDto = new ImageDto(pathname.getAbsolutePath(), settings.getPalette().getValue());
+                                imageDtos.add(imageDto);
                                 return true;
                             } else {
                                 return false;
                             }
-
                         }
                     });
                 }
             }
             //sort them
-            Collections.sort(imageFile, new Comparator<String>() {
+            Collections.sort(imageDtos, new Comparator<ImageDto>() {
                 @Override
-                public int compare(String o1, String o2) {
+                public int compare(ImageDto o1, ImageDto o2) {
                     //newest first - descending
-                    return o2.compareTo(o1);
+                    return o2.getCreationDate().compareTo(o1.getCreationDate());
                 }
             });
         } catch (Exception e) {
@@ -319,21 +297,21 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             }
             selectionTracker.setItemsSelected(keys, false);
         } else if(id == R.id.action_sort_ascending) {
-            Collections.sort(imageFile, new Comparator<String>() {
+            Collections.sort(imageDtos, new Comparator<ImageDto>() {
                 @Override
-                public int compare(String o1, String o2) {
-                    return o1.compareTo(o2);
+                public int compare(ImageDto o1, ImageDto o2) {
+                    return o1.getCreationDate().compareTo(o2.getCreationDate());
                 }
             });
-            ((LibrarySelectionAdapter)binding.rvLibrary.getAdapter()).setImageFileList(imageFile);
+            ((LibrarySelectionAdapter)binding.rvLibrary.getAdapter()).setImageData(imageDtos);
         } else if(id == R.id.action_sort_ascending) {
-            Collections.sort(imageFile, new Comparator<String>() {
+            Collections.sort(imageDtos, new Comparator<ImageDto>() {
                 @Override
-                public int compare(String o1, String o2) {
-                    return o2.compareTo(o1);
+                public int compare(ImageDto o1, ImageDto o2) {
+                    return o2.getCreationDate().compareTo(o1.getCreationDate());
                 }
             });
-            ((LibrarySelectionAdapter) binding.rvLibrary.getAdapter()).setImageFileList(imageFile);
+            ((LibrarySelectionAdapter) binding.rvLibrary.getAdapter()).setImageData(imageDtos);
         }
             return true;
     }

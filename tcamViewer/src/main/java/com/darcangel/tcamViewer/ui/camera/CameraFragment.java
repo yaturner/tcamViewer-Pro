@@ -434,6 +434,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     imageDto.setBitmap(imageDto.drawHotspot());
                 }
             }
+            cameraViewModel.setRemapNeeded(true);
+            drawScreen();
         } else if(v.getId() == R.id.ivColorBar) {
             int h = binding.ivColorBar.getHeight();
             if(event.getAction() == MotionEvent.ACTION_UP) {

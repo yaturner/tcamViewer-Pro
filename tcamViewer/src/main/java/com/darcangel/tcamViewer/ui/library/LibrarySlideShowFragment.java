@@ -202,13 +202,16 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         // command switch
         int position = binding.vpSlideshow.getCurrentItem();
         int id = menuItem.getItemId();
+        //delete image
         if (id == R.id.action_item_delete) {
             deleteImage(position);
             return true;
         } else if (id == R.id.action_item_share) {
+            //share image
             shareImage(position);
             return true;
         } else if (id == R.id.action_item_export) {
+            //export image
             try {
                 ImageDto imageDto = imageDtos.get(position);
                 utils.exportImage(imageDto);

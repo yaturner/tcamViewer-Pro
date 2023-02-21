@@ -38,6 +38,7 @@ public class ImageDto {
     private String filename;
     private String tjsnString;
     private int[][] palette;
+    private int[] imageData;
     private String paletteName;
     private Bitmap bitmap;
 
@@ -297,4 +298,11 @@ public class ImageDto {
         this.creationDate = creationDate;
     }
 
+    public int[] getImageData() {
+        return imageData;
+    }
+
+    public void setImageData(int[] imageData) {
+        this.imageData = imageData;
+    }
 }

@@ -32,7 +32,6 @@ import timber.log.Timber;
 
 public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
     private SelectionTracker<Long> selectionTracker;
-    private ArrayList<String> imageFileList;
     private ArrayList<ImageDto> imageDtos;
 
     private final AssetManager assetManager;
@@ -43,16 +42,13 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
 
-    public LibrarySelectionAdapter(ArrayList<String> imageFileList) {
+    public LibrarySelectionAdapter(ArrayList<ImageDto> imageDtos) {
         super();
-        this.imageFileList = imageFileList;
-
+        this.imageDtos = imageDtos;
         mainActivity = MainActivity.getInstance();
         cameraUtils = mainActivity.getCameraUtils();
         assetManager = mainActivity.getAssets();
         settings = mainActivity.getSettings();
-
-        imageDtos = new ArrayList<ImageDto>();
     }
 
     @NonNull
@@ -68,15 +64,12 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
         String json = "";
         String line;
         String  imageName;
-        String path = imageFileList.get(position);
-        ImageDto imageDto;
-
+        ImageDto imageDto = imageDtos.get(position);
+        String path = imageDto.getFilename();
         String[] words = path.split("/");
         int nWords = words.length;
         String imageDate = words[nWords-2].replace("_", "/");
         imageName = path.substring(path.lastIndexOf(File.separatorChar)+1);
-        imageDto = new ImageDto(path, settings.getPalette().getValue());
-        imageDtos.add(position, imageDto);
         Bitmap image = imageDto.getBitmap();
         itemHolder.getImageView().setImageBitmap(image);
         itemHolder.setImagePath(path);
@@ -103,7 +96,7 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public int getItemCount() {
-        return imageFileList.size();
+        return imageDtos.size();
     }
 
     public void setSelectionTracker(SelectionTracker<Long> selectionTracker) {
@@ -119,17 +112,14 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     }
 
-    public void setImageFileList(ArrayList<String> imageFileList) {
-        if (imageFileList != null) {
-            this.imageFileList = imageFileList;
-            notifyDataSetChanged();
-        }
+    public void removeAt(int position) {
+        imageDtos.remove(position);
+        notifyItemRemoved(position);
     }
 
-    public void removeAt(int position) {
-        imageFileList.remove(position);
-        notifyItemRemoved(position);
-        notifyItemRangeChanged(position, imageFileList.size());
+    public void setImageData(ArrayList<ImageDto> imageDtos) {
+        this.imageDtos = imageDtos;
+        notifyDataSetChanged();
     }
 
     static public class KeyProvider extends ItemKeyProvider<Long> {

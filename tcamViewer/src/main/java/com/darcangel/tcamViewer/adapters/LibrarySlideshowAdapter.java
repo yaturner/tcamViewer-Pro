@@ -16,12 +16,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
+
+import timber.log.Timber;
 
 public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
@@ -31,12 +34,14 @@ public class LibrarySlideshowAdapter
     private final ArrayList<ImageDto> imageDtos;
     private final Context ctx;
     private final CameraUtils cameraUtils;
+    private final Settings settings;
 
     // Constructor of our ViewPager2Adapter class
     public LibrarySlideshowAdapter(Context ctx, ArrayList<ImageDto> images) {
         this.ctx = ctx;
         this.imageDtos = images;
         cameraUtils = MainActivity.getInstance().getCameraUtils();
+        settings = MainActivity.getInstance().getSettings();
     }
 
     // This method returns our layout
@@ -70,8 +75,8 @@ public class LibrarySlideshowAdapter
             holder.tvMaxTemperature.setText("AGC");
             holder.tvMinTemperature.setText("AGC");
         } else {
-            holder.tvMaxTemperature.setText(String.format(Locale.US, "%.2f", temps.second));
-            holder.tvMinTemperature.setText(String.format(Locale.US, "%.2f", temps.first));
+            holder.tvMaxTemperature.setText(cameraUtils.createTemperatureString(temps.second));
+            holder.tvMinTemperature.setText(cameraUtils.createTemperatureString(temps.first));
         }
 
         holder.imageDto = imageDto;
@@ -126,7 +131,7 @@ public class LibrarySlideshowAdapter
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             LibrarySlideshowAdapter.touchListener.onTouch(imageDto, v, event);
-            return false;
+            return false; //TODO shouldn't this be true
         }
     }
 }

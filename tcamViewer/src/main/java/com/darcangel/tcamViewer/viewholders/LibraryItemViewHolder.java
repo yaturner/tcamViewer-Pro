@@ -14,6 +14,8 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.LibraryItemDetails;
 
+import timber.log.Timber;
+
 public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     private final ImageView imageView;
     private final TextView titleView;
@@ -52,12 +54,19 @@ public class LibraryItemViewHolder extends RecyclerView.ViewHolder {
     }
 
     public ImageDto getImageDto() {
-        return imageDto;
+        if (position != null) {
+            return imageDto;
+        } else {
+            return null;
+        }
     }
 
     public void setImageDto(ImageDto imageDto) {
-        this.imageDto = imageDto;
+        if (position != null) {
+            this.imageDto = imageDto;
+        }
     }
+
 
     public boolean isSelected() {
         if (selectionTracker != null) {
