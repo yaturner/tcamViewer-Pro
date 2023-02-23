@@ -9,6 +9,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -22,9 +23,9 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.darcangel.tcamViewer.JNI.CameraServiceJNI;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.ui.camera.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.ui.library.LibraryViewModel;
@@ -38,7 +39,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import rxdogtag2.RxDogTag;
 import timber.log.Timber;
 
 
@@ -210,6 +210,21 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         if(progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
+    }
+
+    public void showSocketError() {
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Socket Error");
+            builder.setPositiveButton(R.string.ok, (dialog, which) -> dialog.dismiss());
+            builder.setMessage(R.string.socket_error);
+            builder.create().show();
+        } catch(Exception e) {
+            //TODO handle error
+            e.printStackTrace();
+        }
+        cameraViewModel.disconnectFromCamera();
+        invalidateMenu();
     }
 
     public NavController getNavController() {

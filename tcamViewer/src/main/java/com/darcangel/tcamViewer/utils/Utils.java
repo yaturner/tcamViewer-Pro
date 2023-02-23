@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.util.Pair;
 import android.view.View;
@@ -55,7 +54,9 @@ public class Utils {
         int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
         String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
         File myDir = new File(root);
-        myDir.mkdirs();
+        if(!myDir.exists()) {
+            myDir.mkdirs();
+        }
         OutputStream out = null;
         File imageFile = new File(root, imageName);
         saveImage(bitmap, root, imageName);
@@ -87,6 +88,7 @@ public class Utils {
         int layoutHeight;
         int bitmapWidth;
         int bitmapHeight;
+        String maxString, minString;
         StringBuilder stringBuilder = new StringBuilder();
         int res = settings.getExportResolution().getValue();
         resources = mainActivity.getResources();
@@ -115,8 +117,13 @@ public class Utils {
 
         String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
         String hotspotString = cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter());
-        String maxString = cameraUtils.createTemperatureString(temps.second);
-        String minString = cameraUtils.createTemperatureString(temps.first);
+        if(imageDto.isAGC()) {
+            maxString = "AGC";
+            minString = "AGC";
+        } else {
+            maxString = cameraUtils.createTemperatureString(temps.second);
+            minString = cameraUtils.createTemperatureString(temps.first);
+        }
         View inflatedFrame = mainActivity.getLayoutInflater().inflate(R.layout.export_library_image, null);
 
         tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);

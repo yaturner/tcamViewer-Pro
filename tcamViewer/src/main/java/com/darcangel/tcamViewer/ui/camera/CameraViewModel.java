@@ -1,7 +1,5 @@
 package com.darcangel.tcamViewer.ui.camera;
 
-import android.graphics.Bitmap;
-
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -13,8 +11,6 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.util.Calendar;
 import java.util.Locale;
-
-import timber.log.Timber;
 
 public class CameraViewModel extends ViewModel {
 
@@ -91,7 +87,6 @@ public class CameraViewModel extends ViewModel {
             e.printStackTrace();
             return false;
         }
-
         return true;
     }
 
