@@ -5,6 +5,8 @@ public final class Constants {
     public final static int COLORBAR_HEIGHT = 256;
     public final static int HISTOGRAM_WIDTH = 256;
 
+    public final static int BUFFER_LENGTH = 65536;
+
     public final static String SHARED_IMAGE_FILENAME = "sharedImage.png";
 
 

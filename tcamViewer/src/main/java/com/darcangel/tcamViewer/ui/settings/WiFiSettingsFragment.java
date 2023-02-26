@@ -4,12 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.text.format.Formatter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,11 +25,10 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
-import com.darcangel.tcamViewer.ui.camera.CameraService;
+import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import java.io.IOException;
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;

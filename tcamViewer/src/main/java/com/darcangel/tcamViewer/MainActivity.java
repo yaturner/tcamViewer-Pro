@@ -2,9 +2,14 @@ package com.darcangel.tcamViewer;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -26,7 +31,7 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
 import com.darcangel.tcamViewer.model.Settings;
-import com.darcangel.tcamViewer.ui.camera.CameraService;
+import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.ui.library.LibraryViewModel;
 import com.darcangel.tcamViewer.ui.settings.SettingsViewModel;
@@ -61,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private SharedPreferences sharedPreferences;
     private PaletteFactory paletteFactory;
 
-    private com.darcangel.tcamViewer.ui.camera.CameraService cameraService;
+    private CameraService cameraService;
     private CameraUtils cameraUtils;
     private Utils utils;
 
@@ -73,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     public interface JNIListener {
         void onAcceptResponse(String response);
     }
+
+    boolean mBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(Constants.KEY_SETTINGS, settings);
-        outState.putParcelable(Constants.KEY_CAMERASERVICE, cameraService);
         super.onSaveInstanceState(outState);
     }
 
@@ -193,16 +199,16 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public void showProgressDialog(final String title, final String msg) {
-//        if (progressDialog == null) {
-//            progressDialog = new ProgressDialog(this);
-//        }
-//        if (!progressDialog.isShowing()) {
-//            progressDialog.setMessage(msg);
-//            progressDialog.setTitle(title);
-//            progressDialog.setIndeterminate(true);
-//            progressDialog.setCancelable(false);
-//            progressDialog.show();
-//        }
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(this);
+        }
+        if (!progressDialog.isShowing()) {
+            progressDialog.setMessage(msg);
+            progressDialog.setTitle(title);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
     }
 
     public void dismissProgressDialog()
@@ -303,6 +309,39 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     public CameraServiceJNI getCameraServiceJNI() {
         return cameraServiceJNI;
+    }
+
+    /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                                       IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            CameraService.CameraServiceBinder binder = (CameraService.CameraServiceBinder) service;
+            cameraService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Bind to LocalService
+        Intent intent = new Intent(this, CameraService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        unbindService(connection);
+        mBound = false;
     }
 
     @Override

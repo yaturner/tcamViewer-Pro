@@ -32,6 +32,7 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentCameraBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import org.json.JSONException;

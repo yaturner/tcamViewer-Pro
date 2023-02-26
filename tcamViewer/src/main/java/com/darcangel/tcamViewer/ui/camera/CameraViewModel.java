@@ -7,6 +7,7 @@ import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.util.Calendar;

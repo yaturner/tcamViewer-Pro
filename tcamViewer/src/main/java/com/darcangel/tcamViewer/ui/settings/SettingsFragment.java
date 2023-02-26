@@ -31,7 +31,7 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
-import com.darcangel.tcamViewer.ui.camera.CameraService;
+import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -47,8 +47,6 @@ import java.util.Iterator;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
-import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.disposables.Disposable;
 import timber.log.Timber;
 
