@@ -13,11 +13,11 @@ import com.darcangel.tcamViewer.constants.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
@@ -28,36 +28,80 @@ import timber.log.Timber;
 public class CameraService extends Service {
     private final IBinder binder = new CameraServiceBinder();
     private Socket cameraSocket;
-    private String response;
     private String command;
     private Boolean isStreaming = false;
     private String ipAddress;
     private PublishSubject<JSONObject> imageChannel;
-    private final MainActivity mainActivity;
+    private final MainActivity mainActivity = MainActivity.getInstance();
     private JSONObject jsonObject;
     private Thread listenerThread;
     private boolean running = false;
     private int totalBytesRead = 0;
     private int bytes_read = 0;
-    private BufferedReader inFromSocket;
-    private DataOutputStream outToSocket;
-    private char[] readBuffer;
+    private int responsePos = 0;
+    private InputStream inFromSocket;
+    private OutputStream outToSocket;
+    private byte[] readBuffer;
+    private byte[] response;
     private boolean startFound, endFound;
-    
+    private String cameraCommand;
+    private StringBuilder sb = new StringBuilder();
+
+
     public class CameraServiceBinder extends Binder {
         public CameraService getService() {
             return CameraService.this;
         }
     }
 
-    public CameraService() {
-        mainActivity = MainActivity.getInstance();
+    /*
+     * Runnables
+     */
+    Runnable connectRunnable = new Runnable() {
+        public void run() {
+            try {
+                cameraSocket = new Socket("192.168.0.26", 5001);
+                if (cameraSocket != null) {
+                    inFromSocket = cameraSocket.getInputStream();
+                    outToSocket = cameraSocket.getOutputStream();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                cameraSocket = null;
+            }
+        }
+    };
+
+    Runnable listeningRunnable = new Runnable() {
+        @Override
+        public void run() {
+            startListening();
+            Timber.d("Return from startListening");
+        }
+    };
+
+    Runnable sendCmdRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                outToSocket.write(cameraCommand.getBytes(StandardCharsets.UTF_8));
+                outToSocket.flush();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    @Override
+    public void onCreate() {
         imageChannel = PublishSubject.create();
         imageChannel.observeOn(AndroidSchedulers.mainThread())
                 .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {},
                         BackpressureOverflowStrategy.DROP_LATEST);
 
-        readBuffer = new char[Constants.BUFFER_LENGTH];
+        readBuffer = new byte[Constants.BUFFER_LENGTH];
+        response = new byte[Constants.BUFFER_LENGTH];
+        cameraSocket = new Socket();
         resetBuffers();
     }
 
@@ -90,15 +134,24 @@ public class CameraService extends Service {
      * TODO add timeout
      */
     public Boolean connect() throws IOException {
-        cameraSocket = new Socket(ipAddress, 5001);
-        inFromSocket = new BufferedReader(new InputStreamReader(cameraSocket.getInputStream()));
-        outToSocket = new DataOutputStream(cameraSocket.getOutputStream());
-        if(isConnected()) {
-            startListening();
+        Thread connectThread = new Thread(connectRunnable);
+        try {
+            connectThread.start();
+            connectThread.join(15 * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+
+        if (isConnected()) {
+            Thread listeningThread = new Thread(listeningRunnable);
+            listeningThread.start();
         } else {
             return false;
         }
         return true;
+
     }
 
     public void stopListening() {
@@ -126,10 +179,12 @@ public class CameraService extends Service {
      * TODO handle error
      */
     public void sendCmd(final String cmd) {
+        cameraCommand = cmd;
+        Thread sendCmdThread = new Thread(sendCmdRunnable);
         try {
-            outToSocket.writeUTF(cmd);
-            outToSocket.flush();
-        } catch (IOException e) {
+            sendCmdThread.start();
+            sendCmdThread.join(15 * 1000);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -172,8 +227,12 @@ public class CameraService extends Service {
                 while (isConnected() && running) {
                     try {
                         bytes_read = inFromSocket.read(readBuffer);
+//                        Timber.d("Read %d bytes", bytes_read);
                     } catch (IOException e) {
+                        String jsonString = String.format(Constants.SOCKET_CLOSED, e.toString());
+                        imageChannel.onNext(parseResponse(jsonString));
                         e.printStackTrace();
+                        continue;
                     }
                     if (bytes_read == 0) {
                         try {
@@ -184,20 +243,26 @@ public class CameraService extends Service {
                         continue;
                     }
                     for (int index = 0; index < bytes_read; index++) {
-                        if (readBuffer[index] == '\02') {
+                        char c = (char)readBuffer[index];
+                        if (c == '\02') {
                             if (startFound) {
                                 //second in a row, we lost the '03', start over
-                                response = "";
+                                responsePos = 0;
                             } else {
                                 startFound = true;
                             }
-                            Timber.d("found start readBuffer[%d] = %c", index, readBuffer[index]);
-                        } else if (startFound && !endFound && readBuffer[index] == '\03') {
+//                            Timber.d("found start readBuffer[%d] = %x", index, (int)c);
+                        } else if (startFound && !endFound && c == '\03') {
                             endFound = true;
+//                            Timber.d("found end readBuffer[%d] = %x", index, (int)c);
+                            response[responsePos] = '\0';
+                            imageChannel.onNext(parseResponse(new String(response)));
                             resetBuffers();
                         } else {
                             if (startFound && !endFound) {
-                                response += readBuffer[index];
+                                //sb.append(c);
+                                response[responsePos] = (byte)c;
+                                responsePos += 1;
                             }
                             totalBytesRead++;
                         }
@@ -209,10 +274,11 @@ public class CameraService extends Service {
     }
 
     void resetBuffers() {
-        response = "";
+        responsePos = 0;
         endFound = false;
         startFound = false;
         totalBytesRead = 0;
+        //sb = new StringBuilder();
     }
 
     /**

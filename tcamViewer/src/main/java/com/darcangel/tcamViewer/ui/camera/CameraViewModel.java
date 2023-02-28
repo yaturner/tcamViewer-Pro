@@ -33,7 +33,6 @@ public class CameraViewModel extends ViewModel {
 
     public CameraViewModel() {
         mainActivity = MainActivity.getInstance();
-        cameraService = mainActivity.getCameraService();
         cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
 
@@ -72,6 +71,10 @@ public class CameraViewModel extends ViewModel {
             this.imageDto = new MutableLiveData<ImageDto>(null);
         }
         this.imageDto.setValue(imageDto);
+    }
+
+    public void setCameraService(CameraService cameraService) {
+        this.cameraService = cameraService;
     }
 
     //Camera operations

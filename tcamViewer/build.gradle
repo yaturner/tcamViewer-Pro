@@ -23,11 +23,6 @@ android {
     defaultConfig {
         versionCode 1
         versionName "0.3-alpha"
-        externalNativeBuild {
-            cmake {
-                cppFlags '-O0 -ggdb'
-            }
-        }
     }
 
     buildTypes {
@@ -71,12 +66,6 @@ android {
 
     hilt {
         enableAggregatingTask = true
-    }
-    externalNativeBuild {
-        cmake {
-            path file('src/main/cpp/CMakeLists.txt')
-            version '3.18.1'
-        }
     }
 }
 

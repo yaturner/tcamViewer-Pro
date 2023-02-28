@@ -236,7 +236,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         paletteNames = mainActivity.getResources().getStringArray(R.array.palette_names);
         cameraViewModel = mainActivity.getCameraViewModel();
         cameraUtils = mainActivity.getCameraUtils();
-        cameraService = mainActivity.getCameraService();
         settings = mainActivity.getSettings();
     }
 
@@ -256,13 +255,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        settings.getCameraAddress().observe(mainActivity, address -> {
-            Timber.d("Camera ip address is now %s", address);
-            if (!address.equals(cameraService.getIpAddress())) {
-                cameraService.setIpAddress(address);
-                mainActivity.invalidateOptionsMenu();
-            }
-        });
         //watch for palette changes
         settings.getPalette().observe(mainActivity, palette ->
         {
@@ -274,16 +266,24 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
         });
 
-        //watch for palette rotation requests
-//        binding.ivColorBar.setOnClickListener(v -> {
-//            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-//            imageDto.rotateColormap();
-//            mainActivity.invalidateMenu();
-//            drawScreen();
-//        });
-        disposable = cameraService.getImageChannel()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
+        mainActivity.getBound().observe(mainActivity, b -> {
+            if(b) {
+                cameraService = mainActivity.getCameraService();
+                cameraViewModel.setCameraService(cameraService);
+                disposable = cameraService.getImageChannel()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
+                settings.getCameraAddress().observe(mainActivity, address -> {
+                    Timber.d("Camera ip address is now %s", address);
+                    if (!address.equals(cameraService.getIpAddress())) {
+                        cameraService.setIpAddress(address);
+                        mainActivity.invalidateOptionsMenu();
+                    }
+                });
+            } else {
+                cameraService = null;
+            }
+        });
 
         drawScreen();
     }
@@ -483,7 +483,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         } else {
             itemSave.setEnabled(true);
         }
-        if (!cameraService.isConnected()) {
+        if (cameraService != null && !cameraService.isConnected()) {
             itemConnect.setVisible(true);
             itemDisconnect.setVisible(false);
             itemGet.setEnabled(false);
@@ -495,7 +495,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             itemStream.setEnabled(true);
         }
 
-        if (!cameraService.isConnected() || cameraViewModel.getStreaming()) {
+        if (cameraService != null && !cameraService.isConnected() || cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
             itemStreamStart.setVisible(false);
             itemStreamStop.setVisible(true);

@@ -44,6 +44,7 @@
         <!-- Enable user interaction tracing to capture transactions for various UI events (such as clicks or scrolls). -->
         <meta-data android:name="io.sentry.traces.user-interaction.enable" android:value="false" />
 
+        <service android:name=".services.CameraService"/>
     </application>
 
 </manifest>

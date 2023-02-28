@@ -84,7 +84,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         cameraUtils = mainActivity.getCameraUtils();
         settingsViewModel = mainActivity.getSettingsViewModel();
         cameraViewModel = mainActivity.getCameraViewModel();
-        cameraService = mainActivity.getCameraService();
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
 
@@ -127,6 +126,36 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         binding.rbUnitsF.setChecked(settings.getUnitsF().getValue());
         binding.rbUnitsC.setChecked(settings.getUnitsC().getValue());
 
+        mainActivity.getBound().observe(mainActivity, b -> {
+            if (b) {
+                cameraService = mainActivity.getCameraService();
+                disposable = cameraService.getImageChannel()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
+
+
+                if (mainActivity.getCameraService().isConnected()) {
+                    binding.btnNavWiFiSettings.setEnabled(true);
+                    binding.btnNavWiFiSettings.setOnClickListener(this);
+                } else {
+                    binding.btnNavWiFiSettings.setEnabled(false);
+                    binding.btnNavWiFiSettings.setOnClickListener(null);
+                }
+                //get the camera settings from the camera if the camera is connected
+                //  otherwise hide the camera settings
+                if(!cameraService.isConnected()) {
+                    int refIds[] = binding.groupCameraSettings.getReferencedIds();
+                    for (int index = 0; index < refIds.length; index++) {
+                        binding.getRoot().findViewById(refIds[index]).setVisibility(ConstraintLayout.GONE);
+                    }
+                } else {
+                    cameraViewModel.getConfig();
+                }
+                //Take a snapshot of the settings so that if the user selects cancel we can restore it
+                snapshot = new Bundle();
+                settings.snapshot(snapshot);
+            }
+        });
         root = binding.getRoot();
         return root;
     }
@@ -134,18 +163,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        disposable = cameraService.getImageChannel()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
-
-
-        if (mainActivity.getCameraService().isConnected()) {
-            binding.btnNavWiFiSettings.setEnabled(true);
-            binding.btnNavWiFiSettings.setOnClickListener(this);
-        } else {
-            binding.btnNavWiFiSettings.setEnabled(false);
-            binding.btnNavWiFiSettings.setOnClickListener(null);
-        }
         binding.btnEmissivityHint.setOnClickListener(this);
         binding.btnPalette.setOnClickListener(this);
         binding.btnPrivacy.setOnClickListener(this);
@@ -162,21 +179,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         if(settings.getManualRange().getValue()) {
             binding.layoutManualRange.setVisibility(View.VISIBLE);
         }
-
-        //get the camera settings from the camera if the camera is connected
-        //  otherwise hide the camera settings
-        if(!cameraService.isConnected()) {
-            int refIds[] = binding.groupCameraSettings.getReferencedIds();
-            for (int index = 0; index < refIds.length; index++) {
-                root.findViewById(refIds[index]).setVisibility(ConstraintLayout.GONE);
-            }
-        } else {
-            cameraViewModel.getConfig();
-        }
-
-        //Take a snapshot of the settings so that if the user selects cancel we can restore it
-        snapshot = new Bundle();
-        settings.snapshot(snapshot);
     }
 
     private String getMyIPAddress() {

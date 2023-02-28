@@ -1,7 +1,6 @@
 package com.darcangel.tcamViewer;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +17,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
@@ -26,7 +27,6 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.darcangel.tcamViewer.JNI.CameraServiceJNI;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
@@ -44,6 +44,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import rxdogtag2.RxDogTag;
 import timber.log.Timber;
 
 
@@ -70,35 +71,31 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private CameraUtils cameraUtils;
     private Utils utils;
 
-    private ProgressDialog progressDialog;
-
     private NavController navController;
     private ThreadPoolExecutor executor;
-    private CameraServiceJNI cameraServiceJNI;
-    public interface JNIListener {
-        void onAcceptResponse(String response);
-    }
-
-    boolean mBound = false;
+    private MutableLiveData<Boolean> mBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         _instance = this;
 
-        System.loadLibrary("camera");
-        ////RxDogTag.install();
+        // Bind to LocalService
+        Intent intent = new Intent(this, CameraService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        startService(intent);
+        setBound(false);
+
+        RxDogTag.install();
 
         if (savedInstanceState != null) {
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
             utils = savedInstanceState.getParcelable(Constants.KEY_UTILS);
-            cameraService = savedInstanceState.getParcelable(Constants.KEY_CAMERASERVICE);
             settings = savedInstanceState.getParcelable(Constants.KEY_SETTINGS);
         }
 
         //order is important, do this before setting the view
         ViewModelProvider viewModelProvider = new ViewModelProvider(this);
-        cameraServiceJNI = new CameraServiceJNI();
         settingsViewModel = viewModelProvider.get(SettingsViewModel.class);
         libraryViewModel = viewModelProvider.get(LibraryViewModel.class);
         cameraViewModel = viewModelProvider.get(CameraViewModel.class);
@@ -199,23 +196,9 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public void showProgressDialog(final String title, final String msg) {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(this);
-        }
-        if (!progressDialog.isShowing()) {
-            progressDialog.setMessage(msg);
-            progressDialog.setTitle(title);
-            progressDialog.setIndeterminate(true);
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
     }
 
-    public void dismissProgressDialog()
-    {
-        if(progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
-        }
+    public void dismissProgressDialog() {
     }
 
     public void showSocketError() {
@@ -261,9 +244,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public CameraService getCameraService() {
-        if(cameraService == null) {
-            cameraService = new CameraService();
-        }
         return cameraService;
     }
 
@@ -303,12 +283,29 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         }
     }
 
-    public ThreadPoolExecutor getExecutor() {
-        return executor;
+    public Boolean isBound() {
+        if(mBound == null) {
+            mBound = new MutableLiveData<>(false);
+        }
+        return mBound.getValue();
     }
 
-    public CameraServiceJNI getCameraServiceJNI() {
-        return cameraServiceJNI;
+    public LiveData<Boolean> getBound() {
+        if(mBound == null) {
+            mBound = new MutableLiveData<>(false);
+        }
+        return mBound;
+    }
+
+    public void setBound(Boolean bound) {
+        if(mBound == null) {
+            mBound = new MutableLiveData<>(false);
+        }
+        this.mBound.setValue(bound);
+    }
+
+    public ThreadPoolExecutor getExecutor() {
+        return executor;
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
@@ -320,28 +317,25 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             CameraService.CameraServiceBinder binder = (CameraService.CameraServiceBinder) service;
             cameraService = binder.getService();
-            mBound = true;
+            setBound(true);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
+            setBound(false);
         }
     };
 
     @Override
     protected void onStart() {
         super.onStart();
-        // Bind to LocalService
-        Intent intent = new Intent(this, CameraService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         unbindService(connection);
-        mBound = false;
+        setBound(false);
     }
 
     @Override
