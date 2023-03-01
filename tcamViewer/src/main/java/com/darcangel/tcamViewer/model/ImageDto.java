@@ -80,6 +80,9 @@ public class ImageDto {
                 this.paletteName = metadata.getString("palette");
             }
             palette = MainActivity.getInstance().getPaletteFactory().getPaletteByName(this.paletteName);
+            if(bitmap != null) {
+                bitmap.recycle();
+            }
             cameraUtils.processImageResponse(this);
         } catch(JSONException e) {
             e.printStackTrace();

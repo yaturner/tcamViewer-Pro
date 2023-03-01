@@ -28,8 +28,6 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import timber.log.Timber;
-
 public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements View.OnClickListener {
     private SelectionTracker<Long> selectionTracker;
     private ArrayList<ImageDto> imageDtos;
@@ -85,8 +83,8 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
         } else {
             itemHolder.getTitleView().setText("");
         }
-        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
-                itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
+//        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
+//                itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
 
 
         //TODO this is the position within the section

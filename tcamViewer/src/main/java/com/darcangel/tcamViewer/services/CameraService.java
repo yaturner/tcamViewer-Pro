@@ -23,7 +23,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.subjects.PublishSubject;
-import timber.log.Timber;
 
 public class CameraService extends Service {
     private final IBinder binder = new CameraServiceBinder();
@@ -46,7 +45,6 @@ public class CameraService extends Service {
     private boolean startFound, endFound;
     private String cameraCommand;
     private StringBuilder sb = new StringBuilder();
-
 
     public class CameraServiceBinder extends Binder {
         public CameraService getService() {
@@ -76,7 +74,7 @@ public class CameraService extends Service {
         @Override
         public void run() {
             startListening();
-            Timber.d("Return from startListening");
+//            Timber.d("Return from startListening");
         }
     };
 
@@ -84,6 +82,7 @@ public class CameraService extends Service {
         @Override
         public void run() {
             try {
+
                 outToSocket.write(cameraCommand.getBytes(StandardCharsets.UTF_8));
                 outToSocket.flush();
             } catch (Exception e) {
@@ -236,7 +235,7 @@ public class CameraService extends Service {
                     }
                     if (bytes_read == 0) {
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

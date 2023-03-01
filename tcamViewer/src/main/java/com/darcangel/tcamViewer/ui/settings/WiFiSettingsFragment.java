@@ -23,8 +23,8 @@ import androidx.navigation.Navigation;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -32,7 +32,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
-import timber.log.Timber;
 
 @AndroidEntryPoint
 public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -181,7 +180,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
                     settings.getSSID().getValue(),
                     settings.getPassword().getValue());
         } else {
-            Timber.d("Unknown or unrecognized wifi settings");
+//            Timber.d("Unknown or unrecognized wifi settings");
             throw new IllegalArgumentException();
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);

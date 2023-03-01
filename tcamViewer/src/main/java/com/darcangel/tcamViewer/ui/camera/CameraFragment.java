@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,7 +46,6 @@ import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
-import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 
@@ -62,6 +62,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long startMillis = -1;
     private long startNano;
     private long endNano;
+    private long prevImageTime = 0L;
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
@@ -267,14 +268,24 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         });
 
         mainActivity.getBound().observe(mainActivity, b -> {
-            if(b) {
+            if (b) {
                 cameraService = mainActivity.getCameraService();
                 cameraViewModel.setCameraService(cameraService);
                 disposable = cameraService.getImageChannel()
-                        .observeOn(AndroidSchedulers.mainThread())
+                        .map(obj -> {
+                            if (prevImageTime == 0L) {
+                                prevImageTime = SystemClock.elapsedRealtime();
+                            } else {
+                                float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
+                                float frameRate = (1000.0f / elapsedTime);
+                                prevImageTime = SystemClock.elapsedRealtime();
+//                                Timber.d("\\\\Streaming\\\\ elapsed time = %.2f millis", elapsedTime);
+                            }
+                            return obj;
+                        }).observeOn(AndroidSchedulers.mainThread())
                         .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
                 settings.getCameraAddress().observe(mainActivity, address -> {
-                    Timber.d("Camera ip address is now %s", address);
+//                    Timber.d("Camera ip address is now %s", address);
                     if (!address.equals(cameraService.getIpAddress())) {
                         cameraService.setIpAddress(address);
                         mainActivity.invalidateOptionsMenu();
@@ -402,7 +413,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if(v.getId() == R.id.ivCamera && Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
+        if (v.getId() == R.id.ivCamera && Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
             float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
             float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
@@ -429,11 +440,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             cameraViewModel.setRemapNeeded(true);
             drawScreen();
-        } else if(v.getId() == R.id.ivColorBar) {
+        } else if (v.getId() == R.id.ivColorBar) {
             int h = binding.ivColorBar.getHeight();
-            if(event.getAction() == MotionEvent.ACTION_UP) {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
                 ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-                if(event.getY() > (h/2)) {
+                if (event.getY() > (h / 2)) {
                     imageDto.rotateColormap(Constants.ROTATE_FORWARD);
                 } else {
                     imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
@@ -557,3 +568,4 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         }
     }
 }
+

@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import rxdogtag2.RxDogTag;
-import timber.log.Timber;
 
 
 
@@ -131,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     protected void onUserLeaveHint()
     {
-        Timber.d("onUserLeaveHint\\\\Home button pressed");
+//        Timber.d("onUserLeaveHint\\\\Home button pressed");
         super.onUserLeaveHint();
         cameraViewModel.startStreaming(false);
     }
@@ -152,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             public void onDestinationChanged(@NonNull NavController navController,
                                              @NonNull NavDestination navDestination,
                                              @Nullable Bundle bundle) {
-                Timber.d("New Destination is %s", navDestination.toString());
+//                Timber.d("New Destination is %s", navDestination.toString());
                 BottomNavigationView navBar = findViewById(R.id.nav_view);
                 if(navDestination.getId() == R.id.navigation_librarySlideShowFragment ||
                         navDestination.getId() == R.id.navigation_settings ||

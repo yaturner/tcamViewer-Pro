@@ -48,7 +48,6 @@ import java.util.Iterator;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
-import timber.log.Timber;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener,
@@ -300,8 +299,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     //If ManualRange is checked do the same for it's values
                     if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()) {
                         settings.setManualRange(binding.switchManualRange.isChecked());
-                        Timber.d("\\\\ManualRange\\\\createSaveDialog\\\\manual range = %s",
-                                (binding.switchManualRange.isChecked()?"true":"false"));
+//                        Timber.d("\\\\ManualRange\\\\createSaveDialog\\\\manual range = %s",
+//                                (binding.switchManualRange.isChecked()?"true":"false"));
                         cameraViewModel.setRemapNeeded(true);
                         if (settings.getManualRange().getValue()) {
                             try {
