@@ -8,7 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -18,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -63,6 +63,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long startNano;
     private long endNano;
     private long prevImageTime = 0L;
+    private TextView tvFrameRate;
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
@@ -250,6 +251,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
         binding.ivColorBar.setOnTouchListener(this);
+        tvFrameRate = binding.tvFrameRate;
         return root;
     }
 
@@ -272,17 +274,30 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraService = mainActivity.getCameraService();
                 cameraViewModel.setCameraService(cameraService);
                 disposable = cameraService.getImageChannel()
-                        .map(obj -> {
-                            if (prevImageTime == 0L) {
-                                prevImageTime = SystemClock.elapsedRealtime();
-                            } else {
-                                float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
-                                float frameRate = (1000.0f / elapsedTime);
-                                prevImageTime = SystemClock.elapsedRealtime();
-//                                Timber.d("\\\\Streaming\\\\ elapsed time = %.2f millis", elapsedTime);
-                            }
-                            return obj;
-                        }).observeOn(AndroidSchedulers.mainThread())
+//                        .map(obj -> {
+//                            if (prevImageTime != 0L) {
+//                                float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
+//                                float frameRate = (1000.0f / elapsedTime);
+//                                mainActivity.runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        String string = String.format(Locale.US, "%.2f", elapsedTime);
+//                                        if(elapsedTime > 200f) {
+//                                            tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark, null));
+//                                        } else if(elapsedTime > 400f) {
+//                                            tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark, null));
+//                                        } else {
+//                                            tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_green_dark, null));
+//                                        }
+//                                        tvFrameRate.setText(string);
+//                                    }
+//                                });
+////                                Timber.d("\\\\Streaming\\\\ elapsed time = %.2f millis", elapsedTime);
+//                            }
+//                            prevImageTime = SystemClock.elapsedRealtime();
+//                            return obj;
+//                        })
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
                 settings.getCameraAddress().observe(mainActivity, address -> {
 //                    Timber.d("Camera ip address is now %s", address);

@@ -161,6 +161,7 @@
                     <EditText
                         android:id="@+id/cameraIPAddress"
                         style="@style/SettingsEditTextEnd"
+                        android:text="@={settings.cameraAddress}"
                         android:inputType="textUri|number"
                         android:textAlignment="textEnd" />
                 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -58,7 +58,7 @@ public class CameraService extends Service {
     Runnable connectRunnable = new Runnable() {
         public void run() {
             try {
-                cameraSocket = new Socket("192.168.0.26", 5001);
+                cameraSocket = new Socket(ipAddress, 5001);
                 if (cameraSocket != null) {
                     inFromSocket = cameraSocket.getInputStream();
                     outToSocket = cameraSocket.getOutputStream();
