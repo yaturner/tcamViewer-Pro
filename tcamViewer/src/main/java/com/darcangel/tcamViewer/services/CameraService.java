@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.SystemClock;
 
 import androidx.annotation.Nullable;
 
@@ -46,6 +47,8 @@ public class CameraService extends Service {
     private boolean startFound, endFound;
     private String cameraCommand;
     private StringBuilder sb = new StringBuilder();
+
+    private long prevTime = 0L;
 
     public class CameraServiceBinder extends Binder {
         public CameraService getService() {
@@ -229,9 +232,13 @@ public class CameraService extends Service {
             @Override
             public void run() {
                 while (isConnected() && running) {
+                    prevTime = SystemClock.elapsedRealtime();
                     try {
                         bytes_read = inFromSocket.read(readBuffer);
-//                        Timber.d("Read %d bytes", bytes_read);
+                        if (prevTime != 0L) {
+                            long elapsedTime = SystemClock.elapsedRealtime() - prevTime;
+                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
+                        }
                     } catch (IOException e) {
                         String jsonString = String.format(Constants.SOCKET_CLOSED, e.toString());
                         imageChannel.onNext(parseResponse(jsonString));
@@ -239,11 +246,11 @@ public class CameraService extends Service {
                         continue;
                     }
                     if (bytes_read == 0) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+//                        try {
+//                            Thread.sleep(100);
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
                         continue;
                     }
                     for (int index = 0; index < bytes_read; index++) {
