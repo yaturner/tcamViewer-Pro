@@ -23,9 +23,10 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.BackpressureOverflowStrategy;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import timber.log.Timber;
 
 public class CameraService extends Service {
-    private final IBinder binder = new CameraServiceBinder();
+    private IBinder binder;
     private Socket cameraSocket;
     private String command;
     private Boolean isStreaming = false;
@@ -41,7 +42,7 @@ public class CameraService extends Service {
     private InputStream inFromSocket;
     private OutputStream outToSocket;
     private byte[] readBuffer;
-    private byte[] response;
+    private char[] response;
     private boolean startFound, endFound;
     private String cameraCommand;
     private StringBuilder sb = new StringBuilder();
@@ -82,7 +83,6 @@ public class CameraService extends Service {
         @Override
         public void run() {
             try {
-
                 outToSocket.write(cameraCommand.getBytes(StandardCharsets.UTF_8));
                 outToSocket.flush();
             } catch (Exception e) {
@@ -93,13 +93,14 @@ public class CameraService extends Service {
 
     @Override
     public void onCreate() {
+        binder = new CameraServiceBinder();
         imageChannel = PublishSubject.create();
         imageChannel.observeOn(AndroidSchedulers.mainThread())
                 .toFlowable(BackpressureStrategy.BUFFER).onBackpressureBuffer(256, () -> {},
                         BackpressureOverflowStrategy.DROP_LATEST);
 
         readBuffer = new byte[Constants.BUFFER_LENGTH];
-        response = new byte[Constants.BUFFER_LENGTH];
+        response = new char[Constants.BUFFER_LENGTH];
         cameraSocket = new Socket();
         resetBuffers();
     }
@@ -178,13 +179,15 @@ public class CameraService extends Service {
      * TODO handle error
      */
     public void sendCmd(final String cmd) {
-        cameraCommand = cmd;
-        Thread sendCmdThread = new Thread(sendCmdRunnable);
-        try {
-            sendCmdThread.start();
-            sendCmdThread.join(15 * 1000);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (isConnected()) {
+            cameraCommand = cmd;
+            Thread sendCmdThread = new Thread(sendCmdRunnable);
+            try {
+                sendCmdThread.start();
+                sendCmdThread.join(15 * 1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -194,10 +197,12 @@ public class CameraService extends Service {
      * @return
      */
     public boolean isConnected() {
-        if (cameraSocket == null) {
+        if (cameraSocket == null ||
+                cameraSocket.isClosed() ||
+                !cameraSocket.isConnected()) {
             return false;
         } else {
-            return cameraSocket.isConnected();
+            return true;
         }
     }
 
@@ -255,12 +260,15 @@ public class CameraService extends Service {
                             endFound = true;
 //                            Timber.d("found end readBuffer[%d] = %x", index, (int)c);
                             response[responsePos] = '\0';
-                            imageChannel.onNext(parseResponse(new String(response)));
+                            String r = String.valueOf(response, 0, responsePos);
+                            Timber.d("\\\\response\\\\ response = '%s'",
+                                    r.substring(0, Math.min(r.length(), 64)));
+                            imageChannel.onNext(parseResponse(r));
                             resetBuffers();
                         } else {
                             if (startFound && !endFound) {
                                 //sb.append(c);
-                                response[responsePos] = (byte)c;
+                                response[responsePos] = c;
                                 responsePos += 1;
                             }
                             totalBytesRead++;
@@ -291,8 +299,6 @@ public class CameraService extends Service {
             if (response != null) {
 //                Timber.d("parseResponse starts with %s and ends with %s",
 //                        response.substring(0, 1), response.substring(response.length()-1));
-                //strip out start/stop bytes
-                //response = response.substring(1, response.length() - 1);
                 return new JSONObject(response);
             }
         } catch (JSONException e) {

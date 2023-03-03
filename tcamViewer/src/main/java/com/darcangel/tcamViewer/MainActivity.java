@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import rxdogtag2.RxDogTag;
-
+import timber.log.Timber;
 
 
 @AndroidEntryPoint
@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private PaletteFactory paletteFactory;
 
     private CameraService cameraService;
+    private CameraService.CameraServiceBinder binder;
     private CameraUtils cameraUtils;
     private Utils utils;
 
@@ -80,10 +81,12 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         _instance = this;
 
         // Bind to LocalService
-        Intent intent = new Intent(this, CameraService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
-        startService(intent);
-        setBound(false);
+        if(!isBound()) {
+            Intent intent = new Intent(this, CameraService.class);
+            bindService(intent, connection, Context.BIND_AUTO_CREATE);
+            //////startService(intent);
+            setBound(false);
+        }
 
         RxDogTag.install();
 
@@ -91,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
             utils = savedInstanceState.getParcelable(Constants.KEY_UTILS);
             settings = savedInstanceState.getParcelable(Constants.KEY_SETTINGS);
+            binder = (CameraService.CameraServiceBinder)
+                    savedInstanceState.getBinder(Constants.KEY_CAMERA_SERVICE);
+            if (binder != null) {
+                cameraService = binder.getService();
+            }
         }
 
         //order is important, do this before setting the view
@@ -124,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putParcelable(Constants.KEY_SETTINGS, settings);
+        outState.putBinder(Constants.KEY_CAMERA_SERVICE, binder);
         super.onSaveInstanceState(outState);
     }
 
@@ -132,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     {
 //        Timber.d("onUserLeaveHint\\\\Home button pressed");
         super.onUserLeaveHint();
-        cameraViewModel.startStreaming(false);
+        //JMT cameraViewModel.startStreaming(false);
     }
 
     private void init() {
@@ -314,14 +323,18 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            CameraService.CameraServiceBinder binder = (CameraService.CameraServiceBinder) service;
+            binder = (CameraService.CameraServiceBinder) service;
             cameraService = binder.getService();
             setBound(true);
+            Timber.d("\\\\cameraService\\\\ bound = true");
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             setBound(false);
+            cameraService = null;
+            Timber.d("\\\\cameraService\\\\ bound = false");
+
         }
     };
 
@@ -333,16 +346,19 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(connection);
-        setBound(false);
+        if (isFinishing() && !isChangingConfigurations()) {
+            stopService(new Intent(this, CameraService.class));
+            unbindService(connection);
+            setBound(false);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(cameraViewModel != null && cameraViewModel.getStreaming()) {
-            cameraService.stopStreaming();
-        }
+//        if(isFinishing() && cameraViewModel != null && cameraViewModel.getStreaming()) {
+//            cameraService.stopStreaming();
+//        }
     }
 
     @Override

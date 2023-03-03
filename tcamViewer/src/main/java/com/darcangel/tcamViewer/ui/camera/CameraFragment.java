@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,7 +18,6 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -63,7 +63,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long startNano;
     private long endNano;
     private long prevImageTime = 0L;
-    private TextView tvFrameRate;
+
+    private boolean showFrameRate = false;
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
@@ -239,6 +240,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         cameraViewModel = mainActivity.getCameraViewModel();
         cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
+        cameraService = mainActivity.getCameraService();
     }
 
 
@@ -251,7 +253,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         root = binding.getRoot();
         binding.ivCamera.setOnTouchListener(this);
         binding.ivColorBar.setOnTouchListener(this);
-        tvFrameRate = binding.tvFrameRate;
+        binding.tvMaxTemperature.setOnTouchListener(this);
+        binding.tvFrameRate.setVisibility(View.GONE);
+        showFrameRate = false;
         return root;
     }
 
@@ -273,30 +277,37 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             if (b) {
                 cameraService = mainActivity.getCameraService();
                 cameraViewModel.setCameraService(cameraService);
+                //we may be in onResume
+                if (cameraViewModel.isInStreamingMode()) {
+                    cameraService.startStreaming();
+                    cameraViewModel.setStreaming(true);
+                }
                 disposable = cameraService.getImageChannel()
-//                        .map(obj -> {
-//                            if (prevImageTime != 0L) {
-//                                float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
-//                                float frameRate = (1000.0f / elapsedTime);
-//                                mainActivity.runOnUiThread(new Runnable() {
-//                                    @Override
-//                                    public void run() {
-//                                        String string = String.format(Locale.US, "%.2f", elapsedTime);
-//                                        if(elapsedTime > 200f) {
-//                                            tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark, null));
-//                                        } else if(elapsedTime > 400f) {
-//                                            tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark, null));
-//                                        } else {
-//                                            tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_green_dark, null));
-//                                        }
-//                                        tvFrameRate.setText(string);
-//                                    }
-//                                });
-////                                Timber.d("\\\\Streaming\\\\ elapsed time = %.2f millis", elapsedTime);
-//                            }
-//                            prevImageTime = SystemClock.elapsedRealtime();
-//                            return obj;
-//                        })
+                        .map(obj -> {
+                            if(showFrameRate) {
+                                if (prevImageTime != 0L) {
+                                    float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
+                                    float frameRate = (1000.0f / elapsedTime);
+                                    mainActivity.runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            String string = String.format(Locale.US, "%.2f", elapsedTime);
+                                            if (elapsedTime > 200f) {
+                                                binding.tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_orange_dark, null));
+                                            } else if (elapsedTime > 400f) {
+                                                binding.tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_red_dark, null));
+                                            } else {
+                                                binding.tvFrameRate.setBackgroundColor(getResources().getColor(android.R.color.holo_green_dark, null));
+                                            }
+                                            binding.tvFrameRate.setText(string);
+                                        }
+                                    });
+//                                Timber.d("\\\\Streaming\\\\ elapsed time = %.2f millis", elapsedTime);
+                                }
+                                prevImageTime = SystemClock.elapsedRealtime();
+                            }
+                            return obj;
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
                 settings.getCameraAddress().observe(mainActivity, address -> {
@@ -467,6 +478,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 mainActivity.invalidateMenu();
                 drawScreen();
             }
+        } else if (v.getId() == R.id.tvMaxTemperature) {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                showFrameRate = !showFrameRate;
+                binding.tvFrameRate.setVisibility(showFrameRate ? View.VISIBLE : View.GONE);
+            }
         }
 
         return true;
@@ -556,7 +572,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     @Override
     public void onResume() {
         super.onResume();
-        if (cameraViewModel.isInStreamingMode()) {
+        if (cameraViewModel.isInStreamingMode() && cameraService != null) {
             cameraService.startStreaming();
             cameraViewModel.setStreaming(true);
         }

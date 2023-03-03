@@ -23,7 +23,7 @@ public final class Constants {
     public final static String KEY_CAMERAUTILS = "CameraUtils";
     public final static String KEY_UTILS = "Utils";
     public final static String KEY_SETTINGS = "Settings";
-    public final static String KEY_CAMERASERVICE = "CameraService";
+    public final static String KEY_CAMERA_SERVICE = "CameraService";
 
     //Settings keys for SharedPrefs
     public final static String KEY_AGC = "agc";
