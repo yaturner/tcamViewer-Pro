@@ -238,6 +238,7 @@ public class CameraService extends Service {
                         if (prevTime != 0L) {
                             long elapsedTime = SystemClock.elapsedRealtime() - prevTime;
                             Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
+                            prevTime = SystemClock.elapsedRealtime();
                         }
                     } catch (IOException e) {
                         String jsonString = String.format(Constants.SOCKET_CLOSED, e.toString());
