@@ -76,6 +76,7 @@
                     <TextView
                         android:id="@+id/emissivityHeading"
                         style="@style/SettingsTextStart"
+                        android:textColor="@color/white"
                         android:text="@string/emissivity" />
 
                     <EditText
@@ -97,6 +98,7 @@
 
                     <TextView
                         android:id="@+id/gainHeading"
+                        android:textColor="@color/white"
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
                         android:text="@string/gain" />
@@ -135,6 +137,7 @@
                     <TextView
                         android:id="@+id/btnNavWiFiHeading"
                         style="@style/SettingsTextStart"
+                        android:textColor="@color/white"
                         android:layout_gravity="center_vertical"
                         android:text="@string/wifi_network" />
 
@@ -156,6 +159,7 @@
                     <TextView
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
+                        android:textColor="@color/white"
                         android:text="@string/camera_ip_address" />
 
                     <EditText
@@ -192,6 +196,7 @@
                     <TextView
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
+                        android:textColor="@color/white"
                         android:text="@string/export_resolution" />
 
                     <Spinner
@@ -225,6 +230,7 @@
 
                         <TextView
                             style="@style/SettingsTextStart"
+                            android:textColor="@color/white"
                             android:text="@string/min" />
 
                         <EditText
@@ -239,6 +245,7 @@
 
                         <TextView
                             style="@style/SettingsTextStart"
+                            android:textColor="@color/white"
                             android:text="@string/max" />
 
                         <EditText
@@ -254,6 +261,7 @@
 
                     <TextView
                         style="@style/SettingsBtnStart"
+                        android:textColor="@color/white"
                         android:text="@string/palette" />
 
                     <ImageButton
@@ -291,6 +299,7 @@
                     <TextView
                         style="@style/SettingsTextStart"
                         android:layout_gravity="center_vertical"
+                        android:textColor="@color/white"
                         android:text="@string/units" />
 
                     <RadioGroup
@@ -319,11 +328,13 @@
 
                     <TextView
                         style="@style/SettingsTextStart"
+                        android:textColor="@color/white"
                         android:text="@string/version" />
 
                     <TextView
                         android:id="@+id/tvVersion"
                         style="@style/SettingsTextEnd"
+                        android:textColor="@color/white"
                         android:text="0.1.0" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -332,6 +343,7 @@
 
                     <TextView
                         style="@style/SettingsTextStart"
+                        android:textColor="@color/white"
                         android:text="@string/privacy_policy" />
 
                     <ImageButton

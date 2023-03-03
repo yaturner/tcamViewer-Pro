@@ -56,8 +56,11 @@ public class CameraService extends Service {
         }
     }
 
-    /*
-     * Runnables
+    /******************************************
+     *             Runnables                  *
+     ******************************************/
+    /**
+     * connectRunnable
      */
     Runnable connectRunnable = new Runnable() {
         public void run() {
@@ -74,6 +77,9 @@ public class CameraService extends Service {
         }
     };
 
+    /**
+     * listeningRunnable
+     */
     Runnable listeningRunnable = new Runnable() {
         @Override
         public void run() {
@@ -82,6 +88,9 @@ public class CameraService extends Service {
         }
     };
 
+    /**
+     * sendCmdRunnable
+     */
     Runnable sendCmdRunnable = new Runnable() {
         @Override
         public void run() {
@@ -237,7 +246,7 @@ public class CameraService extends Service {
                         bytes_read = inFromSocket.read(readBuffer);
                         if (prevTime != 0L) {
                             long elapsedTime = SystemClock.elapsedRealtime() - prevTime;
-                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
+//                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
                         }
                     } catch (IOException e) {
                         String jsonString = String.format(Constants.SOCKET_CLOSED, e.toString());
@@ -246,11 +255,11 @@ public class CameraService extends Service {
                         continue;
                     }
                     if (bytes_read == 0) {
-//                        try {
-//                            Thread.sleep(100);
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         continue;
                     }
                     for (int index = 0; index < bytes_read; index++) {
