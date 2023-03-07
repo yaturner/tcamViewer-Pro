@@ -7,9 +7,6 @@ public final class Constants {
 
     public final static int BUFFER_LENGTH = 65536;
 
-    public final static String SHARED_IMAGE_FILENAME = "sharedImage.png";
-
-
     public final static String SUCCESS = "{\"result\":\"OK\"}";
     public final static String ERROR = "{\"result\":\"ERROR\"}";
 

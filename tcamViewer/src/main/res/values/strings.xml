@@ -82,4 +82,6 @@
     <string name="stream">Stream</string>
     <string name="warning_ssid">Invalid or missing SSID name</string>
     <string name="socket_error">The connection to the camera can not be established, please check your settings and try again</string>
+    <string name="you_must_specify_filename">You must specify a filename for the image</string>
+    <string name="enter_name_for_shared_image">Enter name for shared file</string>
 </resources>

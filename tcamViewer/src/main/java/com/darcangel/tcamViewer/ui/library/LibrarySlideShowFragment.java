@@ -1,13 +1,12 @@
 package com.darcangel.tcamViewer.ui.library;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,6 +14,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
@@ -22,6 +23,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.FileProvider;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
@@ -46,8 +48,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import timber.log.Timber;
-
 
 public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private ViewGroup container;
@@ -62,6 +62,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private Utils utils;
     private BottomNavigationView navBar;
     private View root;
+    private int sharedImagePosition = -1;
+
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -71,9 +73,12 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                     //ACTION_SEND always returns RESULT_CANCELLED, ignore it
                     // There are no request codes
                     File imagePath = mainActivity.getCacheDir();
-                    File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
-                    if (newFile.exists()) {
-                        newFile.delete();
+                    if(sharedImagePosition != -1) {
+                        File newFile = new File(imagePath, imageDtos.get(sharedImagePosition).getFilename());
+                        if (newFile.exists()) {
+                            newFile.delete();
+                        }
+                        sharedImagePosition = -1;
                     }
                 }
             });
@@ -133,41 +138,61 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     }
 
     private void shareImage(final int position) {
+        //save this for the result callback
+        sharedImagePosition = position;
         ImageDto imageDto = imageDtos.get(position);
-        try {
-            Intent shareIntent = new Intent();
-            Bitmap bitmap = utils.createExportImage(imageDto);
-            File imagePath = mainActivity.getCacheDir();
-            File newFile = new File(imagePath, Constants.SHARED_IMAGE_FILENAME);
-            if (bitmap != null) {
-                if (newFile.exists()) {
-                    newFile.delete();
-                }
-                cameraUtils.saveBitmapToFile(bitmap, newFile);
-                Uri imageUri = FileProvider.getUriForFile(mainActivity, "com.darcangel.fileprovider", newFile);
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                shareIntent.setDataAndType(imageUri, mainActivity.getContentResolver().getType(imageUri));
-                shareIntent.setClipData(ClipData.newRawUri("", imageUri));
-                shareIntent.putExtra(Intent.EXTRA_SUBJECT, Constants.SHARED_IMAGE_FILENAME);
-                shareIntent.addFlags(
-                        Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                shareActivityResultLauncher.launch(shareIntent);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            //TODO handle error
+        Bitmap sharedBitmap = utils.createExportImage(imageDto);
+        if (sharedBitmap != null) {
+            getSharedFilename(imageDto, sharedBitmap);
         }
     }
 
+    private void getSharedFilename(final ImageDto imageDto, final Bitmap sharedBitmap) {
+        final ConstraintLayout layout = (ConstraintLayout) mainActivity.getLayoutInflater().
+                inflate(R.layout.dialog_enter_share_filename, null);
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext())
+                    .setCancelable(true)
+                    .setMessage(R.string.enter_name_for_shared_image)
+                    .setNegativeButton(R.string.cancel, (dlg, which) -> {
+                        dlg.dismiss();
+                    })
+                    .setPositiveButton(R.string.ok, (dlg, which) -> {
+                        EditText et = layout.findViewById(R.id.etFilename);
+                        String filename = et.getText().toString();
+                        if(filename.isEmpty()) {
+                            Toast.makeText(getContext(), R.string.you_must_specify_filename,
+                                    Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        Intent shareIntent = new Intent();
+                        File imagePath = mainActivity.getCacheDir();
+                        File newFile = new File(imagePath, filename);
+                        if (newFile.exists()) {
+                            newFile.delete();
+                        }
+                        try {
+                            cameraUtils.saveBitmapToFile(sharedBitmap, newFile);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-    private ContentValues contentValues() {
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
-        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-        return values;
+                        Uri imageUri = FileProvider.getUriForFile(mainActivity,
+                                "com.darcangel.fileprovider", newFile);
+                        shareIntent.setAction(Intent.ACTION_SEND);
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                        shareIntent.setDataAndType(imageUri, mainActivity.getContentResolver()
+                                .getType(imageUri));
+                        shareIntent.setClipData(ClipData.newRawUri("", imageUri));
+                        shareIntent.putExtra(Intent.EXTRA_SUBJECT, newFile.getName());
+                        shareIntent.addFlags(
+                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                                        Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        shareActivityResultLauncher.launch(shareIntent);
+                        dlg.dismiss();
+                    })
+                    .setTitle("Share Image")
+                    .setView(layout);
+            builder.create().show();
     }
 
     private void deleteImage(final int position) {

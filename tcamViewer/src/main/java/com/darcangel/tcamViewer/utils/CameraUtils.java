@@ -40,8 +40,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import timber.log.Timber;
-
 
 public class CameraUtils extends BaseObservable {
 
@@ -64,11 +62,11 @@ public class CameraUtils extends BaseObservable {
     private final Paint paintBlack;
 
 
-    private static final Pattern IP_PATTERN = Pattern.compile(
+    public static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
-    private static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("MM_dd_yyyy");
-    private static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
+    public static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("MM_dd_yyyy");
+    public static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
     //default constructor
     public CameraUtils() {
