@@ -166,7 +166,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                         }
                         Intent shareIntent = new Intent();
                         File imagePath = mainActivity.getCacheDir();
-                        File newFile = new File(imagePath, filename);
+                        File newFile = new File(imagePath, filename + ".png");
                         if (newFile.exists()) {
                             newFile.delete();
                         }

@@ -1,5 +1,6 @@
 package com.darcangel.tcamViewer.utils;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -26,7 +28,7 @@ import com.darcangel.tcamViewer.model.Settings;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
@@ -48,18 +50,13 @@ public class Utils {
     public void exportImage(final ImageDto imageDto) throws FileNotFoundException {
         String imageFilename = null;
         Bitmap bitmap = createExportImage(imageDto);
-        String path = imageDto.getFilename();
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
+        String[] word = imageDto.getFilename().split("/");
+        int nWords = word.length;
+        String imageDirectory = word[nWords-2];
+        String imageName = word[nWords-1].replace("img_", "").replace(".tjsn", "");
         int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
         int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
-        String root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString();
-        File myDir = new File(root);
-        if(!myDir.exists()) {
-            myDir.mkdirs();
-        }
-        OutputStream out = null;
-        File imageFile = new File(root, imageName);
-        saveImage(bitmap, root, imageName);
+        saveBitmap(bitmap, imageDirectory, imageName);
         Toast.makeText(mainActivity, "Image exported as " + imageName, Toast.LENGTH_LONG).show();
     }
 
@@ -188,51 +185,41 @@ public class Utils {
         return bitmap;
     }
 
-    public void saveImage(Bitmap bitmap, String folderName, String imageFilename) throws FileNotFoundException {
-        File dir = null, imageFile = null;
-        if (android.os.Build.VERSION.SDK_INT >= 29) {
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/" + folderName);
-            values.put(MediaStore.Images.Media.IS_PENDING, true);
-            // RELATIVE_PATH and IS_PENDING are introduced in API 29.
+    @NonNull
+    public Uri saveBitmap(@NonNull final Bitmap bitmap,
+                          @NonNull final String imageDirectory,
+                          @NonNull final String imageName) {
+        final ContentValues values = new ContentValues();
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, imageName);
+        values.put(MediaStore.MediaColumns.MIME_TYPE, "image/png");
+        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM + "/" + imageDirectory);
 
-            Uri uri = mainActivity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        final ContentResolver resolver = MainActivity.getInstance().getContentResolver();
+        Uri uri = null;
+
+        try {
+            final Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            uri = resolver.insert(contentUri, values);
+
+            if (uri == null)
+                throw new IOException("Failed to create new MediaStore record.");
+
+            try (final OutputStream stream = resolver.openOutputStream(uri)) {
+                if (stream == null)
+                    throw new IOException("Failed to open output stream.");
+
+                if (!bitmap.compress(Bitmap.CompressFormat.PNG, 95, stream))
+                    throw new IOException("Failed to save bitmap.");
+            }
+
+            return uri;
+        }
+        catch (IOException e) {
             if (uri != null) {
-                saveImageToStream(bitmap, mainActivity.getContentResolver().openOutputStream(uri));
-                values.put(MediaStore.Images.Media.IS_PENDING, false);
-                mainActivity.getContentResolver().update(uri, values, null, null);
-            }
-        } else {
-            dir = new File(mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "tcamViewer");
-            // getExternalStorageDirectory is deprecated in API 29
-
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            java.util.Date date = new java.util.Date();
-            imageFile = new File(dir.getAbsolutePath()
-                    + File.separator
-                    + imageFilename
-                    + ".png");
-            saveImageToStream(bitmap, new FileOutputStream(imageFile));
-            if (imageFile.getAbsolutePath() != null) {
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.DATA, imageFile.getAbsolutePath());
-                // .DATA is deprecated in API 29
-                mainActivity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                // Don't leave an orphan entry in the MediaStore
+                resolver.delete(uri, null, null);
             }
         }
-    }
-
-    public void saveImageToStream(Bitmap bitmap, OutputStream outputStream) {
-        if (outputStream != null) {
-            try {
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        return null;
     }
 }
