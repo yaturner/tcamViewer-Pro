@@ -18,6 +18,7 @@ import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -433,7 +434,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (v.getId() == R.id.ivCamera && Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
+        if (v.getId() == R.id.ivCamera &&
+                Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
+                if(Boolean.TRUE.equals(settings.getAGC().getValue())) {
+                    Toast.makeText(getContext(), R.string.changing_spot_meter_not_available, Toast.LENGTH_LONG).show();
+                    return true;
+                }
             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
             float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
             float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
