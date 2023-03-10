@@ -148,6 +148,7 @@ public class CameraService extends Service {
     public Boolean connect() throws IOException {
         Thread connectThread = new Thread(connectRunnable);
         try {
+            running = true;
             connectThread.start();
             connectThread.join(15 * 1000);
         } catch (InterruptedException e) {

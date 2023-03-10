@@ -124,7 +124,7 @@ public final class Constants {
     public static final int ROTATE_FORWARD = 1;
     public static final int ROTATE_BACKWARD = -1;
     public static final String SOCKET_CLOSED = "{\n" +
-            "\"error\":\"{\"message\":\"%s\"}\n" +
+            "\"error\":{\"message\":\"%s\"}\n" +
             "}";
 
     private Constants() {
