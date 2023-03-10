@@ -27,6 +27,7 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 
+import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
@@ -284,7 +285,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 disposable = cameraService.getImageChannel()
                         .map(obj -> {
-                            if(showFrameRate) {
+                            if(showFrameRate && BuildConfig.DEBUG) {
                                 if (prevImageTime != 0L) {
                                     float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
                                     float frameRate = (1000.0f / elapsedTime);
@@ -471,7 +472,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 mainActivity.invalidateMenu();
                 drawScreen();
             }
-        } else if (v.getId() == R.id.tvMaxTemperature) {
+        } else if (v.getId() == R.id.tvMaxTemperature && BuildConfig.DEBUG) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 showFrameRate = !showFrameRate;
                 binding.tvFrameRate.setVisibility(showFrameRate ? View.VISIBLE : View.GONE);
