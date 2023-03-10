@@ -217,6 +217,14 @@ public class ImageDto {
 
     public void setPaletteName(String paletteName) {
         this.paletteName = paletteName;
+        //change it in the jsonObject.metadata
+        try {
+            JSONObject meta = jsonObject.getJSONObject("metadata");
+            meta.remove("paletteName");
+            meta.put("palette", paletteName);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getFilename() {

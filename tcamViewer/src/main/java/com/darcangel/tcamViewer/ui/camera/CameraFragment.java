@@ -341,13 +341,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             ///Timber.d("Response String is %s", response);
             //get image
             if (response.equalsIgnoreCase("metadata")) {
-//                long millis = System.currentTimeMillis();
-//                long diff;
-//                if (startMillis != -1) {
-//                    diff = millis - startMillis;
-//                    //Timing Timber.d("\\\\Timing\\\\ Received onNext at %d millis", diff);
-//                }
-//                startMillis = millis;
                 if (cameraViewModel.getImageDto().getValue() != null) {
                     cameraViewModel.getImageDto().getValue().parse(obj, settings.getPalette().getValue());
                 } else {
