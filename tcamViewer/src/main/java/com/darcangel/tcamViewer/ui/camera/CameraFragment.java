@@ -437,7 +437,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (v.getId() == R.id.ivCamera &&
                 Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
                 if(Boolean.TRUE.equals(settings.getAGC().getValue())) {
-                    Toast.makeText(getContext(), R.string.changing_spot_meter_not_available, Toast.LENGTH_LONG).show();
+                    Toast.makeText(getContext(), R.string.changing_spot_meter_not_available, Toast.LENGTH_SHORT).show();
                     return true;
                 }
             ImageDto imageDto = cameraViewModel.getImageDto().getValue();
