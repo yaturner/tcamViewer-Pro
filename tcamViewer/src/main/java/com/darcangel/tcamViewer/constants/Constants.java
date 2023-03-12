@@ -126,11 +126,6 @@ public final class Constants {
     public static final String ERROR_RESPONSE = "{\n" +
             "\"error\":{\n" +
             "\"exception\":\"%s\",\n" +
-            "\"level\":\"%s\",\n" +
-            "\"message\":\"%s\",\n" +
-            "\"class\":\"%s\",\n" +
-            "\"method\":\"%s\",\n" +
-            "\"line\":\"%s\",\n" +
             "}";
 
     private Constants() {

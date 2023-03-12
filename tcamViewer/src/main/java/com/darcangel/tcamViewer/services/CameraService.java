@@ -250,7 +250,7 @@ public class CameraService extends Service {
 //                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
                         }
                     } catch (IOException e) {
-                        String jsonString = String.format(Constants.SOCKET_CLOSED, e.toString());
+                        String jsonString = String.format(Constants.ERROR_RESPONSE, e.toString());
                         imageChannel.onNext(parseResponse(jsonString));
                         e.printStackTrace();
                         continue;
