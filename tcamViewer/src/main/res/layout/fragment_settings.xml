@@ -81,7 +81,7 @@
                     <EditText
                         android:id="@+id/etEmissivity"
                         style="@style/SettingsEditTextEnd"
-                        android:inputType="numberDecimal"
+                        android:inputType="numberSigned"
                         android:text="@={settings.emissivity}"
                         android:textAlignment="textEnd" />
 
