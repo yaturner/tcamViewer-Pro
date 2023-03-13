@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
@@ -223,8 +224,21 @@ public class Settings extends BaseObservable implements Parcelable {
     @InverseBindingAdapter(attribute = "android:text")
     public static Object getText(TextView view) {
         try {
-            if(view.getId() == R.id.etManualRangeMax || view.getId() == R.id.etManualRangeMin) {
+            int id = view.getId();
+            if (id == R.id.etManualRangeMax || id == R.id.etManualRangeMin) {
                 return Float.parseFloat(view.getText().toString());
+            } else if (id == R.id.etEmissivity) {
+                int value = Integer.parseInt(view.getText().toString());
+                if (value < 1) {
+                    Toast.makeText(view.getContext(), R.string.emissivity_too_low, Toast.LENGTH_LONG).show();
+                    value = 1;
+                    view.setText("1");
+                } else if (value > 100) {
+                    Toast.makeText(view.getContext(), R.string.emissivity_too_high, Toast.LENGTH_LONG).show();
+                    value = 100;
+                    view.setText("100");
+                }
+                return value;
             } else {
                 return Integer.parseInt(view.getText().toString());
             }

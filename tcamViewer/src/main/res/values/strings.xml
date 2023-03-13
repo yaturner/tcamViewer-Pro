@@ -85,4 +85,6 @@
     <string name="you_must_specify_filename">You must specify a filename for the image</string>
     <string name="enter_name_for_shared_image">Enter name for shared file</string>
     <string name="changing_spot_meter_not_available">Changing the spot meter location is not available in AGC mode</string>
+    <string name="emissivity_too_low">Emissivity value too low, setting it to 1</string>
+    <string name="emissivity_too_high">emissivity value is too high, setting it to 100</string>
 </resources>

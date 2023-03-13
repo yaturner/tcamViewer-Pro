@@ -71,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private CameraUtils cameraUtils;
     private Utils utils;
 
+    private AlertDialog progressDialog;
+
     private NavController navController;
     private ThreadPoolExecutor executor;
     private MutableLiveData<Boolean> mBound;
@@ -203,7 +205,15 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         editor.commit();
     }
 
-    public void showProgressDialog(final String title, final String msg) {
+    public void showProgressDialog(final String title) {
+        if(progressDialog == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setCancelable(false); // if you want user to wait for some process to finish,
+            builder.setView(R.layout.progress_layout);
+            progressDialog = builder.create();
+        }
+        progressDialog.setMessage(title);
+        progressDialog.show();
     }
 
     public void dismissProgressDialog() {
