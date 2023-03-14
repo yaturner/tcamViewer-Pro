@@ -173,7 +173,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                         try {
                             cameraUtils.saveBitmapToFile(sharedBitmap, newFile);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            Sentry.captureException(e);
                         }
 
                         Uri imageUri = FileProvider.getUriForFile(mainActivity,
@@ -241,7 +241,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 ImageDto imageDto = imageDtos.get(position);
                 utils.exportImage(imageDto);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
             return true;
         } else if (id == android.R.id.home) {

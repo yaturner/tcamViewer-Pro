@@ -88,7 +88,7 @@ public class CameraViewModel extends ViewModel {
                 return false;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
             return false;
         }
         return true;
@@ -101,7 +101,7 @@ public class CameraViewModel extends ViewModel {
         try {
             cameraService.disconnect();
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 
@@ -133,7 +133,7 @@ public class CameraViewModel extends ViewModel {
         try {
             cameraService.sendCmd(cmd);
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 
@@ -153,7 +153,7 @@ public class CameraViewModel extends ViewModel {
             try {
                 cameraService.sendCmd(cmd);
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
     }
@@ -164,7 +164,7 @@ public class CameraViewModel extends ViewModel {
             try {
                 cameraService.sendCmd(cmd);
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
     }
@@ -175,7 +175,7 @@ public class CameraViewModel extends ViewModel {
             try {
                 cameraService.sendCmd(cmd);
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
     }
@@ -187,7 +187,7 @@ public class CameraViewModel extends ViewModel {
         try {
             cameraService.sendCmd(Constants.CMD_GET_IMAGE);
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 
@@ -200,7 +200,7 @@ public class CameraViewModel extends ViewModel {
             }
             isStreaming = on;
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 

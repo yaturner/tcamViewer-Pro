@@ -86,7 +86,7 @@ public class PrivacyDisclosureFragment extends Fragment implements MenuProvider 
             inputStream.close();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
         //update version
         String string = byteArrayOutputStream.toString();

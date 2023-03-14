@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             builder.create().show();
         } catch(Exception e) {
             //TODO handle error
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
         cameraViewModel.disconnectFromCamera();
         invalidateMenu();

@@ -60,7 +60,7 @@ public class ImageDto {
             try {
                 jsonObject = new JSONObject(tjsnString);
             } catch (JSONException e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         } else {
             //TODO Handle error
@@ -85,7 +85,7 @@ public class ImageDto {
             }
             cameraUtils.processImageResponse(this);
         } catch(JSONException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
         creationDate = new Date();
     }
@@ -223,7 +223,7 @@ public class ImageDto {
             meta.remove("paletteName");
             meta.put("palette", paletteName);
         } catch(JSONException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 

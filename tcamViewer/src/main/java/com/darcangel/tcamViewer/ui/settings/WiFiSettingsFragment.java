@@ -88,7 +88,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
         try {
             cameraService.sendCmd(cmd);
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
         ActionBar actionBar = mainActivity.getSupportActionBar();
         if (actionBar != null) {

@@ -71,7 +71,7 @@ public class CameraService extends Service {
                     outToSocket = cameraSocket.getOutputStream();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
                 cameraSocket = null;
             }
         }
@@ -98,7 +98,7 @@ public class CameraService extends Service {
                 outToSocket.write(cameraCommand.getBytes(StandardCharsets.UTF_8));
                 outToSocket.flush();
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
     };
@@ -152,7 +152,7 @@ public class CameraService extends Service {
             connectThread.start();
             connectThread.join(15 * 1000);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
             return false;
         }
 
@@ -180,7 +180,7 @@ public class CameraService extends Service {
         try {
             cameraSocket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 
@@ -199,7 +199,7 @@ public class CameraService extends Service {
                 sendCmdThread.start();
                 sendCmdThread.join(15 * 1000);
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
     }
@@ -252,14 +252,14 @@ public class CameraService extends Service {
                     } catch (IOException e) {
                         String jsonString = String.format(Constants.ERROR_RESPONSE, e.toString());
                         imageChannel.onNext(parseResponse(jsonString));
-                        e.printStackTrace();
+                        Sentry.captureException(e);
                         continue;
                     }
                     if (bytes_read == 0) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            Sentry.captureException(e);
                         }
                         continue;
                     }
@@ -326,7 +326,7 @@ public class CameraService extends Service {
     }
 
     private void handleError(Exception e) {
-        e.printStackTrace();
+        Sentry.captureException(e);
         mainActivity.getExecutor().shutdown();
 //        try {
 //            imageChannel.onNext(new JSONObject(String.format(jsonString, e.toString())));

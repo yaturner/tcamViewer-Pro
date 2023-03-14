@@ -184,7 +184,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         mainActivity.getUtils().exportImage(imageDto);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Sentry.captureException(e);
                     //TODO handle error
                 }
                 break;
@@ -424,7 +424,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     binding.ivHistogram.setImageBitmap(imageDto.createHistogram());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
         endNano = System.nanoTime();

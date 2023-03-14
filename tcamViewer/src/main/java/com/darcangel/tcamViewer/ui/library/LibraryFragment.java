@@ -162,7 +162,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
             //TODO handle error
         }
     }

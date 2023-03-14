@@ -107,7 +107,7 @@ public class CameraUtils extends BaseObservable {
                     " " +
                     metadata.getString("Time"));
         } catch (ParseException e) {
-           e.printStackTrace();
+           Sentry.captureException(e);
             date = new Date();
         }
         imageDto.setCreationDate(date);
@@ -302,7 +302,7 @@ public class CameraUtils extends BaseObservable {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
 
         //add a 5% margin
@@ -584,7 +584,7 @@ public class CameraUtils extends BaseObservable {
                 }
             } while (line != null);
         } catch (IOException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
             json = "";
         }
 
@@ -593,7 +593,7 @@ public class CameraUtils extends BaseObservable {
                 fileReader.close();
                 bufferedReader.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                Sentry.captureException(e);
             }
         }
         return json;

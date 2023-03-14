@@ -20,6 +20,8 @@ import com.darcangel.tcamViewer.constants.Constants;
 
 import java.util.Locale;
 
+import io.sentry.Sentry;
+
 public class Settings extends BaseObservable implements Parcelable {
     private final SharedPreferences sharedPreferences = MainActivity.getInstance().getSharedPreferences();
 
@@ -217,7 +219,7 @@ public class Settings extends BaseObservable implements Parcelable {
                 }
             }
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 
@@ -243,7 +245,7 @@ public class Settings extends BaseObservable implements Parcelable {
                 return Integer.parseInt(view.getText().toString());
             }
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
             return 0f;
         }
     }
@@ -261,7 +263,7 @@ public class Settings extends BaseObservable implements Parcelable {
                 }
             }
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 

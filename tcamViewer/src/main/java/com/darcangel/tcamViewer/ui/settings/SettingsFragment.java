@@ -48,6 +48,7 @@ import java.util.Iterator;
 import dagger.hilt.android.AndroidEntryPoint;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.sentry.Sentry;
 
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment implements View.OnClickListener,
@@ -309,7 +310,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                                 settings.setManualRangeMax(
                                         Float.parseFloat(binding.etManualRangeMax.getText().toString()));
                             } catch (NumberFormatException e) {
-                                e.printStackTrace();
+                                Sentry.captureException(e);
                             }
                         }
                     }
