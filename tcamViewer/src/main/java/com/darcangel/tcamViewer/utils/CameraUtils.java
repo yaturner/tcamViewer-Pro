@@ -40,6 +40,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import io.sentry.Sentry;
+
 
 public class CameraUtils extends BaseObservable {
 

@@ -15,6 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import io.sentry.Sentry;
+
 public class ImageDto {
 
     private boolean AGC;

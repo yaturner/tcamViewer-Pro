@@ -48,6 +48,7 @@ import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.sentry.Sentry;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 

@@ -13,6 +13,8 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import java.util.Calendar;
 import java.util.Locale;
 
+import io.sentry.Sentry;
+
 public class CameraViewModel extends ViewModel {
 
     private MutableLiveData<ImageDto> imageDto;

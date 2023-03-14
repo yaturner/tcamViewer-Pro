@@ -15,8 +15,6 @@ import androidx.annotation.Nullable;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
 
@@ -29,6 +27,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import io.sentry.Sentry;
 
 public class PrivacyDisclosureFragment extends Fragment implements MenuProvider {
     private MainActivity mainActivity;

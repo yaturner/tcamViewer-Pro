@@ -32,6 +32,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.sentry.Sentry;
 
 @AndroidEntryPoint
 public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {

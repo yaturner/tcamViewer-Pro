@@ -48,6 +48,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import io.sentry.Sentry;
+
 
 public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private ViewGroup container;

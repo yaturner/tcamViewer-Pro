@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import timber.log.Timber;
+import io.sentry.Sentry;
 
 public class LibraryFragment extends Fragment implements MenuProvider  {
 

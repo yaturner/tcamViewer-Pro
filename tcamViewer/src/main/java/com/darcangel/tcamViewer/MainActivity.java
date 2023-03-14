@@ -44,6 +44,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import dagger.hilt.android.AndroidEntryPoint;
+import io.sentry.Sentry;
 import rxdogtag2.RxDogTag;
 import timber.log.Timber;
 
