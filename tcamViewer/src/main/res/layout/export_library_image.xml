@@ -110,16 +110,14 @@
                         android:textAlignment="textStart"
                         android:layout_alignParentLeft="true"
                         android:layout_weight="1"
-                        android:text="tcamViewer"
-                        android:textColor="@android:color/white" />
+                        android:text="tcamViewer"/>
 
                     <TextView
                         android:id="@+id/tvSpotmeterTemperature"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="233C"
-                        android:textColor="@color/white" />
+                        android:text="233C"/>
 
 
                     <TextView
@@ -127,8 +125,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="e1.00"
-                        android:textColor="@color/white" />
+                        android:text="e1.00"/>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -145,15 +142,13 @@
                         android:id="@+id/tvDateTime"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textColor="@color/white" />
+                        android:layout_weight="1"/>
 
                     <TextView
                         android:id="@+id/tvGain"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:textColor="@color/white" />
+                        android:layout_weight="1"/>
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
             </androidx.appcompat.widget.LinearLayoutCompat>

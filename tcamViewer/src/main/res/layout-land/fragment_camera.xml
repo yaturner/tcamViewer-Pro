@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
     tools:context=".ui.camera.CameraFragment">
 
     <include layout="@layout/guidelines" />
@@ -15,7 +14,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:text=""
-        android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintTop_toTopOf="@+id/ivCamera"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,7 +36,6 @@
         android:layout_height="wrap_content"
         android:textAlignment="viewEnd"
         android:layout_marginStart="5sp"
-        android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintTop_toTopOf="@+id/ivCamera"
         app:layout_constraintBottom_toTopOf="@+id/ivColorBar"
@@ -65,7 +62,6 @@
         android:layout_marginStart="5sp"
         android:text=""
         android:textAlignment="viewEnd"
-        android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@+id/ivColorBar"
         app:layout_constraintBottom_toBottomOf="@+id/ivCamera"
@@ -87,7 +83,6 @@
         android:id="@+id/tvFrameRate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
