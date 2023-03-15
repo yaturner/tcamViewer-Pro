@@ -23,9 +23,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:textColor="@color/black"
-        android:background="@color/white"
         android:textSize="12sp">
-
     </TextView>
 </androidx.appcompat.widget.LinearLayoutCompat>

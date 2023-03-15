@@ -67,7 +67,6 @@ public class LibrarySlideshowAdapter
         holder.tvFilename.setText(imageName);
         holder.tvSpotmeterTemperature.setText(cameraUtils.createTemperatureString(imageDto.
                 getMeanTemperatureAtSpotmeter()));
-        holder.tvSpotmeterTemperature.setTextColor(MainActivity.getInstance().getResources().getColor(R.color.white, null));
         Bitmap colorbar = imageDto.createColorBar();
         holder.ivColorBar.setImageBitmap(colorbar);
         Pair<Float, Float> temps = imageDto.getTemperatures();
