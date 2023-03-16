@@ -251,9 +251,12 @@ public class CameraService extends Service {
 //                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
                         }
                     } catch (IOException e) {
+                        if(e.toString().equalsIgnoreCase("java.net.SocketException: Socket closed")) {
+                            running = false;
+                        }
                         String jsonString = String.format(Constants.ERROR_RESPONSE, e.toString());
                         imageChannel.onNext(parseResponse(jsonString));
-                        Sentry.captureException(e);
+                        //Sentry.captureException(e);
                         continue;
                     }
                     if (bytes_read == 0) {
