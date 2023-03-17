@@ -176,12 +176,14 @@ public class CameraService extends Service {
      * disconnect
      */
     public void disconnect() {
-        stopStreaming();
-        stopListening();
-        try {
-            cameraSocket.close();
-        } catch (IOException e) {
-            Sentry.captureException(e);
+        if (isConnected()) {
+            stopStreaming();
+            stopListening();
+            try {
+                cameraSocket.close();
+            } catch (IOException e) {
+                Sentry.captureException(e);
+            }
         }
     }
 
