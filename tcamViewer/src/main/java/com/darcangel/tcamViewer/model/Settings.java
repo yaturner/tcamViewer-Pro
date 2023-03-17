@@ -23,7 +23,7 @@ import java.util.Locale;
 import io.sentry.Sentry;
 
 public class Settings extends BaseObservable implements Parcelable {
-    private final SharedPreferences sharedPreferences = MainActivity.getInstance().getSharedPreferences();
+    private SharedPreferences sharedPreferences;
 
     //Settings Fragment
     private MutableLiveData<Boolean> AGC;
@@ -69,11 +69,12 @@ public class Settings extends BaseObservable implements Parcelable {
     private MutableLiveData<Integer> streamDelay;
 
     public Settings() {
+        sharedPreferences = MainActivity.getInstance().getSharedPreferences();
         init();
     }
 
     protected Settings(Parcel in) {
-        //restore(in);
+
     }
 
     public void restore(Bundle in) {

@@ -87,15 +87,12 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         if(!isBound()) {
             Intent intent = new Intent(this, CameraService.class);
             bindService(intent, connection, Context.BIND_AUTO_CREATE);
-            //////startService(intent);
             setBound(false);
         }
 
         RxDogTag.install();
 
         if (savedInstanceState != null) {
-            cameraUtils = savedInstanceState.getParcelable(Constants.KEY_CAMERAUTILS);
-            utils = savedInstanceState.getParcelable(Constants.KEY_UTILS);
             settings = savedInstanceState.getParcelable(Constants.KEY_SETTINGS);
             binder = (CameraService.CameraServiceBinder)
                     savedInstanceState.getBinder(Constants.KEY_CAMERA_SERVICE);
@@ -137,14 +134,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         outState.putParcelable(Constants.KEY_SETTINGS, settings);
         outState.putBinder(Constants.KEY_CAMERA_SERVICE, binder);
         super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onUserLeaveHint()
-    {
-//        Timber.d("onUserLeaveHint\\\\Home button pressed");
-        super.onUserLeaveHint();
-        //JMT cameraViewModel.startStreaming(false);
     }
 
     private void init() {
