@@ -97,7 +97,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         cameraUtils = mainActivity.getCameraUtils();
         utils = mainActivity.getUtils();
         libraryViewModel = mainActivity.getLibraryViewModel();
-        this.imageDtos = libraryViewModel.getSelectedImages().getValue();
+        imageDtos = libraryViewModel.getSelectedImages().getValue();
         slideshowAdapter = new LibrarySlideshowAdapter(getContext(), imageDtos);
 
         slideshowAdapter.setOnTouchListener(new LibrarySlideshowAdapter.TouchListener() {
@@ -198,14 +198,31 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     }
 
     private void deleteImage(final int position) {
-        slideshowAdapter.removeItem(position);
-        if (slideshowAdapter.getItemCount() == 0) {
-            NavDirections navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
-            mainActivity.getNavController().navigate(navDirections);
-        } else {
-            binding.vpSlideshow.setAdapter(slideshowAdapter);
-        }
+            AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+            ImageDto imageDto = imageDtos.get(position);
+            builder.setTitle("Confirm Deletion")
+                    .setMessage("Are you sure you want to permanently remove this image")
+                    .setNegativeButton("Cancel", (dlg, which) -> {
+                        dlg.dismiss();
+                    })
+                    .setPositiveButton("OK", (dlg, which) -> {
+                        slideshowAdapter.removeItem(position);
+                        libraryViewModel.setReloadNeeded(true);
+                        File file = new File(imageDto.getFilename());
+                        if (file.exists()) {
+                            file.delete();
+                        }
+                        if (slideshowAdapter.getItemCount() == 0) {
+                            NavDirections navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
+                            mainActivity.getNavController().navigate(navDirections);
+                        } else {
+                            binding.vpSlideshow.setAdapter(slideshowAdapter);
+                        }
+                    })
+                    .show();
     }
+
+
 
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);

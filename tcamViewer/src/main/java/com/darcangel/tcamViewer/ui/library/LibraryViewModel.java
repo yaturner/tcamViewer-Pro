@@ -1,7 +1,5 @@
 package com.darcangel.tcamViewer.ui.library;
 
-import android.graphics.Bitmap;
-
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
