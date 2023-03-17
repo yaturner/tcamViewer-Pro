@@ -207,7 +207,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                     })
                     .setPositiveButton("OK", (dlg, which) -> {
                         slideshowAdapter.removeItem(position);
-                        libraryViewModel.setReloadNeeded(true);
                         File file = new File(imageDto.getFilename());
                         if (file.exists()) {
                             file.delete();
