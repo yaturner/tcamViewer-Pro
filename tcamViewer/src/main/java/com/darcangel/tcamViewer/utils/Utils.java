@@ -48,12 +48,20 @@ public class Utils {
     }
 
     public void exportImage(final ImageDto imageDto) throws FileNotFoundException {
-        String imageFilename = null;
+        String imageFilename;
+        String imageDirectory;
+        String imageName;
         Bitmap bitmap = createExportImage(imageDto);
         String[] word = imageDto.getFilename().split("/");
         int nWords = word.length;
-        String imageDirectory = word[nWords-2];
-        String imageName = word[nWords-1].replace("img_", "").replace(".tjsn", "");
+        //if there is only one word, then it is the filename and take the folder from the CreationDate
+        if(nWords == 1) {
+            imageName = imageDto.getFilename().replace("img_", "").replace(".tjsn", "");
+            imageDirectory = CameraUtils.simpleDateFormatFolder.format(imageDto.getCreationDate());
+        } else {
+            imageDirectory = word[nWords - 2];
+            imageName = word[nWords - 1].replace("img_", "").replace(".tjsn", "");
+        }
         int[] widths = mainActivity.getResources().getIntArray(R.array.resolution_widths);
         int[] heights = mainActivity.getResources().getIntArray(R.array.resolution_heights);
         saveBitmap(bitmap, imageDirectory, imageName);
@@ -110,10 +118,11 @@ public class Utils {
             default:
                 textSize = 8f;
         }
-        /////textSize = textSize * scale;
 
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
-        String hotspotString = cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter());
+        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1)
+                .replace(".tjsn", "");
+        String hotspotString = cameraUtils.createTemperatureString(
+                imageDto.getMeanTemperatureAtSpotmeter());
         if(imageDto.isAGC()) {
             maxString = "AGC";
             minString = "AGC";
@@ -121,7 +130,8 @@ public class Utils {
             maxString = cameraUtils.createTemperatureString(temps.second);
             minString = cameraUtils.createTemperatureString(temps.first);
         }
-        View inflatedFrame = mainActivity.getLayoutInflater().inflate(R.layout.export_library_image, null);
+        View inflatedFrame = mainActivity.getLayoutInflater()
+                .inflate(R.layout.export_library_image, null);
 
         tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);
         ivColorBar = inflatedFrame.findViewById(R.id.ivColorBar);
@@ -137,37 +147,47 @@ public class Utils {
         ivImageView.setLayoutParams(lp);
 
         tvMaxTemperature.setText(maxString);
+        tvMaxTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         tvMaxTemperature.setTextSize(textSize);
         tvMinTemperature.setText(minString);
+        tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         tvMinTemperature.setTextSize(textSize);
 
         if (!settings.getExportMetaData().getValue()) {
             //scale to resolution in settings
-            return Bitmap.createScaledBitmap(imageDto.getBitmap(), width[res], height[res], false);
+            return Bitmap.createScaledBitmap(imageDto.getBitmap(),
+                    width[res], height[res], false);
         }
 
         LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
         tvLogo.setText(R.string.appName);
         tvLogo.setTextSize(textSize);
+        tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         tvSpotmeterTemperature.setText(hotspotString);
         tvSpotmeterTemperature.setTextSize(textSize);
+        tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         float emissivity = (float) imageDto.getEmissivity() / 8192f;
         tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
         tvEmissivity.setTextSize(textSize);
+        tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         lline1.requestLayout();
 
         LinearLayoutCompat lline2 = inflatedFrame.findViewById(R.id.llAnnotation_line_2);
         tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
         tvDateTime.setTextSize(textSize);
+        tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         int gain = imageDto.getGainMode();
         tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
         tvGain.setTextSize(textSize);
+        tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
         lline2.requestLayout();
         inflatedFrame.requestLayout();
 
-        ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame.findViewById(R.id.clItemLayout);
+        ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame
+                .findViewById(R.id.clItemLayout);
         constraintLayout.setDrawingCacheEnabled(true);
-        constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+        constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0,
+                        View.MeasureSpec.UNSPECIFIED),
                 View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
         layoutHeight = constraintLayout.getMeasuredHeight();
         layoutWidth = constraintLayout.getMeasuredWidth();
@@ -179,7 +199,7 @@ public class Utils {
         Bitmap colorbar = imageDto.createColorBar();
         ivColorBar.setImageBitmap(colorbar);
         bitmap = Bitmap.createBitmap(layoutWidth, layoutHeight, Bitmap.Config.ARGB_8888);
-        bitmap.eraseColor(resources.getColor(android.R.color.black, mainActivity.getTheme()));
+        bitmap.eraseColor(resources.getColor(android.R.color.background_dark, mainActivity.getTheme()));
         Canvas canvas = new Canvas(bitmap);
         constraintLayout.draw(canvas);
         return bitmap;
