@@ -1,7 +1,6 @@
 package com.darcangel.tcamViewer.ui.library;
 
 import android.app.AlertDialog;
-import android.content.ClipData;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
@@ -166,7 +165,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                                     Toast.LENGTH_LONG).show();
                             return;
                         }
-                        Intent shareIntent = new Intent();
                         File imagePath = mainActivity.getCacheDir();
                         File newFile = new File(imagePath, filename + ".png");
                         if (newFile.exists()) {
@@ -180,14 +178,14 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
 
                         Uri imageUri = FileProvider.getUriForFile(mainActivity,
                                 "com.darcangel.fileprovider", newFile);
-                        shareIntent.setAction(Intent.ACTION_SEND);
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.setType("*/*");
                         shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                        shareIntent.setDataAndType(imageUri, mainActivity.getContentResolver()
-                                .getType(imageUri));
-                        shareIntent.setClipData(ClipData.newRawUri("", imageUri));
+                        shareIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{""});
                         shareIntent.putExtra(Intent.EXTRA_SUBJECT, newFile.getName());
                         shareIntent.addFlags(
-                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
+                                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION |
+                                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
                                         Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         shareActivityResultLauncher.launch(shareIntent);
                         dlg.dismiss();
