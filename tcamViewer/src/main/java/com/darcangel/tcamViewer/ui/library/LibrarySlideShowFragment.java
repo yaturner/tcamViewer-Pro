@@ -64,6 +64,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private BottomNavigationView navBar;
     private View root;
     private int sharedImagePosition = -1;
+    private int tab;
 
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
@@ -132,9 +133,49 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        tab = binding.vpSlideshow.getCurrentItem();
+        setNavigationArrows(tab);
         navBar = getActivity().findViewById(R.id.nav_view);
         if (navBar != null) {
             navBar.setVisibility(View.GONE);
+        }
+
+        // Images left navigation
+        binding.leftNav.setOnClickListener(v ->{
+                tab = binding.vpSlideshow.getCurrentItem();
+                if (tab > 0) {
+                    tab--;
+                    binding.vpSlideshow.setCurrentItem(tab);
+                } else if (tab == 0) {
+                    binding.vpSlideshow.setCurrentItem(tab);
+                }
+                setNavigationArrows(tab);
+            });
+
+        // Images right navigation
+        binding.rightNav.setOnClickListener(v -> {
+            tab = binding.vpSlideshow.getCurrentItem();
+            tab++;
+            binding.vpSlideshow.setCurrentItem(tab);
+            setNavigationArrows(tab);
+        });
+    }
+
+    private void setNavigationArrows(int tab) {
+        //set the arrows visibility
+        int nImages = binding.vpSlideshow.getAdapter().getItemCount();
+        if(nImages == 1) {
+            binding.leftNav.setVisibility(View.GONE);
+            binding.rightNav.setVisibility(View.GONE);
+        } else if(tab == 0) {
+            binding.leftNav.setVisibility(View.GONE);
+            binding.rightNav.setVisibility(View.VISIBLE);
+        } else if(tab == nImages - 1) {
+            binding.rightNav.setVisibility(View.GONE);
+            binding.leftNav.setVisibility(View.VISIBLE);
+        } else {
+            binding.rightNav.setVisibility(View.VISIBLE);
+            binding.leftNav.setVisibility(View.VISIBLE);
         }
     }
 
@@ -215,6 +256,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                         } else {
                             binding.vpSlideshow.setAdapter(slideshowAdapter);
                         }
+                        setNavigationArrows(binding.vpSlideshow.getCurrentItem());
                     })
                     .show();
     }
