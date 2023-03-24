@@ -125,7 +125,7 @@ public final class Constants {
     public static final int ROTATE_BACKWARD = -1;
     public static final String ERROR_RESPONSE = "{\n" +
             "\"error\":{\n" +
-            "\"exception\":\"%s\",\n" +
+            "\"exception\":\"%s\"\n" +
             "}\n" +
             "}";
 

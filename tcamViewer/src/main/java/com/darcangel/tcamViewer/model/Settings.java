@@ -229,7 +229,13 @@ public class Settings extends BaseObservable implements Parcelable {
         try {
             int id = view.getId();
             if (id == R.id.etManualRangeMax || id == R.id.etManualRangeMin) {
-                return Float.parseFloat(view.getText().toString());
+                String str = view.getText().toString();
+                if(!str.isEmpty()) {
+                    return Float.parseFloat(str);
+                } else {
+                    Toast.makeText(view.getContext(), R.string.invalid_range_value, Toast.LENGTH_LONG).show();
+                    return 0.0f;
+                }
             } else if (id == R.id.etEmissivity) {
                 int value = Integer.parseInt(view.getText().toString());
                 if (value < 1) {
