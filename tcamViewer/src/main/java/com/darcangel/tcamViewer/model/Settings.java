@@ -176,12 +176,6 @@ public class Settings extends BaseObservable implements Parcelable {
         setUnitsC(sharedPreferences.getBoolean(Constants.KEY_UNITS_C, true));
 
         //Wifi settings are always pulled from the camera
-//        setAccessPoint(sharedPreferences.getBoolean(Constants.KEY_WIFI_ACCESSPOINT, false));
-//        setSSID(sharedPreferences.getString(Constants.KEY_WIFI_SSID, ""));
-//        setPassword(sharedPreferences.getString(Constants.KEY_WIFI_PASSWORD, ""));
-//        setStaticIP(sharedPreferences.getBoolean(Constants.KEY_WIFI_STATICIP,false));
-//        setStaticIPAddress(sharedPreferences.getString(Constants.KEY_WIFI_STATICIPADDRESS, ""));
-//        setStaticNetmask(sharedPreferences.getString(Constants.KEY_WIFI_STATICNETMASK, ""));
     }
 
     public void persist() {
@@ -227,9 +221,10 @@ public class Settings extends BaseObservable implements Parcelable {
     @InverseBindingAdapter(attribute = "android:text")
     public static Object getText(TextView view) {
         try {
+            String str;
             int id = view.getId();
             if (id == R.id.etManualRangeMax || id == R.id.etManualRangeMin) {
-                String str = view.getText().toString();
+                str = view.getText().toString();
                 if(!str.isEmpty()) {
                     return Float.parseFloat(str);
                 } else {
@@ -237,7 +232,13 @@ public class Settings extends BaseObservable implements Parcelable {
                     return 0.0f;
                 }
             } else if (id == R.id.etEmissivity) {
-                int value = Integer.parseInt(view.getText().toString());
+                str = view.getText().toString();
+                int value;
+                if(!str.isEmpty()) {
+                    Toast.makeText(view.getContext(), R.string.invalid_emissivity_value, Toast.LENGTH_LONG).show();
+                    value = 1;
+                }
+                value = Integer.parseInt(view.getText().toString());
                 if (value < 1) {
                     Toast.makeText(view.getContext(), R.string.emissivity_too_low, Toast.LENGTH_LONG).show();
                     value = 1;

@@ -468,16 +468,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             cameraViewModel.setRemapNeeded(true);
             drawScreen();
         } else if (v.getId() == R.id.ivColorBar) {
-            int h = binding.ivColorBar.getHeight();
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-                if (event.getY() > (h / 2)) {
-                    imageDto.rotateColormap(Constants.ROTATE_FORWARD);
-                } else {
-                    imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+            if (imageDto != null) {
+                int h = binding.ivColorBar.getHeight();
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    if (event.getY() > (h / 2)) {
+                        imageDto.rotateColormap(Constants.ROTATE_FORWARD);
+                    } else {
+                        imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+                    }
+                    mainActivity.invalidateMenu();
+                    drawScreen();
                 }
-                mainActivity.invalidateMenu();
-                drawScreen();
             }
         } else if (v.getId() == R.id.tvMaxTemperature && BuildConfig.DEBUG) {
             if (event.getAction() == MotionEvent.ACTION_UP) {

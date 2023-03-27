@@ -44,19 +44,19 @@ public class CameraViewModel extends ViewModel {
             mainActivity.invalidateOptionsMenu();
         });
         //observe any changes from settings for manual range and/or units
-        settings.getManualRange().observeForever(v -> {
+        settings.getManualRange().observe(mainActivity, v -> {
             isManualRange = v;
             //Timber.d("\\\\ManualRange\\\\observe isManualRange = %s", (isManualRange?"true":"false"));
         });
-        settings.getManualRangeMin().observeForever(v -> {
+        settings.getManualRangeMin().observe(mainActivity, v -> {
             manualMinTemperature = v; //convertToRadiometric(v);
             //Timber.d("\\\\ManualRange\\\\observe ManualRangeMin = %f", v);
         });
-        settings.getManualRangeMax().observeForever(v -> {
+        settings.getManualRangeMax().observe(mainActivity, v -> {
             manualMaxTemperature = v; //convertToRadiometric(v);
             //Timber.d("\\\\ManualRange\\\\observe ManualRangeMax = %f", v);
         });
-        settings.getUnitsC().observeForever(v -> {
+        settings.getUnitsC().observe(mainActivity, v -> {
             unitsCelsius = v;
         });
     }

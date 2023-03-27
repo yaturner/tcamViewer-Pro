@@ -103,6 +103,9 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         slideshowAdapter.setOnTouchListener(new LibrarySlideshowAdapter.TouchListener() {
             @Override
             public void onTouch(ImageDto imageDto, View v, MotionEvent event) {
+                if(imageDto == null) {
+                    return;
+                }
                 int h = v.getHeight();
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (event.getY() > (h / 2)) {

@@ -99,6 +99,9 @@ public class CameraService extends Service {
                 outToSocket.write(cameraCommand.getBytes(StandardCharsets.UTF_8));
                 outToSocket.flush();
             } catch (Exception e) {
+                cameraSocket = null;
+                String errorMsg = String.format(Constants.ERROR_RESPONSE, e.toString());
+                imageChannel.onNext(parseResponse(errorMsg));
                 Sentry.captureException(e);
             }
         }
