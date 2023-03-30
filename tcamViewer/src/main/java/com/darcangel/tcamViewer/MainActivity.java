@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
                     .getMethod("setEnabled", boolean.class)
                     .invoke(null, true);
         } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
+            Sentry.captureException(e);
         }
 
         if (executor == null || executor.getMaximumPoolSize() == 0) {
@@ -152,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             public void onDestinationChanged(@NonNull NavController navController,
                                              @NonNull NavDestination navDestination,
                                              @Nullable Bundle bundle) {
-//                Timber.d("New Destination is %s", navDestination.toString());
                 BottomNavigationView navBar = findViewById(R.id.nav_view);
                 if(navDestination.getId() == R.id.navigation_librarySlideShowFragment ||
                         navDestination.getId() == R.id.navigation_settings ||
@@ -217,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
             builder.setMessage(R.string.socket_error);
             builder.create().show();
         } catch(Exception e) {
-            //TODO handle error
             Sentry.captureException(e);
         }
         cameraViewModel.disconnectFromCamera();

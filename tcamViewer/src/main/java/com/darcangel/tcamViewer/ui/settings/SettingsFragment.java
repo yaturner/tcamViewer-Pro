@@ -7,12 +7,14 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.OnBackPressedDispatcher;
@@ -287,6 +289,15 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         builder.setTitle(R.string.title_settings)
                 .setMessage("Do you wish to save your settings")
                 .setPositiveButton(R.string.yes, (dialog, which) -> {
+                    if(binding.etEmissivity.getText().toString().isEmpty()) {
+                        settings.setEmissivity(1);
+                    }
+                    if(settings.getCameraAddress().getValue().isEmpty() ||
+                            !Patterns.WEB_URL.matcher(settings.getCameraAddress().getValue()).matches()) {
+                        Toast.makeText(getContext(), "Invalid or missing Ip Address", Toast.LENGTH_LONG).show();
+                        dialog.dismiss();
+                        return;
+                    }
                     if(!cameraService.getIpAddress().
                             equalsIgnoreCase(settings.getCameraAddress().getValue())) {
                         cameraService.setIpAddress(settings.getCameraAddress().getValue());
@@ -300,8 +311,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     //If ManualRange is checked do the same for it's values
                     if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()) {
                         settings.setManualRange(binding.switchManualRange.isChecked());
-//                        Timber.d("\\\\ManualRange\\\\createSaveDialog\\\\manual range = %s",
-//                                (binding.switchManualRange.isChecked()?"true":"false"));
                         cameraViewModel.setRemapNeeded(true);
                         if (settings.getManualRange().getValue()) {
                             try {

@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -221,34 +222,33 @@ public class Settings extends BaseObservable implements Parcelable {
     @InverseBindingAdapter(attribute = "android:text")
     public static Object getText(TextView view) {
         try {
-            String str;
+            String str = view.getText().toString();
             int id = view.getId();
-            if (id == R.id.etManualRangeMax || id == R.id.etManualRangeMin) {
-                str = view.getText().toString();
+            if ((id == R.id.etManualRangeMax ||
+                    id == R.id.etManualRangeMin) &&
+                    view.getVisibility() == View.VISIBLE) {
                 if(!str.isEmpty()) {
-                    return Float.parseFloat(str);
+                    return Float.parseFloat(view.getText().toString());
                 } else {
-                    Toast.makeText(view.getContext(), R.string.invalid_range_value, Toast.LENGTH_LONG).show();
-                    return 0.0f;
+                    return 0;
                 }
-            } else if (id == R.id.etEmissivity) {
-                str = view.getText().toString();
-                int value;
+            } else if (id == R.id.etEmissivity &&
+                    view.getVisibility() == View.VISIBLE) {
                 if(!str.isEmpty()) {
-                    Toast.makeText(view.getContext(), R.string.invalid_emissivity_value, Toast.LENGTH_LONG).show();
-                    value = 1;
+                    int value = Integer.parseInt(str);
+                    if (value < 1) {
+                        Toast.makeText(view.getContext(), R.string.emissivity_too_low, Toast.LENGTH_LONG).show();
+                        value = 1;
+                        view.setText("1");
+                    } else if (value > 100) {
+                        Toast.makeText(view.getContext(), R.string.emissivity_too_high, Toast.LENGTH_LONG).show();
+                        value = 100;
+                        view.setText("100");
+                    }
+                    return value;
+                } else {
+                    return 0;
                 }
-                value = Integer.parseInt(view.getText().toString());
-                if (value < 1) {
-                    Toast.makeText(view.getContext(), R.string.emissivity_too_low, Toast.LENGTH_LONG).show();
-                    value = 1;
-                    view.setText("1");
-                } else if (value > 100) {
-                    Toast.makeText(view.getContext(), R.string.emissivity_too_high, Toast.LENGTH_LONG).show();
-                    value = 100;
-                    view.setText("100");
-                }
-                return value;
             } else {
                 return Integer.parseInt(view.getText().toString());
             }
@@ -261,7 +261,9 @@ public class Settings extends BaseObservable implements Parcelable {
     @BindingAdapter("android:text")
     public static void setText(TextView view, Float value) {
         try {
-            if (view.getText() != null && value != null) {
+            if (view.getText() != null &&
+                    value != null &&
+                    view.getVisibility() == View.VISIBLE) {
                 //If the editText is empty, just set the value
                 if (view.getText().toString().isEmpty()) {
                     view.setText(Float.toString(value));
