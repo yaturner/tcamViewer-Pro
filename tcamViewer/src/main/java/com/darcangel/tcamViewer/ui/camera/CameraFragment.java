@@ -435,56 +435,58 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (v.getId() == R.id.ivCamera &&
-                Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
-                if(Boolean.TRUE.equals(settings.getAGC().getValue())) {
+        ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+        if (imageDto != null &&
+                event.getAction() == MotionEvent.ACTION_UP) {
+            if (v.getId() == R.id.ivCamera &&
+                    Boolean.TRUE.equals(settings.getDisplaySpotmeter().getValue())) {
+                if (Boolean.TRUE.equals(settings.getAGC().getValue())) {
                     Toast.makeText(getContext(), R.string.changing_spot_meter_not_available, Toast.LENGTH_SHORT).show();
                     return true;
                 }
-            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-            float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
-            float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
-            float scaleX = Constants.IMAGE_WIDTH / displayImageWidth;
-            float scaleY = Constants.IMAGE_HEIGHT / displayImageHeight;
-            int imageViewX = (int) (event.getX() * scaleX);
-            int imageViewY = (int) (event.getY() * scaleY);
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                String args = String.format(Locale.US, Constants.ARGS_SET_SPOTMETER,
-                        imageViewX,
-                        imageViewX + 1,
-                        imageViewY,
-                        imageViewY + 1);
-                String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
-                cameraService.sendCmd(cmd);
-                imageDto.setSpotmeterLocation(new Rect(
-                        imageViewX,
-                        imageViewY,
-                        imageViewX + 1,
-                        imageViewY + 1));
-                if (settings.getDisplaySpotmeter().getValue()) {
-                    imageDto.setBitmap(imageDto.drawHotspot());
-                }
-            }
-            cameraViewModel.setRemapNeeded(true);
-            drawScreen();
-        } else if (v.getId() == R.id.ivColorBar) {
-            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
-            if (imageDto != null) {
-                int h = binding.ivColorBar.getHeight();
+                float displayImageHeight = mainActivity.getResources().getDimension(R.dimen.display_image_height);
+                float displayImageWidth = mainActivity.getResources().getDimension(R.dimen.display_image_width);
+                float scaleX = Constants.IMAGE_WIDTH / displayImageWidth;
+                float scaleY = Constants.IMAGE_HEIGHT / displayImageHeight;
+                int imageViewX = (int) (event.getX() * scaleX);
+                int imageViewY = (int) (event.getY() * scaleY);
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (event.getY() > (h / 2)) {
-                        imageDto.rotateColormap(Constants.ROTATE_FORWARD);
-                    } else {
-                        imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+                    String args = String.format(Locale.US, Constants.ARGS_SET_SPOTMETER,
+                            imageViewX,
+                            imageViewX + 1,
+                            imageViewY,
+                            imageViewY + 1);
+                    String cmd = String.format(Constants.CMD_SET_SPOTMETER, args);
+                    cameraService.sendCmd(cmd);
+                    imageDto.setSpotmeterLocation(new Rect(
+                            imageViewX,
+                            imageViewY,
+                            imageViewX + 1,
+                            imageViewY + 1));
+                    if (settings.getDisplaySpotmeter().getValue()) {
+                        imageDto.setBitmap(imageDto.drawHotspot());
                     }
-                    mainActivity.invalidateMenu();
-                    drawScreen();
                 }
-            }
-        } else if (v.getId() == R.id.tvMaxTemperature && BuildConfig.DEBUG) {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                showFrameRate = !showFrameRate;
-                binding.tvFrameRate.setVisibility(showFrameRate ? View.VISIBLE : View.GONE);
+                cameraViewModel.setRemapNeeded(true);
+                drawScreen();
+            } else if (v.getId() == R.id.ivColorBar) {
+                if (imageDto != null) {
+                    int h = binding.ivColorBar.getHeight();
+                    if (event.getAction() == MotionEvent.ACTION_UP) {
+                        if (event.getY() > (h / 2)) {
+                            imageDto.rotateColormap(Constants.ROTATE_FORWARD);
+                        } else {
+                            imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+                        }
+                        mainActivity.invalidateMenu();
+                        drawScreen();
+                    }
+                }
+            } else if (v.getId() == R.id.tvMaxTemperature && BuildConfig.DEBUG) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    showFrameRate = !showFrameRate;
+                    binding.tvFrameRate.setVisibility(showFrameRate ? View.VISIBLE : View.GONE);
+                }
             }
         }
 
