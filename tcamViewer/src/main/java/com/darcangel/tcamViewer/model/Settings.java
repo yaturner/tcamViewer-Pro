@@ -230,7 +230,11 @@ public class Settings extends BaseObservable implements Parcelable {
                 if(!str.isEmpty()) {
                     return Float.parseFloat(view.getText().toString());
                 } else {
-                    return 0;
+                    if (id == R.id.etManualRangeMax) {
+                        return 100.0f;
+                    } else {
+                        return 0.0f;
+                    }
                 }
             } else if (id == R.id.etEmissivity &&
                     view.getVisibility() == View.VISIBLE) {

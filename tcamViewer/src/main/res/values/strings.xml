@@ -87,6 +87,6 @@
     <string name="changing_spot_meter_not_available">Changing the spot meter location is not available in AGC mode</string>
     <string name="emissivity_too_low">Emissivity value is missing or too low, setting it to 1</string>
     <string name="emissivity_too_high">emissivity value is too high, setting it to 100</string>
-    <string name="invalid_range_value">Invalid range value, setting it to 0</string>
+    <string name="invalid_range_value">Invalid range value, setting it to default</string>
     <string name="invalid_emissivity_value">Invalid or missing emissivity value, setting it to 1</string>
 </resources>

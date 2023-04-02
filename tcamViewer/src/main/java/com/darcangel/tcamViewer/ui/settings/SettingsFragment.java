@@ -314,10 +314,14 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         cameraViewModel.setRemapNeeded(true);
                         if (settings.getManualRange().getValue()) {
                             try {
-                                settings.setManualRangeMin(
-                                        Float.parseFloat(binding.etManualRangeMin.getText().toString()));
-                                settings.setManualRangeMax(
-                                        Float.parseFloat(binding.etManualRangeMax.getText().toString()));
+                                String min = binding.etManualRangeMin.getText().toString();
+                                String max = binding.etManualRangeMax.getText().toString();
+                                if(!min.isEmpty() && !max.isEmpty()) {
+                                    settings.setManualRangeMin(Float.parseFloat(min));
+                                    settings.setManualRangeMax(Float.parseFloat(max));
+                                } else {
+                                    Toast.makeText(getContext(), R.string.invalid_range_value, Toast.LENGTH_LONG).show();
+                                }
                             } catch (NumberFormatException e) {
                                 Sentry.captureException(e);
                             }
