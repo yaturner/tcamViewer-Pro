@@ -54,6 +54,12 @@ public final class Constants {
     public final static String KEY_CAMERA_IMAGE = "cam_image";
     public final static String KEY_SELECTED_PALETTE = "pal_selected";
 
+    //Record Summary Footer
+    public final static String RECORDING_FOOTER =
+    "{\"video_info\":{\"start_time\":\"%12s\",\"start_date\":\"%8s\",\"end_time\":\"%12s\"," +
+            "\"end_date\":\"%8s\",\"num_frames\":%3d,\"version\":%2d}}\3";
+    public final static int RECORDING_FOOTER_LENGTH = 147;
+
     //Camera Commands
     public final static String CMD_GET_STATUS       = "\2{\"cmd\":\"get_status\"}\3";
     public final static String CMD_GET_CONFIG       = "\2{\"cmd\":\"get_config\"}\3";

@@ -30,13 +30,17 @@
         app:showAsAction="always|withText">
         <menu>
             <item
-                android:id="@+id/action_stream_on"
-                android:title="@string/start"
+                android:id="@+id/action_stream_start"
+                android:title="@string/stream"
                 android:visible="true" />
             <item
-                android:id="@+id/action_stream_off"
-                android:title="@string/stop"
+                android:id="@+id/action_record_start"
+                android:title="@string/record"
                 android:visible="true" />
+            <item
+                android:id="@+id/action_stop"
+                android:title="@string/stop"
+                android:visible="false" />
         </menu>
     </item>
 

@@ -6,11 +6,12 @@ import androidx.lifecycle.ViewModel;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
-import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import io.sentry.Sentry;
@@ -19,30 +20,25 @@ public class CameraViewModel extends ViewModel {
 
     private MutableLiveData<ImageDto> imageDto;
     private CameraService cameraService;
-    private CameraUtils cameraUtils;
-    private MainActivity mainActivity;
-    private Settings settings;
+    private final MainActivity mainActivity = MainActivity.getInstance();
+    private final Settings settings;
     private float manualMaxTemperature;
     private float manualMinTemperature;
     private boolean unitsCelsius;
     private boolean isStreaming = false;        //are we currently streaming
+    private boolean isRecording = false;        //are we currently recording the stream
     private boolean isInStreamingMode = false;  //should we resume streaming after onPause etc.
     private boolean isRemapNeeded = false;
     private boolean isManualRange;
-
-
-
+    private RecordingDto recordingDto;
+    private String recordingFooter;
 
     public CameraViewModel() {
-        mainActivity = MainActivity.getInstance();
-        cameraUtils = mainActivity.getCameraUtils();
         settings = mainActivity.getSettings();
 
         //Listen for changes in ipAddress
         MutableLiveData<String> camera = mainActivity.getSettings().getCameraAddress();
-        camera.observe(mainActivity, address -> {
-            mainActivity.invalidateOptionsMenu();
-        });
+        camera.observe(mainActivity, address -> mainActivity.invalidateOptionsMenu());
         //observe any changes from settings for manual range and/or units
         settings.getManualRange().observe(mainActivity, v -> {
             isManualRange = v;
@@ -214,6 +210,24 @@ public class CameraViewModel extends ViewModel {
         isStreaming = streaming;
     }
 
+    public Boolean isRecording() {
+        return isRecording;
+    }
+
+    public void setRecording(Boolean recording) {
+        if(recording) {
+            recordingDto = new RecordingDto();
+        } else {
+            recordingFooter = recordingDto.generateFooter(new Date());
+            recordingDto = null;
+        }
+        isRecording = recording;
+    }
+
+    public String getRecordingFooter() {
+        return recordingFooter;
+    }
+
     //If this is true, then we should resume streaming if, for example,
     // we went to a different fragment and returned to camera
     public boolean isInStreamingMode() {
@@ -262,5 +276,15 @@ public class CameraViewModel extends ViewModel {
 
     public void setManualRange(boolean manualRange) {
         isManualRange = manualRange;
+    }
+
+    public void incrFrameCount() {
+        if(recordingDto != null) {
+            recordingDto.incrFrameCount();
+        }
+    }
+
+    public RecordingDto getRecordingDto() {
+        return recordingDto;
     }
 }

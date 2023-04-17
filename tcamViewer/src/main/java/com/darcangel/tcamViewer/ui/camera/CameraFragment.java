@@ -1,14 +1,20 @@
 package com.darcangel.tcamViewer.ui.camera;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.OpenableColumns;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +26,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.internal.view.SupportMenuItem;
@@ -42,13 +52,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.sentry.Sentry;
+import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 
@@ -66,10 +81,57 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long startNano;
     private long endNano;
     private long prevImageTime = 0L;
+    private OutputStream recordingOutputStream;
 
     private boolean showFrameRate = false;
 
-    @Override
+    private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    Timber.d("\\\\result = %s", result.toString());
+                    if(result.getResultCode() == RESULT_OK) {
+                        Intent intent = result.getData();
+                        String filename = "";
+                        try {
+                            Uri uri = intent.getData();
+                            String uriString = uri.toString();
+                            if (result.getData().getData().toString().startsWith("content://")) {
+                                Cursor cursor = null;
+                                try {
+                                    cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+                                    if (cursor != null && cursor.moveToFirst()) {
+                                        int index = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+                                        filename = (index < 0) ? "" : cursor.getString(index);
+                                    }
+                                } finally {
+                                    cursor.close();
+                                }
+                            }
+                            if (!filename.endsWith(".tmjsn")) {
+                                Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
+                                        .show();
+                                recordingOutputStream = null;
+                                return;
+                            } else {
+                                recordingOutputStream = mainActivity.getContentResolver()
+                                        .openOutputStream(result.getData().getData());
+                                cameraViewModel.setRecording(true);
+                                cameraViewModel.startStreaming(true);
+                                cameraViewModel.setInStreamingMode(true);
+                                mainActivity.invalidateOptionsMenu();
+                            }
+                        } catch(FileNotFoundException e){
+                            ////JMT Sentry.captureException(e);
+                            e.printStackTrace();
+                            recordingOutputStream = null;
+                        }
+
+                    }
+                }
+            });
+
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
     }
@@ -158,18 +220,45 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     setPaletteFromMenu("Sepia", menuItem);
                 }
                 break;
-            case R.id.action_stream_off: {
+            case R.id.action_stop: {
                 // stop streaming
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
+                if (cameraViewModel.isRecording()) {
+                    cameraViewModel.setRecording(false);
+                    //write the footer summary
+                    String recordingFooter = cameraViewModel.getRecordingFooter();
+                    try {
+                        recordingOutputStream.write(recordingFooter.getBytes(StandardCharsets.UTF_8));
+                        recordingOutputStream.flush();
+                        recordingOutputStream.close();
+                        recordingOutputStream = null;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Sentry.captureException(e);
+                    } finally {
+                        recordingOutputStream = null;
+                    }
+                }
                 break;
             }
-            case R.id.action_stream_on: {
+            case R.id.action_stream_start: {
                 // start streaming
                 cameraViewModel.startStreaming(true);
                 cameraViewModel.setInStreamingMode(true);
                 mainActivity.invalidateOptionsMenu();
+                break;
+            }
+            case R.id.action_record_start: {
+                // start recording the stream
+                //  get the filename for saving
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.setType("application/tmjsn");
+                intent.putExtra(Intent.EXTRA_TITLE, "tcam-video.tmjsn");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                shareActivityResultLauncher.launch(intent);
+                //shareActivityResult handles the rest
                 break;
             }
             // file menu items
@@ -349,8 +438,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 } else {
                     cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                 }
-                //endNano = System.nanoTime();
-                //Timing Timber.d("\\\\Timing\\\\ handleCameraResponse took %5.2f millis", (float)((endNano-startNano)/1000000.0));
+                if(cameraViewModel.isRecording() && recordingOutputStream != null) {
+                    try {
+                        recordingOutputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
+                        recordingOutputStream.write((byte)3);
+                        recordingOutputStream.flush();
+                        cameraViewModel.incrFrameCount();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        /////JMT Sentry.captureException(e);
+                    }
+                }
                 drawScreen();
                 //if we are not streaming and have an image, enable save
                 if (!cameraViewModel.getStreaming()) {
@@ -501,8 +599,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemGet = menu.findItem(R.id.action_get);
         MenuItem itemPalette = menu.findItem(R.id.action_palette);
         MenuItem itemStream = menu.findItem(R.id.action_stream);
-        MenuItem itemStreamStart = menu.findItem(R.id.action_stream_on);
-        MenuItem itemStreamStop = menu.findItem(R.id.action_stream_off);
+        MenuItem itemStreamStart = menu.findItem(R.id.action_stream_start);
+        MenuItem itemRecordStart = menu.findItem(R.id.action_record_start);
+        MenuItem itemStop = menu.findItem(R.id.action_stop);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
         if (imageDto != null && !imageDto.getPaletteName().isEmpty()) {
             paletteSubMenu.setHeaderTitle(imageDto.getPaletteName());
@@ -545,11 +644,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (cameraService != null && !cameraService.isConnected() || cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
             itemStreamStart.setVisible(false);
-            itemStreamStop.setVisible(true);
+            itemRecordStart.setVisible(false);
+            itemStop.setVisible(true);
         } else {
             itemGet.setEnabled(true);
             itemStreamStart.setVisible(true);
-            itemStreamStop.setVisible(false);
+            itemRecordStart.setVisible(true);
+            itemStop.setVisible(false);
         }
     }
 
