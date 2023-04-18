@@ -117,7 +117,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             } else {
                                 recordingOutputStream = mainActivity.getContentResolver()
                                         .openOutputStream(result.getData().getData());
-                                cameraViewModel.setRecording(true);
+                                cameraViewModel.isRecording.compareAndSet(false,true);
                                 cameraViewModel.startStreaming(true);
                                 cameraViewModel.setInStreamingMode(true);
                                 mainActivity.invalidateOptionsMenu();
@@ -225,9 +225,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
-                if (cameraViewModel.isRecording()) {
-                    cameraViewModel.setRecording(false);
+                if (cameraViewModel.isRecording.get()) {
+                    cameraViewModel.isRecording.compareAndSet(true, false);
                     //write the footer summary
+
                     String recordingFooter = cameraViewModel.getRecordingFooter();
                     try {
                         recordingOutputStream.write(recordingFooter.getBytes(StandardCharsets.UTF_8));
@@ -438,7 +439,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 } else {
                     cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                 }
-                if(cameraViewModel.isRecording() && recordingOutputStream != null) {
+                if(cameraViewModel.isRecording.get() && recordingOutputStream != null) {
                     try {
                         recordingOutputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
                         recordingOutputStream.write((byte)3);

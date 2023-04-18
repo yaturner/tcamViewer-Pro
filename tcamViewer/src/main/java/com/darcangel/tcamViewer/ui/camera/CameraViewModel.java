@@ -11,8 +11,8 @@ import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.sentry.Sentry;
 
@@ -26,7 +26,7 @@ public class CameraViewModel extends ViewModel {
     private float manualMinTemperature;
     private boolean unitsCelsius;
     private boolean isStreaming = false;        //are we currently streaming
-    private boolean isRecording = false;        //are we currently recording the stream
+    public AtomicBoolean isRecording = new AtomicBoolean();  //are we currently recording the stream
     private boolean isInStreamingMode = false;  //should we resume streaming after onPause etc.
     private boolean isRemapNeeded = false;
     private boolean isManualRange;
@@ -208,20 +208,6 @@ public class CameraViewModel extends ViewModel {
 
     public void setStreaming(Boolean streaming) {
         isStreaming = streaming;
-    }
-
-    public Boolean isRecording() {
-        return isRecording;
-    }
-
-    public void setRecording(Boolean recording) {
-        if(recording) {
-            recordingDto = new RecordingDto();
-        } else {
-            recordingFooter = recordingDto.generateFooter(new Date());
-            recordingDto = null;
-        }
-        isRecording = recording;
     }
 
     public String getRecordingFooter() {
