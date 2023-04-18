@@ -182,10 +182,12 @@ public class CameraService extends Service {
         if (isConnected()) {
             stopStreaming();
             stopListening();
-            try {
-                cameraSocket.close();
-            } catch (IOException e) {
-                Sentry.captureException(e);
+            if(cameraSocket != null) {
+                try {
+                    cameraSocket.close();
+                } catch (IOException e) {
+                    Sentry.captureException(e);
+                }
             }
         }
     }
