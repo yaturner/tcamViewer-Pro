@@ -611,13 +611,14 @@ public class CameraUtils extends BaseObservable {
     }
 
     public JSONObject getRecordingFooter(FileInputStream recordingInputStream) {
+        JSONObject recordingFooter = null;
         try {
             byte[] buffer = new byte[150];
             long size = recordingInputStream.available();
             recordingInputStream.skip(size - 147L);
             int b = recordingInputStream.read(buffer, 0, 250);
             String footer = new String(buffer, StandardCharsets.UTF_8);
-            JSONObject recordFooter = new JSONObject(footer);
+            recordingFooter = new JSONObject(footer);
         } catch (IOException e) {
             e.printStackTrace();
             Sentry.captureException(e);
@@ -625,9 +626,8 @@ public class CameraUtils extends BaseObservable {
             e.printStackTrace();
             Sentry.captureException(e);
         }
+        return recordingFooter;
     }
 }
 
 
-}
-}
