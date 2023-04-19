@@ -29,9 +29,7 @@ public class RecordingDto {
             String end = CameraUtils.sdfRecording.format(endDate);
             String[] startWords = start.split(" ");
             String[] endWords = end.split(" ");
-            //frames are 1 based not 0
-            String result = String.format(Locale.getDefault(), Constants.RECORDING_FOOTER, startWords[1], startWords[0],
-                    endWords[1], endWords[0], numFrames+1, version);
+                    endWords[1], endWords[0], numFrames, version);
             return result;
         } catch (Exception e) {
             e.printStackTrace();

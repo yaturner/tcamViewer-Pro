@@ -51,11 +51,10 @@ import com.darcangel.tcamViewer.utils.CameraUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Locale;
@@ -81,7 +80,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long startNano;
     private long endNano;
     private long prevImageTime = 0L;
-    private OutputStream recordingOutputStream;
+    private BufferedOutputStream recordingOutputStream;
 
     private boolean showFrameRate = false;
 
@@ -109,15 +108,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                                     cursor.close();
                                 }
                             }
-                            if (!filename.endsWith(".tmjsn")) {
+                            String words[] = filename.split("\\.");
+                            if(words.length != 2  || !words[1].startsWith("tmjsn"))
+                            {
                                 Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
                                         .show();
                                 recordingOutputStream = null;
                                 return;
+
                             } else {
-                                recordingOutputStream = mainActivity.getContentResolver()
-                                        .openOutputStream(result.getData().getData());
-                                cameraViewModel.isRecording.compareAndSet(false,true);
+                                recordingOutputStream = new BufferedOutputStream(mainActivity.getContentResolver()
+                                        .openOutputStream(result.getData().getData()));
+                                cameraViewModel.setRecording(true);
                                 cameraViewModel.startStreaming(true);
                                 cameraViewModel.setInStreamingMode(true);
                                 mainActivity.invalidateOptionsMenu();
@@ -225,10 +227,9 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
-                if (cameraViewModel.isRecording.get()) {
-                    cameraViewModel.isRecording.compareAndSet(true, false);
+                if (cameraViewModel.isRecording()) {
+                    cameraViewModel.setRecording(false);
                     //write the footer summary
-
                     String recordingFooter = cameraViewModel.getRecordingFooter();
                     try {
                         recordingOutputStream.write(recordingFooter.getBytes(StandardCharsets.UTF_8));
@@ -238,8 +239,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     } catch (IOException e) {
                         e.printStackTrace();
                         Sentry.captureException(e);
-                    } finally {
-                        recordingOutputStream = null;
                     }
                 }
                 break;
@@ -439,7 +438,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 } else {
                     cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                 }
-                if(cameraViewModel.isRecording.get() && recordingOutputStream != null) {
+                if(cameraViewModel.isRecording() && recordingOutputStream != null) {
                     try {
                         recordingOutputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
                         recordingOutputStream.write((byte)3);
