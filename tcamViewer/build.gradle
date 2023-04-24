@@ -36,11 +36,13 @@ android {
             dimension "version"
             applicationIdSuffix ".free"
             versionNameSuffix "-free"
+            applicationId "com.darcangel.tcamViewer"
         }
         pro {
             dimension "version"
             applicationIdSuffix ".pro"
             versionNameSuffix "-pro"
+            applicationId "com.darcangel.tcamViewer"
         }
     }
 
@@ -51,26 +53,26 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.debug
         }
-        applicationVariants.all {
-                // this method is use to rename your all apk whether
-                // it may be signed or unsigned(debug apk)
-            variant ->
-                variant.outputs.each{
-                        // on below line we are setting a name to our apk
-                    output->
-                        def buildType =  variant.buildType.name
-                        // on below line we are specifying our app name.
-                        project.ext { appName = 'tcamViewer' }
-                        // on below line we are creating a new name for our apk.
-                        def newName = output.outputFile.name
-                        // on below line we are replacing our previous name with our app name.
-                        newName = newName.replace("app_", "$project.ext.appName-")
-                        // on below line we are replacing -debug with our formatted date.
-                        newName = newName.replace("-" + buildType, "_" + buildType + "_" + "v" + versionName)
-                        // at last we are setting our apk name to it.
-                        output.outputFileName  = newName
-                }
-        }
+//        applicationVariants.all {
+//                // this method is use to rename your all apk whether
+//                // it may be signed or unsigned(debug apk)
+//            variant ->
+//                variant.outputs.each{
+//                        // on below line we are setting a name to our apk
+//                    output->
+//                        def buildType =  variant.buildType.name
+//                        // on below line we are specifying our app name.
+//                        project.ext { appName = 'tcamViewer' }
+//                        // on below line we are creating a new name for our apk.
+//                        def newName = output.outputFile.name
+//                        // on below line we are replacing our previous name with our app name.
+//                        newName = newName.replace("app_", "$project.ext.appName-")
+//                        // on below line we are replacing -debug with our formatted date.
+//                        newName = newName.replace("-" + buildType, "_" + buildType + "_" + "v" + versionName)
+//                        // at last we are setting our apk name to it.
+//                        output.outputFileName  = newName
+//                }
+//        }
     }
 
     compileOptions {

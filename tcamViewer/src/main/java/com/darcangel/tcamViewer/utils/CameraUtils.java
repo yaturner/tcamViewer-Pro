@@ -13,6 +13,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 
+import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
@@ -29,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -526,7 +528,7 @@ public class CameraUtils extends BaseObservable {
     public Boolean saveTjsn(ImageDto imageDto) throws IOException {
 
         File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        String file = generateNewFilename() + ".tjsn";
+        String file = generateNewFilename(false) + ".tjsn";
         File path = new File(rootDir + "/" + generateNewPath());
         if (!path.exists()) {
             path.mkdir();
@@ -545,9 +547,13 @@ public class CameraUtils extends BaseObservable {
         return true;
     }
 
-    public static String generateNewFilename() {
+    public static String generateNewFilename(boolean isMovie) {
         Date now = new Date();
-        return new String("img_" + simpleDateFormatFile.format(now));
+        if (isMovie) {
+            return new String("mov_" + simpleDateFormatFile.format(now));
+        } else {
+            return new String("img_" + simpleDateFormatFile.format(now));
+        }
     }
 
     public static String generateNewPath() {
@@ -572,24 +578,33 @@ public class CameraUtils extends BaseObservable {
         }
     }
 
-    public String readTjsnFile(String path) {
+    public String readTjsnFile(String path, Boolean isMovie) {
         String json = new String();
         String line;
         BufferedReader bufferedReader = null;
         FileReader fileReader = null;
         try {
-            fileReader = new FileReader(new File(path));
-            bufferedReader = new BufferedReader(fileReader);
-            do {
-                line = bufferedReader.readLine();
-                if (line != null) {
-                    json = json + line;
+            bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(path)));
+            if (isMovie) {
+                StringBuilder sb = new StringBuilder();
+                int c = 0;
+                while ((c = bufferedReader.read()) != 3 && c != -1) {
+                    sb.append((char)c);
                 }
-            } while (line != null);
-        } catch (IOException e) {
-            Sentry.captureException(e);
-            json = "";
-        }
+                json = sb.toString();
+            } else {
+                do {
+                    line = bufferedReader.readLine();
+                    if (line != null) {
+                        json = json + line;
+                    }
+                } while (line != null);
+            }
+            } catch(IOException e){
+                Sentry.captureException(e);
+                json = "";
+            }
+
 
         if (bufferedReader != null) {
             try {

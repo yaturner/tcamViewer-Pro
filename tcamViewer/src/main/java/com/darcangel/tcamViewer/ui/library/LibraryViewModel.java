@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 public class LibraryViewModel extends ViewModel {
     private MutableLiveData<ArrayList<ImageDto>> selectedImages;
+    private ImageDto playbackImageDto;
 
     public LibraryViewModel() {
         clearAllSelectedImages();
@@ -24,5 +25,13 @@ public class LibraryViewModel extends ViewModel {
 
     public void setSelectedImages(ArrayList<ImageDto> selectedImages) {
         this.selectedImages.setValue(selectedImages);
+    }
+
+    public ImageDto getPlaybackImageDto() {
+        return playbackImageDto;
+    }
+
+    public void setPlaybackImageDto(ImageDto playbackImageDto) {
+        this.playbackImageDto = playbackImageDto;
     }
 }

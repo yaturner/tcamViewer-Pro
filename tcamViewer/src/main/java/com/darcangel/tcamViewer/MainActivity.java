@@ -115,13 +115,13 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         getSettings();
 
         //For debugging only, catch unclosed resources
-        try {
-            Class.forName("dalvik.system.CloseGuard")
-                    .getMethod("setEnabled", boolean.class)
-                    .invoke(null, true);
-        } catch (ReflectiveOperationException e) {
-            Sentry.captureException(e);
-        }
+//        try {
+//            Class.forName("dalvik.system.CloseGuard")
+//                    .getMethod("setEnabled", boolean.class)
+//                    .invoke(null, true);
+//        } catch (ReflectiveOperationException e) {
+//            Sentry.captureException(e);
+//        }
 
         if (executor == null || executor.getMaximumPoolSize() == 0) {
             executor = new ThreadPoolExecutor(5, 10, 0,

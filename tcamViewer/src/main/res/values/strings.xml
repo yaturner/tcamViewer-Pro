@@ -91,4 +91,7 @@
     <string name="invalid_emissivity_value">Invalid or missing emissivity value, setting it to 1</string>
     <string name="record">Record</string>
     <string name="filetype_not_mtjsn">Filetype must be \'.mtjsn\', nothing recorded</string>
+    <string name="play">Play</string>
+    <string name="analyze">Analyze</string>
+    <string name="recording">rec</string>
 </resources>

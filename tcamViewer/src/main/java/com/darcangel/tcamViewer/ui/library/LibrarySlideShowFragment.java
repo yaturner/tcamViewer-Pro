@@ -153,6 +153,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                     binding.vpSlideshow.setCurrentItem(tab);
                 }
                 setNavigationArrows(tab);
+                mainActivity.invalidateOptionsMenu();
             });
 
         // Images right navigation
@@ -161,6 +162,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             tab++;
             binding.vpSlideshow.setCurrentItem(tab);
             setNavigationArrows(tab);
+            mainActivity.invalidateOptionsMenu();
         });
     }
 
@@ -269,6 +271,18 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
+        MenuItem itemRecording = menu.findItem(R.id.action_recording);
+        MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
+        MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
+        if(binding.vpSlideshow != null) {
+            int position = binding.vpSlideshow.getCurrentItem();
+            ImageDto imageDto = imageDtos.get(position);
+            if(imageDto.isMovie()) {
+                itemRecording.setEnabled(true);
+            } else {
+                itemRecording.setEnabled(false);
+            }
+        }
     }
 
 
@@ -288,6 +302,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         // command switch
         int position = binding.vpSlideshow.getCurrentItem();
         int id = menuItem.getItemId();
+        NavDirections navDirections;
         //delete image
         if (id == R.id.action_item_delete) {
             deleteImage(position);
@@ -306,7 +321,13 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             }
             return true;
         } else if (id == android.R.id.home) {
-            NavDirections navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
+            navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
+            mainActivity.getNavController().navigate(navDirections);
+            return true;
+        } else if(id == R.id.action_movie_play) {
+            libraryViewModel.setPlaybackImageDto(imageDtos.get(position));
+            navDirections = LibrarySlideShowFragmentDirections.
+                    actionNavigationLibrarySlideShowFragmentToPlaybackFragment();
             mainActivity.getNavController().navigate(navDirections);
             return true;
         } else {

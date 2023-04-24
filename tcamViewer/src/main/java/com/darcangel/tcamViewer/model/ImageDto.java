@@ -34,7 +34,7 @@ public class ImageDto {
     private int maxTemperature;
     private int minTemperature;
     private Date creationDate;
-
+    private Boolean movie;
     private JSONObject jsonObject;
     private JSONObject metadata;
     private String filename;
@@ -51,13 +51,20 @@ public class ImageDto {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         this.jsonObject = jsonObject;
         init(paletteName);
+        movie = false;
     }
 
     //Constructor from file
     public ImageDto(String filename, String paletteName) {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         this.filename = filename;
-        tjsnString = cameraUtils.readTjsnFile(filename);
+        String words[] = filename.split("\\.");
+        if(words[words.length-1].equalsIgnoreCase("tmjsn")) {
+            movie = true;
+        } else {
+            movie = false;
+        }
+         tjsnString = cameraUtils.readTjsnFile(filename, isMovie());
         if (tjsnString != null && !tjsnString.isEmpty()) {
             try {
                 jsonObject = new JSONObject(tjsnString);
@@ -317,5 +324,9 @@ public class ImageDto {
 
     public void setImageData(int[] imageData) {
         this.imageData = imageData;
+    }
+
+    public Boolean isMovie() {
+        return movie;
     }
 }

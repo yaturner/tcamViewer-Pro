@@ -13,7 +13,6 @@ import com.darcangel.tcamViewer.services.CameraService;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.sentry.Sentry;
 

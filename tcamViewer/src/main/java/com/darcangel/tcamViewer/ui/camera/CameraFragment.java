@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.provider.OpenableColumns;
 import android.util.Pair;
@@ -52,8 +53,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
@@ -81,6 +84,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long endNano;
     private long prevImageTime = 0L;
     private BufferedOutputStream recordingOutputStream;
+    private String recordingFilename;
 
     private boolean showFrameRate = false;
 
@@ -227,7 +231,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
-                if (cameraViewModel.isRecording()) {
+                if (BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION) &&  cameraViewModel.isRecording()) {
                     cameraViewModel.setRecording(false);
                     //write the footer summary
                     String recordingFooter = cameraViewModel.getRecordingFooter();
@@ -252,15 +256,39 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             }
             case R.id.action_record_start: {
                 // start recording the stream
+                //for simplicity's sake use the same naming conventions as for tjsn
+                try {
+                File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                String file = cameraUtils.generateNewFilename(true) + ".tmjsn";
+                File path = new File(rootDir + "/" + cameraUtils.generateNewPath());
+                if (!path.exists()) {
+                    path.mkdir();
+                }
+                File tmjsn = new File(path, file);
+                if (!tmjsn.exists()) {
+                    tmjsn.createNewFile();
+                }
+                recordingFilename = path +"/" + file;
+                recordingOutputStream = new BufferedOutputStream(new FileOutputStream(tmjsn));
+                cameraViewModel.setRecording(true);
+                cameraViewModel.startStreaming(true);
+                cameraViewModel.setInStreamingMode(true);
+                mainActivity.invalidateOptionsMenu();
+                } catch(IOException e) {
+                    e.printStackTrace();
+                    Sentry.captureException(e);
+                }
+
                 //  get the filename for saving
-                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                intent.setType("application/tmjsn");
-                intent.putExtra(Intent.EXTRA_TITLE, "tcam-video.tmjsn");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                shareActivityResultLauncher.launch(intent);
-                //shareActivityResult handles the rest
+//                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+//                intent.setType("application/tmjsn");
+//                intent.putExtra(Intent.EXTRA_TITLE, "tcam-video.tmjsn");
+//                intent.addCategory(Intent.CATEGORY_OPENABLE);
+//                shareActivityResultLauncher.launch(intent);
+//                //shareActivityResult handles the rest
                 break;
             }
+
             // file menu items
             case R.id.action_save:
                 // save
@@ -603,6 +631,13 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemRecordStart = menu.findItem(R.id.action_record_start);
         MenuItem itemStop = menu.findItem(R.id.action_stop);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
+
+        //Only available in PRO_VERSION
+        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.FREE_VERSION)) {
+            itemRecordStart.setVisible(false);
+            itemStreamStart.setTitle(R.string.start);
+        }
+
         if (imageDto != null && !imageDto.getPaletteName().isEmpty()) {
             paletteSubMenu.setHeaderTitle(imageDto.getPaletteName());
         }
@@ -644,12 +679,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (cameraService != null && !cameraService.isConnected() || cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
             itemStreamStart.setVisible(false);
-            itemRecordStart.setVisible(false);
+            if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
+                itemRecordStart.setVisible(false);
+            }
             itemStop.setVisible(true);
         } else {
             itemGet.setEnabled(true);
             itemStreamStart.setVisible(true);
-            itemRecordStart.setVisible(true);
+            if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
+                itemRecordStart.setVisible(true);
+            }
             itemStop.setVisible(false);
         }
     }

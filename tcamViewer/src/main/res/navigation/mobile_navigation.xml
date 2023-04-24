@@ -75,6 +75,20 @@
             app:destination="@id/navigation_library"
             app:popUpTo="@id/navigation_library"
             app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_navigation_librarySlideShowFragment_to_playbackFragment"
+            app:destination="@id/playbackFragment" />
 
+    </fragment>
+    <fragment
+        android:id="@+id/playbackFragment"
+        tools:layout="@layout/fragment_playback"
+        android:name="com.darcangel.tcamViewer.ui.library.PlaybackFragment"
+        android:label="Playback" >
+        <action
+            android:id="@+id/action_playbackFragment_to_navigation_librarySlideShowFragment"
+            app:destination="@id/navigation_librarySlideShowFragment"
+            app:popUpTo="@id/navigation_librarySlideShowFragment"
+            app:popUpToInclusive="true"/>
     </fragment>
 </navigation>

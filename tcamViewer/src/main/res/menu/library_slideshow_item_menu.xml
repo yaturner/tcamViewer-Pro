@@ -23,4 +23,20 @@
         android:title="@string/delete"
         android:visible="true"
         app:showAsAction="always" />
+    <item android:id="@+id/action_recording"
+        android:title="@string/recording"
+        android:icon="@drawable/film_30_30"
+        android:visible="true"
+        app:showAsAction="always">
+        <menu>
+            <item android:id="@+id/action_movie_play"
+                android:title="@string/play"
+                android:icon="@drawable/ff_w_20_20"
+                android:visible="true"/>
+            <item android:id="@+id/action_movie_analyze"
+                android:title="@string/analyze"
+                android:icon="@drawable/ic_baseline_share_24"
+                android:visible="true"/>
+        </menu>
+    </item>
 </menu>

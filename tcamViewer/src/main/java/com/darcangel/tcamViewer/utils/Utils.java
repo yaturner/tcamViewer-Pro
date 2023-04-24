@@ -21,8 +21,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 
@@ -242,4 +244,35 @@ public class Utils {
         }
         return null;
     }
+
+    public boolean acceptableFiletype(final File filename) {
+        boolean result = false;
+        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
+            if (filename.getName().endsWith(".tjsn") ||
+                    filename.getName().endsWith(".tmjsn")) {
+                result = true;
+            }
+        } else {
+            if(filename.getName().endsWith(".tjsn")) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    public boolean acceptableFiletype(final String pathname) {
+        boolean result = false;
+        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
+            if (pathname.endsWith(".tjsn") ||
+                    pathname.endsWith(".tmjsn")) {
+                result = true;
+            }
+        } else {
+            if(pathname.endsWith(".tjsn")) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
 }

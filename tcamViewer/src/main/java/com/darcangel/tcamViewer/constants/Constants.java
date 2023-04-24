@@ -1,11 +1,15 @@
 package com.darcangel.tcamViewer.constants;
 
 public final class Constants {
+    public static final String PRO_VERSION = "pro";
+    public static final String FREE_VERSION = "free";
+
     public final static int COLORBAR_WIDTH = 48;
     public final static int COLORBAR_HEIGHT = 256;
     public final static int HISTOGRAM_WIDTH = 256;
 
     public final static int BUFFER_LENGTH = 65536;
+    public final static int RECORDING_FOOTER_LENGTH = 147;
 
     public final static String SUCCESS = "{\"result\":\"OK\"}";
     public final static String ERROR = "{\"result\":\"ERROR\"}";
@@ -53,12 +57,11 @@ public final class Constants {
     public final static String KEY_IS_SOCKET_CONNECTED = "soc_connected";
     public final static String KEY_CAMERA_IMAGE = "cam_image";
     public final static String KEY_SELECTED_PALETTE = "pal_selected";
-
+    public final static String KEY_SELECTED_IMAGE = "image_selected";
     //Record Summary Footer
     public final static String RECORDING_FOOTER =
     "{\"video_info\":{\"start_time\":\"%12s\",\"start_date\":\"%8s\",\"end_time\":\"%12s\"," +
             "\"end_date\":\"%8s\",\"num_frames\":%3d,\"version\":%2d}}\3";
-    public final static int RECORDING_FOOTER_LENGTH = 147;
 
     //Camera Commands
     public final static String CMD_GET_STATUS       = "\2{\"cmd\":\"get_status\"}\3";

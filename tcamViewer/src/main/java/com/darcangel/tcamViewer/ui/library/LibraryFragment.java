@@ -26,12 +26,15 @@ import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
+import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.utils.Utils;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;
 
 import java.io.File;
@@ -49,6 +52,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     private FragmentLibraryBinding binding;
     private MainActivity mainActivity;
     private LibraryViewModel libraryViewModel;
+    private Utils utils;
     private Settings settings;
     private RecyclerView recyclerView;
     private LibrarySelectionAdapter librarySelectionAdapter;
@@ -77,6 +81,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         }
         libraryViewModel = mainActivity.getLibraryViewModel();
         settings = mainActivity.getSettings();
+        utils =mainActivity.getUtils();
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -142,7 +147,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                     imageFileList = directoryList[iFolder].listFiles(new FileFilter() {
                         @Override
                         public boolean accept(File pathname) {
-                            if(pathname.getName().endsWith(".tjsn")) {
+                            if(utils.acceptableFiletype(pathname)) {
                                 ImageDto imageDto = new ImageDto(pathname.getAbsolutePath(), settings.getPalette().getValue());
                                 imageDtos.add(imageDto);
                                 return true;
@@ -154,12 +159,9 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 }
             }
             //sort them
-            Collections.sort(imageDtos, new Comparator<ImageDto>() {
-                @Override
-                public int compare(ImageDto o1, ImageDto o2) {
-                    //newest first - descending
-                    return o2.getCreationDate().compareTo(o1.getCreationDate());
-                }
+            Collections.sort(imageDtos, (o1, o2) -> {
+                //newest first - descending
+                return o2.getCreationDate().compareTo(o1.getCreationDate());
             });
         } catch (Exception e) {
             Sentry.captureException(e);
@@ -169,13 +171,13 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
 
     private Boolean hasImages(String imageFolder) {
         File folder = new File(imageFolder);
-        String files[] = folder.list();
+        String[] files = folder.list();
         //For free version, filter out movies
         String file;
         int count = 0;
-        for (int iFile = 0; iFile < files.length; iFile++) {
-            file = files[iFile];
-            if (file.substring(file.lastIndexOf(".")).equals(".tjsn")) {
+        for (String s : files) {
+            file = s;
+            if (utils.acceptableFiletype(file)) {
                 count++;
             }
         }
@@ -297,15 +299,10 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             }
             selectionTracker.setItemsSelected(keys, false);
         } else if(id == R.id.action_sort_ascending) {
-            Collections.sort(imageDtos, new Comparator<ImageDto>() {
-                @Override
-                public int compare(ImageDto o1, ImageDto o2) {
-                    return o1.getCreationDate().compareTo(o2.getCreationDate());
-                }
-            });
+            Collections.sort(imageDtos, (o1, o2) -> o1.getCreationDate().compareTo(o2.getCreationDate()));
             ((LibrarySelectionAdapter)binding.rvLibrary.getAdapter()).setImageData(imageDtos);
         } else if(id == R.id.action_sort_ascending) {
-            Collections.sort(imageDtos, new Comparator<ImageDto>() {
+            imageDtos.sort(new Comparator<ImageDto>() {
                 @Override
                 public int compare(ImageDto o1, ImageDto o2) {
                     return o2.getCreationDate().compareTo(o1.getCreationDate());
