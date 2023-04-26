@@ -326,6 +326,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             return true;
         } else if(id == R.id.action_movie_play) {
             libraryViewModel.setPlaybackImageDto(imageDtos.get(position));
+            libraryViewModel.resetFrameOffset();
+            libraryViewModel.resetFrameSize();
             navDirections = LibrarySlideShowFragmentDirections.
                     actionNavigationLibrarySlideShowFragmentToPlaybackFragment();
             mainActivity.getNavController().navigate(navDirections);

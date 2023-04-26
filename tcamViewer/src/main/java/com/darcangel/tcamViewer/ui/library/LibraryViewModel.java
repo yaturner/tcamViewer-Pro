@@ -10,6 +10,9 @@ import java.util.ArrayList;
 public class LibraryViewModel extends ViewModel {
     private MutableLiveData<ArrayList<ImageDto>> selectedImages;
     private ImageDto playbackImageDto;
+    private ArrayList<Long> frameOffset;
+    private ArrayList<Integer> frameSize;
+
 
     public LibraryViewModel() {
         clearAllSelectedImages();
@@ -33,5 +36,21 @@ public class LibraryViewModel extends ViewModel {
 
     public void setPlaybackImageDto(ImageDto playbackImageDto) {
         this.playbackImageDto = playbackImageDto;
+    }
+
+    public ArrayList<Long> getFrameOffset() {
+        return frameOffset;
+    }
+
+    public void resetFrameOffset() {
+        this.frameOffset = new ArrayList<Long>();
+    }
+
+    public ArrayList<Integer> getFrameSize() {
+        return frameSize;
+    }
+
+    public void resetFrameSize() {
+        this.frameSize = new ArrayList<Integer>();
     }
 }
