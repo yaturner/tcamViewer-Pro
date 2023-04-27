@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.Date;
 
 import io.sentry.Sentry;
@@ -96,7 +97,14 @@ public class ImageDto {
         } catch(JSONException e) {
             Sentry.captureException(e);
         }
-        creationDate = new Date();
+        try {
+            String s = metadata.getString("Date") + " " + metadata.getString("Time");
+            creationDate = CameraUtils.sdfRecording.parse(s);
+        } catch (JSONException | ParseException e) {
+            creationDate = new Date();
+            e.printStackTrace();
+            Sentry.captureException(e);
+        }
     }
 
     public void parse(JSONObject obj, String PaletteName) {
@@ -312,10 +320,6 @@ public class ImageDto {
 
     public Date getCreationDate() {
         return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
     }
 
     public int[] getImageData() {

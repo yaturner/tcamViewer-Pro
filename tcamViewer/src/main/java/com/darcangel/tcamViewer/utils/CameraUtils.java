@@ -107,17 +107,6 @@ public class CameraUtils extends BaseObservable {
         String radiometricString = imageDto.getJsonObject().getString("radiometric");
         String telemetryString = imageDto.getJsonObject().getString("telemetry");
         imageBytes = Base64.getDecoder().decode(radiometricString.getBytes());
-        Date date;
-        try {
-            date = sdf.parse(metadata.getString("Date") +
-                    " " +
-                    metadata.getString("Time"));
-        } catch (ParseException e) {
-            Sentry.captureException(e);
-            date = new Date();
-        }
-        imageDto.setCreationDate(date);
-
         imageLen = imageBytes.length;
         int[] imageData = new int[imageLen / 2];
         pixels = new int[Constants.IMAGE_WIDTH * Constants.IMAGE_HEIGHT];

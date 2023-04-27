@@ -15,7 +15,6 @@ public class RecordingDto {
 
     public RecordingDto() {
         numFrames = 0;
-        startDate = new Date();
         version = 1;
     }
 
@@ -74,5 +73,9 @@ public class RecordingDto {
 
     public void incrFrameCount() {
         numFrames = numFrames + 1;
+    }
+
+    public int getFrameCount() {
+        return numFrames;
     }
 }

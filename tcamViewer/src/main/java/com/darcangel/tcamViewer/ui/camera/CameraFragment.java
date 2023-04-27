@@ -468,13 +468,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 if(cameraViewModel.isRecording() && recordingOutputStream != null) {
                     try {
+                        //the first image is the start date, the last the end date
+                        if(cameraViewModel.getFrameCount() == 0) {
+                            cameraViewModel.setRecordingStartDate();
+                        }
+                        cameraViewModel.setRecordingEndDate();
                         recordingOutputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
                         recordingOutputStream.write((byte)3);
                         recordingOutputStream.flush();
                         cameraViewModel.incrFrameCount();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        /////JMT Sentry.captureException(e);
+                        Sentry.captureException(e);
                     }
                 }
                 drawScreen();

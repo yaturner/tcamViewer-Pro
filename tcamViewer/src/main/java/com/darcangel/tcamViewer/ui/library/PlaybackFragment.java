@@ -59,14 +59,15 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     private ImageDto[] playbackImageArray = new ImageDto[2];
     private int numFrames;
     private long fileSize;
-    private char[] buffer = new char[64767];
+    private static char[] buffer = new char[64767];
 
     private Runnable imagePlayer = new Runnable() {
         @Override
         public void run() {
             try {
                 int len = libraryViewModel.getFrameSize().get(frameIndex);
-                bufferedReader.read(buffer, 0, len);
+                int bytesRead = bufferedReader.read(buffer, 0, len);
+                assert bytesRead == len;
                 ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, len)),
                         "Rainbow");
                 displayImage(imageDto);
@@ -127,6 +128,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             analyzeRecording();
             recordingFooterDto = new RecordingFooterDto(getFooterInfo());
             numFrames = recordingFooterDto.getNumFrames();
+            playRecording();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Sentry.captureException(e);
@@ -134,7 +136,6 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             e.printStackTrace();
             Sentry.captureException(e);
         }
-        playRecording();
     }
 
     private void openRecordingFile() throws IOException {
@@ -143,8 +144,9 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
     }
 
-    private void playRecording() {
+    private void playRecording() throws IOException{
         frameIndex = 0;
+        openRecordingFile();
         imageTimerHandler.postDelayed(imagePlayer, 500);
     }
 

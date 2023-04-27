@@ -10,6 +10,8 @@ import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
 
+import org.json.JSONObject;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -287,7 +289,29 @@ public class CameraViewModel extends ViewModel {
         }
     }
 
+    public int getFrameCount() {
+        return recordingDto.getFrameCount();
+    }
+
     public RecordingDto getRecordingDto() {
         return recordingDto;
+    }
+
+    public void setRecordingStartDate() {
+        if (imageDto.getValue() != null) {
+            recordingDto.setStartDate(imageDto.getValue().getCreationDate());
+        } else {
+            recordingDto.setStartDate(new Date());
+        }
+    }
+
+    public void setRecordingEndDate() {
+        {
+            if (imageDto.getValue() != null) {
+                recordingDto.setEndDate(imageDto.getValue().getCreationDate());
+            } else {
+                recordingDto.setEndDate(new Date());
+            }
+        }
     }
 }
