@@ -12,6 +12,7 @@ public class LibraryViewModel extends ViewModel {
     private ImageDto playbackImageDto;
     private ArrayList<Long> frameOffset;
     private ArrayList<Integer> frameSize;
+    private ArrayList<Integer> frameDelay;
 
 
     public LibraryViewModel() {
@@ -52,5 +53,13 @@ public class LibraryViewModel extends ViewModel {
 
     public void resetFrameSize() {
         this.frameSize = new ArrayList<Integer>();
+    }
+
+    public ArrayList<Integer> getFrameDelay() {
+        return frameDelay;
+    }
+
+    public void resetFrameDelay() {
+        this.frameDelay = new ArrayList<Integer>();
     }
 }

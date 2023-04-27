@@ -239,7 +239,6 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
 
     @Override
     public void onDestroyView() {
-        libraryViewModel.clearAllSelectedImages();
         super.onDestroyView();
         binding = null;
     }

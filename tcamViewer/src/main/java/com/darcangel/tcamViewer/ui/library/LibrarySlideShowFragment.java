@@ -61,7 +61,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private Settings settings;
     private CameraUtils cameraUtils;
     private Utils utils;
-    private BottomNavigationView navBar;
     private View root;
     private int sharedImagePosition = -1;
     private int tab;
@@ -138,11 +137,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         super.onViewCreated(view, savedInstanceState);
         tab = binding.vpSlideshow.getCurrentItem();
         setNavigationArrows(tab);
-        navBar = getActivity().findViewById(R.id.nav_view);
-        if (navBar != null) {
-            navBar.setVisibility(View.GONE);
-        }
-
         // Images left navigation
         binding.leftNav.setOnClickListener(v ->{
                 tab = binding.vpSlideshow.getCurrentItem();
@@ -276,15 +270,13 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
         if(binding.vpSlideshow != null) {
             int position = binding.vpSlideshow.getCurrentItem();
-            ImageDto imageDto = imageDtos.get(position);
-            if(imageDto.isMovie()) {
+            if(imageDtos.get(position).isMovie()) {
                 itemRecording.setEnabled(true);
             } else {
                 itemRecording.setEnabled(false);
             }
         }
     }
-
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
@@ -328,6 +320,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             libraryViewModel.setPlaybackImageDto(imageDtos.get(position));
             libraryViewModel.resetFrameOffset();
             libraryViewModel.resetFrameSize();
+            libraryViewModel.resetFrameDelay();
             navDirections = LibrarySlideShowFragmentDirections.
                     actionNavigationLibrarySlideShowFragmentToPlaybackFragment();
             mainActivity.getNavController().navigate(navDirections);
@@ -345,10 +338,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        libraryViewModel.clearAllSelectedImages();
-        if (navBar != null) {
-            navBar.setVisibility(View.VISIBLE);
-        }
     }
 }
 
