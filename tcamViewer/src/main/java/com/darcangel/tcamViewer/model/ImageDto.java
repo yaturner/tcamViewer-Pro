@@ -101,7 +101,6 @@ public class ImageDto {
             String s = metadata.getString("Date") + " " + metadata.getString("Time");
             creationDate = CameraUtils.sdfRecording.parse(s);
         } catch (JSONException | ParseException e) {
-            creationDate = new Date();
             e.printStackTrace();
             Sentry.captureException(e);
         }

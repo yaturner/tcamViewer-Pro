@@ -289,8 +289,8 @@ public class CameraService extends Service {
 //                            Timber.d("found end readBuffer[%d] = %x", index, (int)c);
                             response[responsePos] = '\0';
                             String r = String.valueOf(response, 0, responsePos);
-                            Timber.d("\\\\response\\\\ response = '%s'",
-                                    r.substring(0, Math.min(r.length(), 64)));
+//                            Timber.d("\\\\response\\\\ response = '%s'",
+//                                    r.substring(0, Math.min(r.length(), 64)));
                             imageChannel.onNext(parseResponse(r));
                             resetBuffers();
                         } else {

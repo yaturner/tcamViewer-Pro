@@ -461,11 +461,14 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             ///Timber.d("Response String is %s", response);
             //get image
             if (response.equalsIgnoreCase("metadata")) {
+                //resuse the ImageDto instance to save time and space
                 if (cameraViewModel.getImageDto().getValue() != null) {
                     cameraViewModel.getImageDto().getValue().parse(obj, settings.getPalette().getValue());
                 } else {
                     cameraViewModel.setImageDto(new ImageDto(obj, settings.getPalette().getValue()));
                 }
+//                Timber.d("\\\\recording\\\\ createDate = %s",
+//                        cameraViewModel.getImageDto().getValue().getCreationDate().toString());
                 if(cameraViewModel.isRecording() && recordingOutputStream != null) {
                     try {
                         //the first image is the start date, the last the end date

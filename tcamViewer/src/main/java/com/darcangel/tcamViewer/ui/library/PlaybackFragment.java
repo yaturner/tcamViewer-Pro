@@ -37,6 +37,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.Timer;
 
 import io.sentry.Sentry;
@@ -74,7 +75,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                 bufferedReader.skip(1); //skip over \03
                 frameIndex = frameIndex + 1;
                 if (frameIndex < numFrames) {
-                    imageTimerHandler.postDelayed(this, 500);
+                    imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex-1));
                 } else {
                     imageTimerHandler.removeCallbacks(this);
                     if(bufferedReader != null) {
@@ -135,6 +136,9 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         } catch (IOException e) {
             e.printStackTrace();
             Sentry.captureException(e);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Sentry.captureException(e);
         }
     }
 
@@ -151,24 +155,49 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     }
 
 
-    private void analyzeRecording() throws IOException {
-        int c;
+    private void analyzeRecording() throws IOException, JSONException {
+        int c, bufferPos = 0;
         frameIndex = 0;
         bytesRead = 0;
+        long currTime;
         libraryViewModel.getFrameOffset().add(frameIndex, bytesRead);
         while ((c = bufferedReader.read()) != -1) {
             if (c == 3 && bytesRead < fileSize - 1) {
-                //exclude \03
+                ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, bufferPos)),
+                        "Rainbow");
+                if(frameIndex == 0) {
+                    libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
+                } else {
+                    if(imageDto.getCreationDate().getTime() <= libraryViewModel.getFrameDelay().get(frameIndex-1)) {
+                        Timber.d("oopppsssss");
+                    }
+                    libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
+//                    Timber.d("\\\\before\\\\ delay[%d] = %d", frameIndex, libraryViewModel.getFrameDelay().get(frameIndex));
+                    libraryViewModel.getFrameDelay().set(frameIndex-1,
+                            libraryViewModel.getFrameDelay().get(frameIndex) -
+                    libraryViewModel.getFrameDelay().get(frameIndex-1));
+//                    Timber.d("\\\\after\\\\ delay[%d] = %d, delay[%d] = %d", frameIndex-1,
+//                            libraryViewModel.getFrameDelay().get(frameIndex-1),
+//                            frameIndex,
+//                            libraryViewModel.getFrameDelay().get(frameIndex));
+                }
+                imageDto = null;
                 frameIndex = frameIndex + 1;
                 libraryViewModel.getFrameOffset().add(frameIndex, bytesRead + 1); //skip over \03
-                libraryViewModel.getFrameSize().add(frameIndex - 1, (int) (bytesRead -
-                        (frameIndex == 0 ? 0 : (libraryViewModel.getFrameOffset().get(frameIndex - 1)))));
+                libraryViewModel.getFrameSize().add(frameIndex - 1, bufferPos);
+                assert bufferPos == (int) (bytesRead -
+                        (frameIndex == 0 ? 0 : (libraryViewModel.getFrameOffset().get(frameIndex - 1))));
+                bufferPos = 0;
+            } else {
+                buffer[bufferPos] = (char)c;
+                bufferPos = bufferPos + 1;
             }
             bytesRead = bytesRead + 1;
         }
         libraryViewModel.getFrameSize().add(frameIndex,
                 (int) (bytesRead - libraryViewModel.getFrameOffset().get(frameIndex - 1)));
         numFrames = libraryViewModel.getFrameOffset().size() - 1; // less footer and final \03
+        libraryViewModel.getFrameDelay().remove(numFrames-1); //last value is for the footer
         Timber.d("read %d frames", frameIndex);
     }
 
@@ -189,6 +218,17 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             result = null;
         } catch (JSONException e) {
             e.printStackTrace();
+            Sentry.captureException(e);
+        } finally {
+            if(bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                    bufferedReader = null;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Sentry.captureException(e);
+                }
+            }
         }
         return result;
     }
