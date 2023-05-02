@@ -104,5 +104,35 @@
             app:layout_constraintTop_toBottomOf="@+id/ivCamera"
             app:layout_constraintStart_toStartOf="@+id/glLeft"
             app:layout_constraintEnd_toStartOf="@+id/glRight"/>
+
+        <RadioGroup
+            android:id="@+id/rgVideoControls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal|fill_horizontal"
+            android:orientation="horizontal"
+            app:layout_constraintStart_toStartOf="@id/ivCamera"
+            app:layout_constraintTop_toBottomOf="@id/tvFilename"
+            app:layout_constraintEnd_toEndOf="@id/ivCamera">
+
+            <Button
+                android:id="@+id/btnRewind"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/backward_68_68" />
+
+            <Button
+                android:id="@+id/btnPlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/ff_w_20_20" />
+
+            <Button
+                android:id="@+id/btnFastForward"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:foreground="@drawable/forward_68_68" />
+
+        </RadioGroup>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
