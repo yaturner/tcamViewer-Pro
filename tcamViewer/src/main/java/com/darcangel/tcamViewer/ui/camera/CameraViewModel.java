@@ -298,20 +298,6 @@ public class CameraViewModel extends ViewModel {
     }
 
     public void setRecordingStartDate() {
-        if (imageDto.getValue() != null) {
-            recordingDto.setStartDate(imageDto.getValue().getCreationDate());
-        } else {
-            recordingDto.setStartDate(new Date());
-        }
-    }
-
-    public void setRecordingEndDate() {
-        {
-            if (imageDto.getValue() != null) {
-                recordingDto.setEndDate(imageDto.getValue().getCreationDate());
-            } else {
-                recordingDto.setEndDate(new Date());
-            }
-        }
+        recordingDto.setStartDate(new Date());
     }
 }

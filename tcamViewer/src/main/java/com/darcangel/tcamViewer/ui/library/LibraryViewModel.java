@@ -4,16 +4,14 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.RecordingDto;
 
 import java.util.ArrayList;
 
 public class LibraryViewModel extends ViewModel {
     private MutableLiveData<ArrayList<ImageDto>> selectedImages;
     private ImageDto playbackImageDto;
-    private ArrayList<Long> frameOffset;
-    private ArrayList<Integer> frameSize;
-    private ArrayList<Long> frameDelay;
-
+    private RecordingDto recordingDto;
 
     public LibraryViewModel() {
         clearAllSelectedImages();
@@ -40,26 +38,34 @@ public class LibraryViewModel extends ViewModel {
     }
 
     public ArrayList<Long> getFrameOffset() {
-        return frameOffset;
+        return recordingDto.getFrameOffset();
     }
 
     public void resetFrameOffset() {
-        this.frameOffset = new ArrayList<Long>();
+        recordingDto.setFrameOffset(new ArrayList<Long>());
     }
 
     public ArrayList<Integer> getFrameSize() {
-        return frameSize;
+        return recordingDto.getFrameSize();
     }
 
     public void resetFrameSize() {
-        this.frameSize = new ArrayList<Integer>();
+        recordingDto.setFrameSize(new ArrayList<Integer>());
     }
 
     public ArrayList<Long> getFrameDelay() {
-        return frameDelay;
+        return recordingDto.getFrameDelay();
     }
 
     public void resetFrameDelay() {
-        this.frameDelay = new ArrayList<Long>();
+        recordingDto.setFrameDelay(new ArrayList<Long>());
+    }
+
+    public RecordingDto getRecordingDto() {
+        return recordingDto;
+    }
+
+    public void setRecordingDto(RecordingDto recordingDto) {
+        this.recordingDto = recordingDto;
     }
 }

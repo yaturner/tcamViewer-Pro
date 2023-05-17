@@ -37,6 +37,7 @@ import com.darcangel.tcamViewer.adapters.LibrarySlideshowAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibrarySlideshowBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
@@ -245,10 +246,17 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                     })
                     .setPositiveButton("OK", (dlg, which) -> {
                         slideshowAdapter.removeItem(position);
-                        File file = new File(imageDto.getFilename());
+                        String filename = imageDto.getFilename();
+                        File file = new File(filename);
                         if (file.exists()) {
                             file.delete();
                         }
+                        String infoFilename = filename.substring(0, filename.lastIndexOf(".")) + ".info";
+                        file = new File(infoFilename);
+                        if (file.exists()) {
+                            file.delete();
+                        }
+                        file = null;
                         if (slideshowAdapter.getItemCount() == 0) {
                             NavDirections navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
                             mainActivity.getNavController().navigate(navDirections);
@@ -317,6 +325,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             mainActivity.getNavController().navigate(navDirections);
             return true;
         } else if(id == R.id.action_movie_play) {
+            libraryViewModel.setRecordingDto(new RecordingDto());
             libraryViewModel.setPlaybackImageDto(imageDtos.get(position));
             libraryViewModel.resetFrameOffset();
             libraryViewModel.resetFrameSize();

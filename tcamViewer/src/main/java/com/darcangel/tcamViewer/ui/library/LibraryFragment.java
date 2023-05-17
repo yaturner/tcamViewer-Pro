@@ -195,8 +195,13 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                     })
                     .setPositiveButton("OK", (dlg, which) -> {
                         deleteImages(selection);
-                        for(String path : deletedFile) {
-                            File file = new File(path);
+                        for(String filename : deletedFile) {
+                            File file = new File(filename);
+                            if (file.exists()) {
+                                file.delete();
+                            }
+                            String infoFilename = filename.substring(0, filename.lastIndexOf(".")) + ".info";
+                            file = new File(infoFilename);
                             if (file.exists()) {
                                 file.delete();
                             }

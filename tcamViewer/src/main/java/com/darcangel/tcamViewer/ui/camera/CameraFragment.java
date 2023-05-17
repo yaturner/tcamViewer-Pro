@@ -3,6 +3,7 @@ package com.darcangel.tcamViewer.ui.camera;
 import static android.app.Activity.RESULT_OK;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -45,6 +46,7 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentCameraBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.utils.CameraUtils;
@@ -58,6 +60,7 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Locale;
@@ -84,59 +87,63 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long endNano;
     private long prevImageTime = 0L;
     private BufferedOutputStream recordingOutputStream;
+    private ObjectOutputStream infoOutputStream;
     private String recordingFilename;
+    private String infoFilename;
+    private File tmjsn;
+    private RecordingDto recordingDto;
 
     private boolean showFrameRate = false;
 
-    private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    Timber.d("\\\\result = %s", result.toString());
-                    if(result.getResultCode() == RESULT_OK) {
-                        Intent intent = result.getData();
-                        String filename = "";
-                        try {
-                            Uri uri = intent.getData();
-                            String uriString = uri.toString();
-                            if (result.getData().getData().toString().startsWith("content://")) {
-                                Cursor cursor = null;
-                                try {
-                                    cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
-                                    if (cursor != null && cursor.moveToFirst()) {
-                                        int index = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
-                                        filename = (index < 0) ? "" : cursor.getString(index);
-                                    }
-                                } finally {
-                                    cursor.close();
-                                }
-                            }
-                            String words[] = filename.split("\\.");
-                            if(words.length != 2  || !words[1].startsWith("tmjsn"))
-                            {
-                                Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
-                                        .show();
-                                recordingOutputStream = null;
-                                return;
-
-                            } else {
-                                recordingOutputStream = new BufferedOutputStream(mainActivity.getContentResolver()
-                                        .openOutputStream(result.getData().getData()));
-                                cameraViewModel.setRecording(true);
-                                cameraViewModel.startStreaming(true);
-                                cameraViewModel.setInStreamingMode(true);
-                                mainActivity.invalidateOptionsMenu();
-                            }
-                        } catch(FileNotFoundException e){
-                            ////JMT Sentry.captureException(e);
-                            e.printStackTrace();
-                            recordingOutputStream = null;
-                        }
-
-                    }
-                }
-            });
+//    private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
+//            new ActivityResultContracts.StartActivityForResult(),
+//            new ActivityResultCallback<ActivityResult>() {
+//                @Override
+//                public void onActivityResult(ActivityResult result) {
+//                    Timber.d("\\\\result = %s", result.toString());
+//                    if(result.getResultCode() == RESULT_OK) {
+//                        Intent intent = result.getData();
+//                        String filename = "";
+//                        try {
+//                            Uri uri = intent.getData();
+//                            String uriString = uri.toString();
+//                            if (result.getData().getData().toString().startsWith("content://")) {
+//                                Cursor cursor = null;
+//                                try {
+//                                    cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+//                                    if (cursor != null && cursor.moveToFirst()) {
+//                                        int index = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+//                                        filename = (index < 0) ? "" : cursor.getString(index);
+//                                    }
+//                                } finally {
+//                                    cursor.close();
+//                                }
+//                            }
+//                            String words[] = filename.split("\\.");
+//                            if(words.length != 2  || !words[1].startsWith("tmjsn"))
+//                            {
+//                                Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
+//                                        .show();
+//                                recordingOutputStream = null;
+//                                return;
+//
+//                            } else {
+//                                recordingOutputStream = new BufferedOutputStream(mainActivity.getContentResolver()
+//                                        .openOutputStream(result.getData().getData()));
+//                                cameraViewModel.setRecording(true);
+//                                cameraViewModel.startStreaming(true);
+//                                cameraViewModel.setInStreamingMode(true);
+//                                mainActivity.invalidateOptionsMenu();
+//                            }
+//                        } catch(FileNotFoundException e){
+//                            ////JMT Sentry.captureException(e);
+//                            e.printStackTrace();
+//                            recordingOutputStream = null;
+//                        }
+//
+//                    }
+//                }
+//            });
 
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
@@ -233,13 +240,18 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 mainActivity.invalidateOptionsMenu();
                 if (BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION) &&  cameraViewModel.isRecording()) {
                     cameraViewModel.setRecording(false);
-                    //write the footer summary
+                    //write the footer summary and the info file
+                    recordingDto.getFrameOffset().add(tmjsn.length());
                     String recordingFooter = cameraViewModel.getRecordingFooter();
                     try {
                         recordingOutputStream.write(recordingFooter.getBytes(StandardCharsets.UTF_8));
                         recordingOutputStream.flush();
                         recordingOutputStream.close();
                         recordingOutputStream = null;
+                        //full path name
+                        infoOutputStream.writeObject(recordingDto);
+                        infoOutputStream.flush();
+                        infoOutputStream.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                         Sentry.captureException(e);
@@ -264,12 +276,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 if (!path.exists()) {
                     path.mkdir();
                 }
-                File tmjsn = new File(path, file);
+                tmjsn = new File(path, file);
                 if (!tmjsn.exists()) {
                     tmjsn.createNewFile();
                 }
                 recordingFilename = path +"/" + file;
                 recordingOutputStream = new BufferedOutputStream(new FileOutputStream(tmjsn));
+                String filename = tmjsn.getPath();
+                infoFilename = filename.substring(0, filename.lastIndexOf(".")) + ".info";
+                FileOutputStream fos = new FileOutputStream(infoFilename);
+                infoOutputStream = new ObjectOutputStream(fos);
+
                 cameraViewModel.setRecording(true);
                 cameraViewModel.startStreaming(true);
                 cameraViewModel.setInStreamingMode(true);
@@ -473,12 +490,17 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     try {
                         //the first image is the start date, the last the end date
                         if(cameraViewModel.getFrameCount() == 0) {
+                            recordingDto = cameraViewModel.getRecordingDto();
                             cameraViewModel.setRecordingStartDate();
                         }
-                        cameraViewModel.setRecordingEndDate();
-                        recordingOutputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
+                        byte[] bytes = obj.toString().getBytes(StandardCharsets.UTF_8);
+                        recordingOutputStream.write(bytes);
                         recordingOutputStream.write((byte)3);
                         recordingOutputStream.flush();
+                        recordingDto.getFrameOffset().add(tmjsn.length());
+                        recordingDto.getFrameSize().add(bytes.length);
+                        recordingDto.addFrameDelay();
+                        cameraViewModel.setRecordingStartDate();
                         cameraViewModel.incrFrameCount();
                     } catch (IOException e) {
                         e.printStackTrace();

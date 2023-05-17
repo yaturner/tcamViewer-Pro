@@ -1,6 +1,5 @@
 package com.darcangel.tcamViewer.ui.library;
 
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -11,7 +10,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,9 +22,9 @@ import androidx.navigation.NavDirections;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.databinding.FragmentPlaybackBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.RecordingFooterDto;
 import com.darcangel.tcamViewer.utils.CameraUtils;
-import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.ParseException;
+import java.io.ObjectInputStream;
 import java.util.Timer;
 
 import io.sentry.Sentry;
@@ -52,20 +50,23 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     private Timer imageTimer;
     private Handler imageTimerHandler;
     private BufferedReader bufferedReader;
+    private BufferedReader bufferedInfoReader;
+    private ObjectInputStream infoInputStream;
     private MainActivity mainActivity;
     private CameraUtils cameraUtils;
     private FragmentPlaybackBinding binding;
     private View root;
     private LibraryViewModel libraryViewModel;
-    private ImageDto[] playbackImageArray = new ImageDto[2];
+    private RecordingDto recordingDto;
     private int numFrames;
     private long fileSize;
-    private static char[] buffer = new char[64767];
+    private static final char[] buffer = new char[64767];
 
-    private Runnable imagePlayer = new Runnable() {
+    private final Runnable imagePlayer = new Runnable() {
         @Override
         public void run() {
             try {
+                numFrames = libraryViewModel.getRecordingDto().getNumFrames();
                 int len = libraryViewModel.getFrameSize().get(frameIndex);
                 int bytesRead = bufferedReader.read(buffer, 0, len);
                 assert bytesRead == len;
@@ -104,8 +105,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         frameIndex = 0;
         bytesRead = 0;
         //prime the pump
-        playbackImageArray[0] = libraryViewModel.getPlaybackImageDto();
-        filename = playbackImageArray[0].getFilename();
+        filename = libraryViewModel.getPlaybackImageDto().getFilename();
         imageTimer = new Timer("imageTimer");
         imageTimerHandler = new Handler();
     }
@@ -126,9 +126,14 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         super.onViewCreated(view, savedInstanceState);
         try {
             openRecordingFile();
-            analyzeRecording();
-            recordingFooterDto = new RecordingFooterDto(getFooterInfo());
-            numFrames = recordingFooterDto.getNumFrames();
+            openInfoFile();
+            if(recordingDto == null) {
+                analyzeRecording();
+                recordingFooterDto = new RecordingFooterDto(getFooterInfo());
+                numFrames = recordingFooterDto.getNumFrames();
+            } else {
+                libraryViewModel.setRecordingDto(recordingDto);
+            }
             playRecording();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -148,9 +153,30 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
     }
 
+    private void openInfoFile() {
+        String infoFilename = filename.substring(0, filename.lastIndexOf(".")) + ".info";
+        File file = new File(infoFilename);
+        try {
+            if (file.exists()) {
+                String filename = file.getName();
+                FileInputStream fos = new FileInputStream(infoFilename);
+                infoInputStream = new ObjectInputStream(fos);
+                recordingDto = (RecordingDto) infoInputStream.readObject();
+                libraryViewModel.setRecordingDto(recordingDto);
+                fos.close();
+            } else {
+                recordingDto = null;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            Sentry.captureException(e);
+        }
+    }
+
     private void playRecording() throws IOException{
         frameIndex = 0;
         openRecordingFile();
+        openInfoFile();
         imageTimerHandler.postDelayed(imagePlayer, 500);
     }
 
@@ -160,6 +186,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         frameIndex = 0;
         bytesRead = 0;
         long currTime;
+        libraryViewModel.setRecordingDto(new RecordingDto());
         libraryViewModel.getFrameOffset().add(frameIndex, bytesRead);
         while ((c = bufferedReader.read()) != -1) {
             if (c == 3 && bytesRead < fileSize - 1) {
@@ -172,14 +199,9 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                         Timber.d("oopppsssss");
                     }
                     libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
-//                    Timber.d("\\\\before\\\\ delay[%d] = %d", frameIndex, libraryViewModel.getFrameDelay().get(frameIndex));
                     libraryViewModel.getFrameDelay().set(frameIndex-1,
                             libraryViewModel.getFrameDelay().get(frameIndex) -
                     libraryViewModel.getFrameDelay().get(frameIndex-1));
-//                    Timber.d("\\\\after\\\\ delay[%d] = %d, delay[%d] = %d", frameIndex-1,
-//                            libraryViewModel.getFrameDelay().get(frameIndex-1),
-//                            frameIndex,
-//                            libraryViewModel.getFrameDelay().get(frameIndex));
                 }
                 imageDto = null;
                 frameIndex = frameIndex + 1;

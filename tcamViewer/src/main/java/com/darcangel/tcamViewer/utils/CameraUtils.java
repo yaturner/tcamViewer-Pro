@@ -516,7 +516,8 @@ public class CameraUtils extends BaseObservable {
 
     public Boolean saveTjsn(ImageDto imageDto) throws IOException {
 
-        File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File rootDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+//        File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         String file = generateNewFilename(false) + ".tjsn";
         File path = new File(rootDir + "/" + generateNewPath());
         if (!path.exists()) {
