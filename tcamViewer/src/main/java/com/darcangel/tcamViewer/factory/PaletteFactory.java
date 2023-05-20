@@ -7,11 +7,12 @@ import com.darcangel.tcamViewer.pallete.DoubleRainbow;
 import com.darcangel.tcamViewer.pallete.Fusion;
 import com.darcangel.tcamViewer.pallete.Gray;
 import com.darcangel.tcamViewer.pallete.Ironblack;
+import com.darcangel.tcamViewer.pallete.Isotherm;
 import com.darcangel.tcamViewer.pallete.Rainbow;
 import com.darcangel.tcamViewer.pallete.Sepia;
 
 public class PaletteFactory {
-    private String[] paletteNames = {
+    private final String[] paletteNames = {
             "Arctic",
             "Banded",
             "Blackhot",
@@ -19,10 +20,11 @@ public class PaletteFactory {
             "Fusion",
             "Gray",
             "Ironblack",
+            "Isotherm",
             "Rainbow",
             "Sepia"
     };
-    private int[][][] palettes = {
+    private final int[][][] palettes = {
             Arctic.palette,
             Banded.palette,
             Blackhot.pallete,
@@ -30,6 +32,7 @@ public class PaletteFactory {
             Fusion.palette,
             Gray.palette,
             Ironblack.palette,
+            Isotherm.palette,
             Rainbow.palette,
             Sepia.palette
     };

@@ -13,7 +13,6 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
 
-import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
@@ -32,7 +31,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -516,8 +514,7 @@ public class CameraUtils extends BaseObservable {
 
     public Boolean saveTjsn(ImageDto imageDto) throws IOException {
 
-        File rootDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
-//        File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         String file = generateNewFilename(false) + ".tjsn";
         File path = new File(rootDir + "/" + generateNewPath());
         if (!path.exists()) {

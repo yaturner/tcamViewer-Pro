@@ -1,22 +1,15 @@
 package com.darcangel.tcamViewer.ui.camera;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
-import android.provider.OpenableColumns;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,10 +21,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.internal.view.SupportMenuItem;
@@ -57,7 +46,6 @@ import org.json.JSONObject;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -68,7 +56,6 @@ import java.util.Locale;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.sentry.Sentry;
-import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 
