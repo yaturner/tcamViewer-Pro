@@ -1,5 +1,8 @@
 package com.darcangel.tcamViewer.utils;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +12,8 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -18,11 +23,13 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.ui.camera.CameraFragment;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +49,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import io.sentry.Sentry;
+import timber.log.Timber;
 
 
 public class CameraUtils extends BaseObservable {
@@ -513,8 +521,8 @@ public class CameraUtils extends BaseObservable {
     }
 
     public Boolean saveTjsn(ImageDto imageDto) throws IOException {
-
-        File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+        MainActivity mainActivity = MainActivity.getInstance();
+        File rootDir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         String file = generateNewFilename(false) + ".tjsn";
         File path = new File(rootDir + "/" + generateNewPath());
         if (!path.exists()) {
@@ -529,8 +537,6 @@ public class CameraUtils extends BaseObservable {
         fileOutputStream.write(imageDto.getJsonObject().toString().getBytes(StandardCharsets.US_ASCII));
         fileOutputStream.flush();
         fileOutputStream.close();
-
-
         return true;
     }
 

@@ -137,7 +137,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     private void initDataSet() {
         imageDtos = new ArrayList<ImageDto>();
         try {
-            File pictureDirectory = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            File pictureDirectory = getContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
             File directoryList[] = pictureDirectory.listFiles();
             File[] imageFileList;
             imageFolder.addAll(Arrays.asList(directoryList));

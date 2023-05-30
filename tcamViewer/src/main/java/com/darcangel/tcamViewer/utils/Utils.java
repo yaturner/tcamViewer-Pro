@@ -1,13 +1,16 @@
 package com.darcangel.tcamViewer.utils;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Pair;
 import android.view.View;
@@ -17,6 +20,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -32,6 +39,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -42,6 +50,8 @@ public class Utils {
     private MainActivity mainActivity;
     private Settings settings;
     private CameraUtils cameraUtils;
+    private ActivityResultLauncher<Intent> activityResultLauncher;
+
 
     public Utils() {
         mainActivity = MainActivity.getInstance();
@@ -49,7 +59,7 @@ public class Utils {
         cameraUtils = mainActivity.getCameraUtils();
     }
 
-    public void exportImage(final ImageDto imageDto) throws FileNotFoundException {
+    public void exportImage(final ImageDto imageDto) throws FileNotFoundException, IOException {
         String imageFilename;
         String imageDirectory;
         String imageName;
@@ -69,6 +79,41 @@ public class Utils {
         saveBitmap(bitmap, imageDirectory, imageName);
         Toast.makeText(mainActivity, "Image exported as " + imageName, Toast.LENGTH_LONG).show();
     }
+
+//    @NonNull
+//    public Uri saveTjsn(@NonNull final String tjsnString,
+//                        @NonNull final String imageDirectory,
+//                        @NonNull final String imageName) throws IOException {
+//        final int CREATE_FILE = 1001;
+//        activityResultLauncher = mainActivity.registerForActivityResult(
+//                new ActivityResultContracts.StartActivityForResult(),
+//                new ActivityResultCallback<ActivityResult>() {
+//                    @Override
+//                    public void onActivityResult(ActivityResult result) {
+//                        if (result.getResultCode() == Activity.RESULT_OK) {
+//                            // There are no request codes
+//                            Intent data = result.getData();
+//                            ////doSomeOperations();
+//                        }
+//                    }
+//                });
+//
+//        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+//        intent.addCategory(Intent.CATEGORY_OPENABLE);
+//        intent.setType("text/plain");
+//        intent.putExtra(Intent.EXTRA_TITLE, "test.tjsn");
+//
+//        Uri pickerInitialUri = Uri.parse(imageDirectory);
+//
+//        // Optionally, specify a URI for the directory that should be opened in
+//        // the system file picker when your app creates the document.
+//        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Environment.DIRECTORY_DOCUMENTS + "/" + imageDirectory);
+//
+//        activityResultLauncher.launch(intent);
+//
+//        return null;
+//    }
+
 
     /**
      * createExportImage
@@ -244,6 +289,7 @@ public class Utils {
         }
         return null;
     }
+
 
     public boolean acceptableFiletype(final File filename) {
         boolean result = false;

@@ -94,4 +94,7 @@
     <string name="play">Play</string>
     <string name="analyze">Analyze</string>
     <string name="recording">rec</string>
+    <string name="image">Image</string>
+    <string name="raw">Raw</string>
+    <string name="image_raw">Image+Raw</string>
 </resources>

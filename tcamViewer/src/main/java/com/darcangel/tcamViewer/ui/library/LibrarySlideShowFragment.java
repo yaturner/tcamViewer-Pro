@@ -316,7 +316,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             try {
                 ImageDto imageDto = imageDtos.get(position);
                 utils.exportImage(imageDto);
-            } catch (FileNotFoundException e) {
+            } catch (IOException e) {
+                e.printStackTrace();
                 Sentry.captureException(e);
             }
             return true;

@@ -1,15 +1,22 @@
 package com.darcangel.tcamViewer.ui.camera;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +28,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.internal.view.SupportMenuItem;
@@ -46,16 +57,19 @@ import org.json.JSONObject;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.sentry.Sentry;
+import timber.log.Timber;
 
 public class CameraFragment extends Fragment implements View.OnTouchListener, MenuProvider {
 
@@ -73,64 +87,71 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private long startNano;
     private long endNano;
     private long prevImageTime = 0L;
+    private BufferedOutputStream tjsnOutputStream;
     private BufferedOutputStream recordingOutputStream;
     private ObjectOutputStream infoOutputStream;
+    private String tjsnFilename;
     private String recordingFilename;
     private String infoFilename;
     private File tmjsn;
     private RecordingDto recordingDto;
+    private boolean exportTjsn;
+    private boolean saveImage;
 
     private boolean showFrameRate = false;
 
-//    private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            new ActivityResultCallback<ActivityResult>() {
-//                @Override
-//                public void onActivityResult(ActivityResult result) {
-//                    Timber.d("\\\\result = %s", result.toString());
-//                    if(result.getResultCode() == RESULT_OK) {
-//                        Intent intent = result.getData();
-//                        String filename = "";
-//                        try {
-//                            Uri uri = intent.getData();
-//                            String uriString = uri.toString();
-//                            if (result.getData().getData().toString().startsWith("content://")) {
-//                                Cursor cursor = null;
-//                                try {
-//                                    cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
-//                                    if (cursor != null && cursor.moveToFirst()) {
-//                                        int index = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
-//                                        filename = (index < 0) ? "" : cursor.getString(index);
-//                                    }
-//                                } finally {
-//                                    cursor.close();
-//                                }
-//                            }
-//                            String words[] = filename.split("\\.");
-//                            if(words.length != 2  || !words[1].startsWith("tmjsn"))
-//                            {
-//                                Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
-//                                        .show();
-//                                recordingOutputStream = null;
-//                                return;
-//
-//                            } else {
-//                                recordingOutputStream = new BufferedOutputStream(mainActivity.getContentResolver()
-//                                        .openOutputStream(result.getData().getData()));
-//                                cameraViewModel.setRecording(true);
-//                                cameraViewModel.startStreaming(true);
-//                                cameraViewModel.setInStreamingMode(true);
-//                                mainActivity.invalidateOptionsMenu();
-//                            }
-//                        } catch(FileNotFoundException e){
-//                            ////JMT Sentry.captureException(e);
-//                            e.printStackTrace();
-//                            recordingOutputStream = null;
-//                        }
-//
-//                    }
-//                }
-//            });
+    private ActivityResultLauncher<Intent> saveActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    Timber.d("\\\\result = %s", result.toString());
+                    if(result.getResultCode() == RESULT_OK) {
+                        Intent intent = result.getData();
+                        String filename = "";
+                        Uri uri = intent.getData();
+                            String uriString = uri.toString();
+                            if (result.getData().getData().toString().startsWith("content://")) {
+                                Cursor cursor = null;
+                                try {
+                                    cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+                                    if (cursor != null && cursor.moveToFirst()) {
+                                        int index = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+                                        filename = (index < 0) ? "" : cursor.getString(index);
+                                    }
+                                } finally {
+                                    cursor.close();
+                                }
+                            }
+                            String words[] = filename.split("\\.");
+                            if(words.length != 2  || !words[1].startsWith("tjsn"))
+                            {
+                                Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
+                                        .show();
+                                return;
+
+                            } else {
+                                try {
+                                    String tjsnString = cameraViewModel.getImageDto().getValue().getTjsnString();
+                                    BufferedOutputStream tjsnOutputStream = new BufferedOutputStream(mainActivity.getContentResolver()
+                                            .openOutputStream(intent.getData()));
+
+                                    tjsnOutputStream.write(tjsnString.getBytes(StandardCharsets.UTF_8));
+                                    tjsnOutputStream.flush();
+                                    tjsnOutputStream.close();
+
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                    Sentry.captureException(e);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                            }
+
+                    }
+                }
+            });
 
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
@@ -210,6 +231,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     setPaletteFromMenu("Ironblack", menuItem);
                 }
                 break;
+            case R.id.palette_isotherm:
+                if (!settings.getPalette().getValue().equalsIgnoreCase("Isotherm")) {
+                    setPaletteFromMenu("Isotherm", menuItem);
+                }
+                break;
             case R.id.palette_rainbow:
                 if (!settings.getPalette().getValue().equalsIgnoreCase("Rainbow")) {
                     setPaletteFromMenu("Rainbow", menuItem);
@@ -225,7 +251,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
-                if (BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION) &&  cameraViewModel.isRecording()) {
+                if (BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION) && cameraViewModel.isRecording()) {
                     cameraViewModel.setRecording(false);
                     //write the footer summary and the info file
                     recordingDto.getFrameOffset().add(tmjsn.length());
@@ -257,63 +283,92 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 // start recording the stream
                 //for simplicity's sake use the same naming conventions as for tjsn
                 try {
-                File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                String file = cameraUtils.generateNewFilename(true) + ".tmjsn";
-                File path = new File(rootDir + "/" + cameraUtils.generateNewPath());
-                if (!path.exists()) {
-                    path.mkdir();
-                }
-                tmjsn = new File(path, file);
-                if (!tmjsn.exists()) {
-                    tmjsn.createNewFile();
-                }
-                recordingFilename = path +"/" + file;
-                recordingOutputStream = new BufferedOutputStream(new FileOutputStream(tmjsn));
-                String filename = tmjsn.getPath();
-                infoFilename = filename.substring(0, filename.lastIndexOf(".")) + ".info";
-                FileOutputStream fos = new FileOutputStream(infoFilename);
-                infoOutputStream = new ObjectOutputStream(fos);
+                    File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                    String file = cameraUtils.generateNewFilename(true) + ".tmjsn";
+                    File path = new File(rootDir + "/" + cameraUtils.generateNewPath());
+                    if (!path.exists()) {
+                        path.mkdirs();
+                    }
+                    tmjsn = new File(path, file);
+                    if (!tmjsn.exists()) {
+                        tmjsn.createNewFile();
+                    }
+                    recordingFilename = path + "/" + file;
+                    recordingOutputStream = new BufferedOutputStream(new FileOutputStream(tmjsn));
+                    String filename = tmjsn.getPath();
+                    infoFilename = filename.substring(0, filename.lastIndexOf(".")) + ".info";
+                    FileOutputStream fos = new FileOutputStream(infoFilename);
+                    infoOutputStream = new ObjectOutputStream(fos);
 
-                cameraViewModel.setRecording(true);
-                cameraViewModel.startStreaming(true);
-                cameraViewModel.setInStreamingMode(true);
-                mainActivity.invalidateOptionsMenu();
-                } catch(IOException e) {
+                    cameraViewModel.setRecording(true);
+                    cameraViewModel.startStreaming(true);
+                    cameraViewModel.setInStreamingMode(true);
+                    mainActivity.invalidateOptionsMenu();
+                } catch (IOException e) {
                     e.printStackTrace();
                     Sentry.captureException(e);
                 }
-
-                //  get the filename for saving
-//                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-//                intent.setType("application/tmjsn");
-//                intent.putExtra(Intent.EXTRA_TITLE, "tcam-video.tmjsn");
-//                intent.addCategory(Intent.CATEGORY_OPENABLE);
-//                shareActivityResultLauncher.launch(intent);
-//                //shareActivityResult handles the rest
                 break;
             }
 
             // file menu items
-            case R.id.action_save:
+            case R.id.action_save_raw:
+                exportTjsn = true;
+                saveImage = false;
+                saveExportTjsn();
+                break;
+            case R.id.action_save_both:
+                exportTjsn = true;
+                saveImage = true;
+                saveExportTjsn();
+                break;
+            case R.id.action_save_image:
                 // save
-                if (settings.getShutterSound().getValue()) {
-                    MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
-                    mediaPlayer.start();
-                }
-                try {
-                    imageDto.saveTjsn();
-                    if (settings.getExportOnSave().getValue()) {
-                        mainActivity.getUtils().exportImage(imageDto);
-                    }
-                } catch (IOException e) {
-                    Sentry.captureException(e);
-                    //TODO handle error
-                }
+                exportTjsn = false;
+                saveImage = true;
+                saveExportTjsn();
                 break;
         }
-
         return true;
     }
+
+    private void saveExportTjsn() {
+        if (settings.getShutterSound().getValue()) {
+            MediaPlayer mediaPlayer = MediaPlayer.create(mainActivity, R.raw.camera_shutter);
+            mediaPlayer.start();
+        }
+        try {
+            ImageDto imageDto = cameraViewModel.getImageDto().getValue();
+            String imageName, imageDirectory;
+            Date now = new Date();
+            imageDirectory = CameraUtils.simpleDateFormatFolder.format(now);
+            imageName = CameraUtils.simpleDateFormatFile.format(now);
+            if (exportTjsn) {
+                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("application/vnd.tcam.tjsn");
+                intent.putExtra(Intent.EXTRA_TITLE, imageName + ".tjsn");
+
+                Uri pickerInitialUri = Uri.parse(imageDirectory);
+
+                // Optionally, specify a URI for the directory that should be opened in
+                // the system file picker when your app creates the document.
+                intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Environment.DIRECTORY_DOWNLOADS + "/"
+                        + imageDirectory);
+                saveActivityResultLauncher.launch(intent);
+            }
+            if(saveImage) {
+                imageDto.saveTjsn();
+                if (settings.getExportOnSave().getValue()) {
+                    mainActivity.getUtils().exportImage(imageDto);
+                }
+            }
+        } catch(Exception e){
+            Sentry.captureException(e);
+            //TODO handle error
+        }
+    }
+
 
     private void setPaletteFromMenu(final String paletteName, final MenuItem menuItem) {
         SupportMenuItem item = ((SupportMenuItem) menuItem);

@@ -267,6 +267,10 @@ public class ImageDto {
         this.minTemperature = minTemperature;
     }
 
+    public String getTjsnString() {
+        return jsonObject.toString();
+    }
+
     /*********************************************************************/
     /*                                                                   */
     /*                      Extenstions                                  */

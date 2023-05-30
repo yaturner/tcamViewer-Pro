@@ -87,6 +87,7 @@
         <item>Fusion</item>
         <item>Gray</item>
         <item>Ironblack</item>
+        <item>Isotherm</item>
         <item>Rainbow</item>
         <item>Sepia</item>
     </string-array>
@@ -98,6 +99,7 @@
     <item name="palette_fusion" type="id" />
     <item name="palette_gray" type="id" />
     <item name="palette_ironblack" type="id" />
+    <item name="palette_isotherm" type="id" />
     <item name="palette_rainbow" type="id" />
     <item name="palette_sepia" type="id" />
 palette_
@@ -109,6 +111,7 @@ palette_
         <item>@id/palette_fusion</item>
         <item>@id/palette_gray</item>
         <item>@id/palette_ironblack</item>
+        <item>@id/palette_isotherm</item>
         <item>@id/palette_rainbow</item>
         <item>@id/palette_sepia</item>
     </integer-array>

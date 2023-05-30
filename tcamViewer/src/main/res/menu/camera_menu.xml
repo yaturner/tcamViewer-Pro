@@ -5,7 +5,23 @@
         android:id="@+id/action_save"
         android:title="@string/save"
         android:visible="true"
-        app:showAsAction="always|withText" />
+        app:showAsAction="always|withText" >
+        <menu>
+            <item
+                android:id="@+id/action_save_image"
+                android:title="@string/image"
+                android:visible="true" />
+            <item
+                android:id="@+id/action_save_raw"
+                android:title="@string/raw"
+                android:visible="true" />
+            <item
+                android:id="@+id/action_save_both"
+                android:title="@string/image_raw"
+                android:visible="true" />
+        </menu>
+
+    </item>
     <item
         android:id="@+id/action_connect"
         android:icon="@drawable/bolt_30_30"
