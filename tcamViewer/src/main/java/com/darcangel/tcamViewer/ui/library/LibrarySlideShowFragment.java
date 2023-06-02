@@ -1,11 +1,17 @@
 package com.darcangel.tcamViewer.ui.library;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,14 +47,17 @@ import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 
 import io.sentry.Sentry;
+import timber.log.Timber;
 
 
 public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
@@ -66,6 +75,60 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private int sharedImagePosition = -1;
     private int tab;
 
+    private ActivityResultLauncher<Intent> saveActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    Timber.d("\\\\result = %s", result.toString());
+                    if(result.getResultCode() == RESULT_OK) {
+                        Intent intent = result.getData();
+                        String filename = "";
+                        Uri uri = intent.getData();
+                        String uriString = uri.toString();
+                        if (result.getData().getData().toString().startsWith("content://")) {
+                            Cursor cursor = null;
+                            try {
+                                cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+                                if (cursor != null && cursor.moveToFirst()) {
+                                    int index = cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME);
+                                    filename = (index < 0) ? "" : cursor.getString(index);
+                                }
+                            } finally {
+                                cursor.close();
+                            }
+                        }
+                        String words[] = filename.split("\\.");
+                        if(words.length != 2  || !words[1].startsWith("tjsn"))
+                        {
+                            Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
+                                    .show();
+                            return;
+
+                        } else {
+                            try {
+                                int position = binding.vpSlideshow.getCurrentItem();
+                                ImageDto imageDto = imageDtos.get(position);
+                                String tjsnString = imageDto.getTjsnString();
+                                BufferedOutputStream tjsnOutputStream = new BufferedOutputStream(mainActivity.getContentResolver()
+                                        .openOutputStream(intent.getData()));
+
+                                tjsnOutputStream.write(tjsnString.getBytes(StandardCharsets.UTF_8));
+                                tjsnOutputStream.flush();
+                                tjsnOutputStream.close();
+
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                                Sentry.captureException(e);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+                }
+            });
 
     private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -320,6 +383,24 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 e.printStackTrace();
                 Sentry.captureException(e);
             }
+            return true;
+        } else if (id == R.id.action_item_export_tjsn) {
+            String imageName, imageDirectory;
+            Date now = new Date();
+            imageDirectory = CameraUtils.simpleDateFormatFolder.format(now);
+            imageName = CameraUtils.simpleDateFormatFile.format(now);
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/vnd.tcam.tjsn");
+            intent.putExtra(Intent.EXTRA_TITLE, imageName + ".tjsn");
+
+            Uri pickerInitialUri = Uri.parse(imageDirectory);
+
+            // Optionally, specify a URI for the directory that should be opened in
+            // the system file picker when your app creates the document.
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Environment.DIRECTORY_DOWNLOADS + "/"
+                    + imageDirectory);
+            saveActivityResultLauncher.launch(intent);
             return true;
         } else if (id == android.R.id.home) {
             navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();

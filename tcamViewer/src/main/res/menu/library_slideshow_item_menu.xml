@@ -16,6 +16,10 @@
                 android:title="@string/export"
                 android:icon="@drawable/ic_baseline_share_24"
                 android:visible="true"/>
+            <item android:id="@+id/action_item_export_tjsn"
+                android:title="@string/export_raw"
+                android:icon="@drawable/ic_baseline_share_24"
+                android:visible="true"/>
         </menu>
     </item>
     <item android:id="@+id/action_item_delete"

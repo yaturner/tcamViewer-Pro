@@ -124,6 +124,7 @@ dependencies {
     implementation 'com.github.luizgrp:SectionedRecyclerViewAdapter:v3.2.0'
     implementation 'io.sentry:sentry-android:6.15.0'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.leanback:leanback:1.0.0'
     implementation ('io.socket:socket.io-client:2.1.0') {
             exclude group: 'org.json', module: 'json'
         }
