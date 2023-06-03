@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.sentry.Sentry;
 
@@ -82,9 +83,11 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
     private File tmjsn;
     private RecordingDto recordingDto;
     private boolean showFrameRate = false;
+    private Menu menu;
 
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
+        this.menu = menu;
     }
 
     @Override
@@ -102,6 +105,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 // Connect
                 if (!cameraViewModel.connectToCamera()) {
                     mainActivity.showSocketError();
+                } else {
+                    cameraViewModel.setTime();
                 }
                 mainActivity.invalidateOptionsMenu();
                 break;
@@ -293,14 +298,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuProvider.super.onMenuClosed(menu);
     }
 
-    public interface FileSelectionEntryPoint {
-        Fragment fileSelectionOwner = null;
-
-        void onFileCreated(FileDescriptor fileDescriptor);
-
-        void onFileSelected(FileDescriptor fileDescriptor);
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -379,6 +376,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             return obj;
                         })
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doOnError(error -> {
+                            Sentry.captureException(error);
+                            error.printStackTrace();
+                        })
                         .subscribe(obj -> handleCameraResponse(obj), Throwable::printStackTrace);
                 settings.getCameraAddress().observe(mainActivity, address -> {
 //                    Timber.d("Camera ip address is now %s", address);
@@ -419,16 +420,16 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
 //                Timber.d("\\\\recording\\\\ createDate = %s",
 //                        cameraViewModel.getImageDto().getValue().getCreationDate().toString());
-                if(cameraViewModel.isRecording() && recordingOutputStream != null) {
+                if (cameraViewModel.isRecording() && recordingOutputStream != null) {
                     try {
                         //the first image is the start date, the last the end date
-                        if(cameraViewModel.getFrameCount() == 0) {
+                        if (cameraViewModel.getFrameCount() == 0) {
                             recordingDto = cameraViewModel.getRecordingDto();
                             cameraViewModel.setRecordingStartDate();
                         }
                         byte[] bytes = obj.toString().getBytes(StandardCharsets.UTF_8);
                         recordingOutputStream.write(bytes);
-                        recordingOutputStream.write((byte)3);
+                        recordingOutputStream.write((byte) 3);
                         recordingOutputStream.flush();
                         recordingDto.getFrameOffset().add(tmjsn.length());
                         recordingDto.getFrameSize().add(bytes.length);
@@ -442,10 +443,19 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 drawScreen();
                 //if we are not streaming and have an image, enable save
-                if (!cameraViewModel.getStreaming()) {
+                if (!cameraViewModel.getStreaming() && !menu.findItem(R.id.action_save).isEnabled()) {
                     mainActivity.invalidateOptionsMenu();
                 }
                 obj = null;
+            } else if (response.equalsIgnoreCase("cam_info")) {
+                if(obj.has("cam_info")) {
+                    JSONObject info = obj.getJSONObject("cam_info");
+                    if(info.has("info_string")) {
+                        if(info.getString("info_string").contains("failed")) {
+                            throw new RuntimeException("Failed: " + info.getString("info_string"));
+                        }
+                    }
+                }
             } else if (response.equalsIgnoreCase("error")) {
                 String msg = new JSONObject(obj.getString("error")).getString("message");
                 mainActivity.dismissProgressDialog(); //just in case
@@ -459,18 +469,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                             .setTitle(R.string.title_error)
                             .setMessage(R.string.error_can_not_connect);
                     builder.create().show();
-                }
-                //connect/disconnect
-            } else if (response.equalsIgnoreCase("connected")) {
-                String value = obj.getString("connected");
-                if (value.equalsIgnoreCase("true")) {
-                    if (cameraService.isConnected()) {
-                        cameraViewModel.setTime();
-                    }
-                    mainActivity.invalidateOptionsMenu();
-                } else {
-                    //TODO JMT ERROR
-                    mainActivity.invalidateOptionsMenu();
                 }
             }
         }

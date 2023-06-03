@@ -159,8 +159,6 @@ public class CameraService extends Service {
             Sentry.captureException(e);
             return false;
         }
-
-
         if (isConnected()) {
             Thread listeningThread = new Thread(listeningRunnable);
             listeningThread.start();

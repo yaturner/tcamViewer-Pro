@@ -60,7 +60,6 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     private GridLayoutManager gridLayoutManager;
     private RecyclerView.LayoutManager layoutManager;
     private ArrayList<File> imageFolder;
-//    private ArrayList<String> imageFile;
     private ArrayList<ImageDto> selectedImages;
     private ArrayList<ImageDto> imageDtos;
     private ArrayList<String> deletedFile;

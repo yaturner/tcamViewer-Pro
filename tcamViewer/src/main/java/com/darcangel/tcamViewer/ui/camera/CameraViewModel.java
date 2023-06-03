@@ -102,6 +102,7 @@ public class CameraViewModel extends ViewModel {
             cameraService.disconnect();
         } catch (Exception e) {
             Sentry.captureException(e);
+            e.printStackTrace();
         }
     }
 
@@ -134,6 +135,7 @@ public class CameraViewModel extends ViewModel {
             cameraService.sendCmd(cmd);
         } catch (Exception e) {
             Sentry.captureException(e);
+            e.printStackTrace();
         }
     }
 

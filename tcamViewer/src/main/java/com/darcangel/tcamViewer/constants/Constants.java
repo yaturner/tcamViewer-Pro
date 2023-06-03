@@ -137,6 +137,13 @@ public final class Constants {
             "\"exception\":\"%s\"\n" +
             "}\n" +
             "}";
+    public static final String CONNECTED_RESPONSE = "{\n" +
+            "\"connected\":{\n" +
+            "\"result\":\"%s\"\n" +
+            "}\n" +
+            "}";
+
+
 
     private Constants() {
     }
