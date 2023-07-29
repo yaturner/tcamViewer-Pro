@@ -1,6 +1,5 @@
 package com.darcangel.tcamViewer.utils;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -10,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Pair;
 import android.view.View;
@@ -20,15 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
@@ -36,10 +30,8 @@ import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -47,9 +39,9 @@ import javax.inject.Singleton;
 
 @Singleton
 public class Utils {
-    private MainActivity mainActivity;
-    private Settings settings;
-    private CameraUtils cameraUtils;
+    private final MainActivity mainActivity;
+    private final Settings settings;
+    private final CameraUtils cameraUtils;
     private ActivityResultLauncher<Intent> activityResultLauncher;
 
 
@@ -59,7 +51,7 @@ public class Utils {
         cameraUtils = mainActivity.getCameraUtils();
     }
 
-    public void exportImage(final ImageDto imageDto) throws FileNotFoundException, IOException {
+    public void exportImage(final ImageDto imageDto) throws IOException {
         String imageFilename;
         String imageDirectory;
         String imageName;
@@ -67,9 +59,9 @@ public class Utils {
         String[] word = imageDto.getFilename().split("/");
         int nWords = word.length;
         //if there is only one word, then it is the filename and take the folder from the CreationDate
-        if(nWords == 1) {
+        if (nWords == 1) {
             imageName = imageDto.getFilename().replace("img_", "").replace(".tjsn", "");
-            imageDirectory = CameraUtils.simpleDateFormatFolder.format(imageDto.getCreationDate());
+            imageDirectory = Constants.simpleDateFormatFolder.format(imageDto.getCreationDate());
         } else {
             imageDirectory = word[nWords - 2];
             imageName = word[nWords - 1].replace("img_", "").replace(".tjsn", "");
@@ -292,32 +284,14 @@ public class Utils {
 
 
     public boolean acceptableFiletype(final File filename) {
-        boolean result = false;
-        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
-            if (filename.getName().endsWith(".tjsn") ||
-                    filename.getName().endsWith(".tmjsn")) {
-                result = true;
-            }
-        } else {
-            if(filename.getName().endsWith(".tjsn")) {
-                result = true;
-            }
-        }
+        boolean result = filename.getName().endsWith(".tjsn") ||
+                filename.getName().endsWith(".tmjsn");
         return result;
     }
 
     public boolean acceptableFiletype(final String pathname) {
-        boolean result = false;
-        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
-            if (pathname.endsWith(".tjsn") ||
-                    pathname.endsWith(".tmjsn")) {
-                result = true;
-            }
-        } else {
-            if(pathname.endsWith(".tjsn")) {
-                result = true;
-            }
-        }
+        boolean result = pathname.endsWith(".tjsn") ||
+                pathname.endsWith(".tmjsn");
         return result;
     }
 

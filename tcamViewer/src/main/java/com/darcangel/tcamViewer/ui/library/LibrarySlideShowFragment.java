@@ -1,7 +1,5 @@
 package com.darcangel.tcamViewer.ui.library;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -59,6 +57,8 @@ import java.util.Date;
 import io.sentry.Sentry;
 import timber.log.Timber;
 
+import static android.app.Activity.RESULT_OK;
+
 
 public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private ViewGroup container;
@@ -75,13 +75,13 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     private int sharedImagePosition = -1;
     private int tab;
 
-    private ActivityResultLauncher<Intent> saveActivityResultLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> saveActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
                     Timber.d("\\\\result = %s", result.toString());
-                    if(result.getResultCode() == RESULT_OK) {
+                    if (result.getResultCode() == RESULT_OK) {
                         Intent intent = result.getData();
                         String filename = "";
                         Uri uri = intent.getData();
@@ -98,12 +98,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                                 cursor.close();
                             }
                         }
-                        String words[] = filename.split("\\.");
+                        String[] words = filename.split("\\.");
                         if(words.length != 2  || !words[1].startsWith("tjsn"))
                         {
                             Toast.makeText(getContext(), R.string.filetype_not_mtjsn, Toast.LENGTH_LONG)
                                     .show();
-                            return;
 
                         } else {
                             try {
@@ -130,7 +129,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 }
             });
 
-    private ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> shareActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
                 @Override
@@ -138,7 +137,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                     //ACTION_SEND always returns RESULT_CANCELLED, ignore it
                     // There are no request codes
                     File imagePath = mainActivity.getCacheDir();
-                    if(sharedImagePosition != -1) {
+                    if (sharedImagePosition != -1) {
                         File newFile = new File(imagePath, imageDtos.get(sharedImagePosition).getFilename());
                         if (newFile.exists()) {
                             newFile.delete();
@@ -341,11 +340,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
         if(binding.vpSlideshow != null) {
             int position = binding.vpSlideshow.getCurrentItem();
-            if(imageDtos.get(position).isMovie()) {
-                itemRecording.setEnabled(true);
-            } else {
-                itemRecording.setEnabled(false);
-            }
+            itemRecording.setEnabled(imageDtos.get(position).isMovie());
         }
     }
 
@@ -387,8 +382,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         } else if (id == R.id.action_item_export_tjsn) {
             String imageName, imageDirectory;
             Date now = new Date();
-            imageDirectory = CameraUtils.simpleDateFormatFolder.format(now);
-            imageName = CameraUtils.simpleDateFormatFile.format(now);
+            imageDirectory = Constants.simpleDateFormatFolder.format(now);
+            imageName = Constants.simpleDateFormatFile.format(now);
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("application/vnd.tcam.tjsn");

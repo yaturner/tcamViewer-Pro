@@ -35,7 +35,7 @@ public class ImageDto {
     private int maxTemperature;
     private int minTemperature;
     private Date creationDate;
-    private Boolean movie;
+    private final Boolean movie;
     private JSONObject jsonObject;
     private JSONObject metadata;
     private String filename;
@@ -45,7 +45,7 @@ public class ImageDto {
     private String paletteName;
     private Bitmap bitmap;
 
-    private CameraUtils cameraUtils;
+    private final CameraUtils cameraUtils;
 
     //Constructor from camera response
     public ImageDto(JSONObject jsonObject, String paletteName) {
@@ -59,13 +59,9 @@ public class ImageDto {
     public ImageDto(String filename, String paletteName) {
         cameraUtils = MainActivity.getInstance().getCameraUtils();
         this.filename = filename;
-        String words[] = filename.split("\\.");
-        if(words[words.length-1].equalsIgnoreCase("tmjsn")) {
-            movie = true;
-        } else {
-            movie = false;
-        }
-         tjsnString = cameraUtils.readTjsnFile(filename, isMovie());
+        String[] words = filename.split("\\.");
+        movie = words[words.length - 1].equalsIgnoreCase("tmjsn");
+        tjsnString = cameraUtils.readTjsnFile(filename, isMovie());
         if (tjsnString != null && !tjsnString.isEmpty()) {
             try {
                 jsonObject = new JSONObject(tjsnString);
@@ -99,7 +95,7 @@ public class ImageDto {
         }
         try {
             String s = metadata.getString("Date") + " " + metadata.getString("Time");
-            creationDate = CameraUtils.sdfRecording.parse(s);
+            creationDate = Constants.sdfRecording.parse(s);
         } catch (JSONException | ParseException e) {
             e.printStackTrace();
             Sentry.captureException(e);

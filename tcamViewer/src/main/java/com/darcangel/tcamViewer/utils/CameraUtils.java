@@ -1,8 +1,5 @@
 package com.darcangel.tcamViewer.utils;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,8 +9,6 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -23,13 +18,11 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
-import com.darcangel.tcamViewer.ui.camera.CameraFragment;
 import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,18 +31,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import io.sentry.Sentry;
-import timber.log.Timber;
 
 
 public class CameraUtils extends BaseObservable {
@@ -71,14 +60,6 @@ public class CameraUtils extends BaseObservable {
     private final Paint paint;
     private final Paint paintWhite;
     private final Paint paintBlack;
-
-
-    public static final Pattern IP_PATTERN = Pattern.compile(
-            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-    public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
-    public static final SimpleDateFormat sdfRecording = new SimpleDateFormat("MM/dd/yy HH:mm:ss.SSS");
-    public static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("MM_dd_yyyy");
-    public static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
 
     //default constructor
     public CameraUtils() {
@@ -377,7 +358,7 @@ public class CameraUtils extends BaseObservable {
     }
 
     public static Boolean isValidIPAddress(String address) {
-        return IP_PATTERN.matcher(address).matches();
+        return Constants.IP_PATTERN.matcher(address).matches();
     }
 
     public Bitmap drawHotspot(ImageDto imageDto) {
@@ -522,8 +503,8 @@ public class CameraUtils extends BaseObservable {
 
     public Boolean saveTjsn(ImageDto imageDto) throws IOException {
         File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        String file = generateNewFilename(false) + ".tjsn";
-        File path = new File(rootDir + "/" + generateNewPath());
+        String file = FileUtils.generateNewFilename(false) + ".tjsn";
+        File path = new File(rootDir + "/" + FileUtils.generateNewPath());
         if (!path.exists()) {
             path.mkdir();
         }
@@ -537,20 +518,6 @@ public class CameraUtils extends BaseObservable {
         fileOutputStream.flush();
         fileOutputStream.close();
         return true;
-    }
-
-    public static String generateNewFilename(boolean isMovie) {
-        Date now = new Date();
-        if (isMovie) {
-            return new String("mov_" + simpleDateFormatFile.format(now));
-        } else {
-            return new String("img_" + simpleDateFormatFile.format(now));
-        }
-    }
-
-    public static String generateNewPath() {
-        Date now = new Date();
-        return simpleDateFormatFolder.format(now);
     }
 
     public void saveBitmapToFile(ImageDto imageDto, File file) throws IOException {
@@ -571,7 +538,7 @@ public class CameraUtils extends BaseObservable {
     }
 
     public String readTjsnFile(String path, Boolean isMovie) {
-        String json = new String();
+        String json = "";
         String line;
         BufferedReader bufferedReader = null;
         FileReader fileReader = null;
