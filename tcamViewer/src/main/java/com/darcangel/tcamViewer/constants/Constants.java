@@ -1,8 +1,19 @@
 package com.darcangel.tcamViewer.constants;
 
+import android.annotation.SuppressLint;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Pattern;
+
 public final class Constants {
-    public static final String PRO_VERSION = "pro";
-    public static final String FREE_VERSION = "free";
+    public static final Pattern IP_PATTERN = Pattern.compile(
+            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+    public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss", Locale.getDefault());
+    public static final SimpleDateFormat sdfRecording = new SimpleDateFormat("MM/dd/yy HH:mm:ss.SSS", Locale.getDefault());
+    public static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("MM_dd_yyyy", Locale.getDefault());
+    public static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss", Locale.getDefault());
 
     public final static int COLORBAR_WIDTH = 48;
     public final static int COLORBAR_HEIGHT = 256;

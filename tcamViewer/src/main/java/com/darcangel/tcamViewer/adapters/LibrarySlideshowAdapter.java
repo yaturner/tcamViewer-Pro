@@ -71,8 +71,8 @@ public class LibrarySlideshowAdapter
         holder.ivColorBar.setImageBitmap(colorbar);
         Pair<Float, Float> temps = imageDto.getTemperatures();
         if (imageDto.isAGC()) {
-            holder.tvMaxTemperature.setText("AGC");
-            holder.tvMinTemperature.setText("AGC");
+            holder.tvMaxTemperature.setText(R.string.AGC);
+            holder.tvMinTemperature.setText(R.string.AGC);
         } else {
             holder.tvMaxTemperature.setText(cameraUtils.createTemperatureString(temps.second));
             holder.tvMinTemperature.setText(cameraUtils.createTemperatureString(temps.first));

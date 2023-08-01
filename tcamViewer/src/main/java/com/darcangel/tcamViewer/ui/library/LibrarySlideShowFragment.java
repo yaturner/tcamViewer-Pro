@@ -46,6 +46,7 @@ import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.utils.FileUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 
 import java.io.BufferedOutputStream;
@@ -275,7 +276,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                             newFile.delete();
                         }
                         try {
-                            cameraUtils.saveBitmapToFile(sharedBitmap, newFile);
+                            FileUtils.saveBitmapToFile(sharedBitmap, newFile);
                         } catch (IOException e) {
                             Sentry.captureException(e);
                         }
@@ -387,8 +388,8 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         } else if (id == R.id.action_item_export_tjsn) {
             String imageName, imageDirectory;
             Date now = new Date();
-            imageDirectory = CameraUtils.simpleDateFormatFolder.format(now);
-            imageName = CameraUtils.simpleDateFormatFile.format(now);
+            imageDirectory = Constants.simpleDateFormatFolder.format(now);
+            imageName = Constants.simpleDateFormatFile.format(now);
             Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("application/vnd.tcam.tjsn");
@@ -413,6 +414,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             libraryViewModel.resetFrameSize();
             libraryViewModel.resetFrameDelay();
             navDirections = LibrarySlideShowFragmentDirections.
+//                    actionNavigationLibrarySlideShowFragmentToExoPlaybackFragment();
                     actionNavigationLibrarySlideShowFragmentToPlaybackFragment();
             mainActivity.getNavController().navigate(navDirections);
             return true;

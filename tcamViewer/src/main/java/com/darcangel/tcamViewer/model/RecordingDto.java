@@ -36,8 +36,8 @@ public class RecordingDto implements Serializable {
 
     public String generateFooter(final Date endDate) {
         try {
-            String start = CameraUtils.sdfRecording.format(startDate);
-            String end = CameraUtils.sdfRecording.format(endDate);
+            String start = Constants.sdfRecording.format(startDate);
+            String end = Constants.sdfRecording.format(endDate);
             String[] startWords = start.split(" ");
             String[] endWords = end.split(" ");
             //frames are 1 based not 0

@@ -98,4 +98,5 @@
     <string name="raw">Raw</string>
     <string name="image_raw">Image+Raw</string>
     <string name="export_raw">Export Raw</string>
+    <string name="AGC">AGC</string>
 </resources>

@@ -78,6 +78,9 @@
         <action
             android:id="@+id/action_navigation_librarySlideShowFragment_to_playbackFragment"
             app:destination="@id/playbackFragment" />
+        <action
+            android:id="@+id/action_navigation_librarySlideShowFragment_to_exoPlaybackFragment"
+            app:destination="@id/exoPlaybackFragment" />
 
     </fragment>
     <fragment
@@ -90,5 +93,13 @@
             app:destination="@id/navigation_librarySlideShowFragment"
             app:popUpTo="@id/navigation_librarySlideShowFragment"
             app:popUpToInclusive="true"/>
+    </fragment>
+    <fragment
+        android:id="@+id/exoPlaybackFragment"
+        android:name="com.darcangel.tcamViewer.ui.library.ExoPlaybackFragment"
+        android:label="ExoPlaybackFragment" >
+        <action
+            android:id="@+id/action_exoPlaybackFragment2_to_navigation_librarySlideShowFragment"
+            app:destination="@id/navigation_librarySlideShowFragment" />
     </fragment>
 </navigation>

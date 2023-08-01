@@ -39,6 +39,8 @@ import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.utils.FileUtils;
+import com.darcangel.tcamViewer.utils.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -186,7 +188,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 cameraViewModel.startStreaming(false);
                 cameraViewModel.setInStreamingMode(false);
                 mainActivity.invalidateOptionsMenu();
-                if (BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION) && cameraViewModel.isRecording()) {
+                if (cameraViewModel.isRecording()) {
                     cameraViewModel.setRecording(false);
                     //write the footer summary and the info file
                     recordingDto.getFrameOffset().add(tmjsn.length());
@@ -219,8 +221,8 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 //for simplicity's sake use the same naming conventions as for tjsn
                 try {
                     File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                    String file = cameraUtils.generateNewFilename(true) + ".tmjsn";
-                    File path = new File(rootDir + "/" + cameraUtils.generateNewPath());
+                    String file = FileUtils.generateNewFilename(true) + ".tmjsn";
+                    File path = new File(rootDir + "/" + FileUtils.generateNewPath());
                     if (!path.exists()) {
                         path.mkdirs();
                     }
@@ -497,6 +499,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         imageDto.setBitmap(image);
                     } else {
                         //In case the spot meter was in the bitmap, clear it out
+                        binding.tvSpotmeter.setText("");
                         imageDto.remapImage();
                     }
                     binding.ivCamera.setImageBitmap(imageDto.getBitmap());
@@ -593,12 +596,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         MenuItem itemStop = menu.findItem(R.id.action_stop);
         SubMenu paletteSubMenu = itemPalette.getSubMenu();
 
-        //Only available in PRO_VERSION
-        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.FREE_VERSION)) {
-            itemRecordStart.setVisible(false);
-            itemStreamStart.setTitle(R.string.start);
-        }
-
         if (imageDto != null && !imageDto.getPaletteName().isEmpty()) {
             paletteSubMenu.setHeaderTitle(imageDto.getPaletteName());
         }
@@ -640,16 +637,12 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
         if (cameraService != null && !cameraService.isConnected() || cameraViewModel.getStreaming()) {
             itemGet.setEnabled(false);
             itemStreamStart.setVisible(false);
-            if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
-                itemRecordStart.setVisible(false);
-            }
+            itemRecordStart.setVisible(false);
             itemStop.setVisible(true);
         } else {
             itemGet.setEnabled(true);
             itemStreamStart.setVisible(true);
-            if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
-                itemRecordStart.setVisible(true);
-            }
+            itemRecordStart.setVisible(true);
             itemStop.setVisible(false);
         }
     }

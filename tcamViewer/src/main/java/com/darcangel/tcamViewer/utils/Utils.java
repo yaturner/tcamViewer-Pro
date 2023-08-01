@@ -1,6 +1,5 @@
 package com.darcangel.tcamViewer.utils;
 
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -10,7 +9,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Environment;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Pair;
 import android.view.View;
@@ -20,15 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
@@ -39,7 +33,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -69,7 +62,7 @@ public class Utils {
         //if there is only one word, then it is the filename and take the folder from the CreationDate
         if(nWords == 1) {
             imageName = imageDto.getFilename().replace("img_", "").replace(".tjsn", "");
-            imageDirectory = CameraUtils.simpleDateFormatFolder.format(imageDto.getCreationDate());
+            imageDirectory = Constants.simpleDateFormatFolder.format(imageDto.getCreationDate());
         } else {
             imageDirectory = word[nWords - 2];
             imageName = word[nWords - 1].replace("img_", "").replace(".tjsn", "");
@@ -168,8 +161,8 @@ public class Utils {
 
         String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1)
                 .replace(".tjsn", "");
-        String hotspotString = cameraUtils.createTemperatureString(
-                imageDto.getMeanTemperatureAtSpotmeter());
+        String hotspotString = settings.getDisplaySpotmeter().getValue()?
+            cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter()):"";
         if(imageDto.isAGC()) {
             maxString = "AGC";
             minString = "AGC";
@@ -293,30 +286,18 @@ public class Utils {
 
     public boolean acceptableFiletype(final File filename) {
         boolean result = false;
-        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
-            if (filename.getName().endsWith(".tjsn") ||
-                    filename.getName().endsWith(".tmjsn")) {
-                result = true;
-            }
-        } else {
-            if(filename.getName().endsWith(".tjsn")) {
-                result = true;
-            }
+        if (filename.getName().endsWith(".tjsn") ||
+                filename.getName().endsWith(".tmjsn")) {
+            result = true;
         }
         return result;
     }
 
     public boolean acceptableFiletype(final String pathname) {
         boolean result = false;
-        if(BuildConfig.FLAVOR.equalsIgnoreCase(Constants.PRO_VERSION)) {
-            if (pathname.endsWith(".tjsn") ||
-                    pathname.endsWith(".tmjsn")) {
-                result = true;
-            }
-        } else {
-            if(pathname.endsWith(".tjsn")) {
-                result = true;
-            }
+        if (pathname.endsWith(".tjsn") ||
+                pathname.endsWith(".tmjsn")) {
+            result = true;
         }
         return result;
     }

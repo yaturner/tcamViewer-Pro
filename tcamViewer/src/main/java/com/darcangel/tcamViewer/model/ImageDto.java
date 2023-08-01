@@ -7,6 +7,7 @@ import android.util.Pair;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.utils.CameraUtils;
+import com.darcangel.tcamViewer.utils.FileUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -99,7 +100,7 @@ public class ImageDto {
         }
         try {
             String s = metadata.getString("Date") + " " + metadata.getString("Time");
-            creationDate = CameraUtils.sdfRecording.parse(s);
+            creationDate = Constants.sdfRecording.parse(s);
         } catch (JSONException | ParseException e) {
             e.printStackTrace();
             Sentry.captureException(e);
@@ -313,7 +314,7 @@ public class ImageDto {
     }
 
     public void saveBitmapToFile(File newFile) throws IOException {
-        cameraUtils.saveBitmapToFile(this, newFile);
+        FileUtils.saveBitmapToFile(this, newFile);
     }
 
 

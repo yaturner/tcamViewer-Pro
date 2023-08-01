@@ -72,14 +72,6 @@ public class CameraUtils extends BaseObservable {
     private final Paint paintWhite;
     private final Paint paintBlack;
 
-
-    public static final Pattern IP_PATTERN = Pattern.compile(
-            "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
-    public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss");
-    public static final SimpleDateFormat sdfRecording = new SimpleDateFormat("MM/dd/yy HH:mm:ss.SSS");
-    public static final SimpleDateFormat simpleDateFormatFolder = new SimpleDateFormat("MM_dd_yyyy");
-    public static final SimpleDateFormat simpleDateFormatFile = new SimpleDateFormat("HH_mm_ss");
-
     //default constructor
     public CameraUtils() {
         black = new Paint();
@@ -377,7 +369,7 @@ public class CameraUtils extends BaseObservable {
     }
 
     public static Boolean isValidIPAddress(String address) {
-        return IP_PATTERN.matcher(address).matches();
+        return Constants.IP_PATTERN.matcher(address).matches();
     }
 
     public Bitmap drawHotspot(ImageDto imageDto) {
@@ -483,14 +475,23 @@ public class CameraUtils extends BaseObservable {
         int[] imageData = imageDto.getImageData();
         Rect spotmeter = imageDto.getSpotmeterLocation();
         int offset = 1;
-        //if we are at the edge of the image, go to the left/top
+        //if we are at the edge of the image, go to the left/up
         if (spotmeter.bottom == Constants.IMAGE_HEIGHT - 1 || spotmeter.right == Constants.IMAGE_WIDTH - 1) {
             offset = -1;
         }
-        int topLeft = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left];
-        int topRight = imageData[spotmeter.top * Constants.IMAGE_WIDTH + spotmeter.left + offset];
-        int bottomLeft = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right];
-        int bottomRight = imageData[spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right + offset];
+
+        int topOffset    = spotmeter.top    * Constants.IMAGE_WIDTH + spotmeter.left;
+        int bottomOffset = spotmeter.bottom * Constants.IMAGE_WIDTH + spotmeter.right;
+        if(topOffset >= imageData.length) {
+            topOffset = imageData.length - 1;
+        }
+        if(bottomOffset >= imageData.length) {
+            bottomOffset = imageData.length - 1;
+        }
+        int topLeft  = imageData[topOffset];
+        int topRight = imageData[topOffset + offset];
+        int bottomLeft  = imageData[bottomOffset];
+        int bottomRight = imageData[bottomOffset + offset];
         if (imageDto.isAGC()) {
             //get the value from telemetry
             return convertToDisplayUnits(imageDto, imageDto.getSpotmeterMean());
@@ -522,8 +523,8 @@ public class CameraUtils extends BaseObservable {
 
     public Boolean saveTjsn(ImageDto imageDto) throws IOException {
         File rootDir = MainActivity.getInstance().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        String file = generateNewFilename(false) + ".tjsn";
-        File path = new File(rootDir + "/" + generateNewPath());
+        String file = FileUtils.generateNewFilename(false) + ".tjsn";
+        File path = new File(rootDir + "/" + FileUtils.generateNewPath());
         if (!path.exists()) {
             path.mkdir();
         }
@@ -537,37 +538,6 @@ public class CameraUtils extends BaseObservable {
         fileOutputStream.flush();
         fileOutputStream.close();
         return true;
-    }
-
-    public static String generateNewFilename(boolean isMovie) {
-        Date now = new Date();
-        if (isMovie) {
-            return new String("mov_" + simpleDateFormatFile.format(now));
-        } else {
-            return new String("img_" + simpleDateFormatFile.format(now));
-        }
-    }
-
-    public static String generateNewPath() {
-        Date now = new Date();
-        return simpleDateFormatFolder.format(now);
-    }
-
-    public void saveBitmapToFile(ImageDto imageDto, File file) throws IOException {
-        Bitmap bitmap = imageDto.getBitmap();
-        FileOutputStream outputStream = new FileOutputStream(file);
-        if (outputStream != null && bitmap != null) {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-            outputStream.close();
-        }
-    }
-
-    public void saveBitmapToFile(Bitmap bitmap, File file) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(file);
-        if (outputStream != null && bitmap != null) {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-            outputStream.close();
-        }
     }
 
     public String readTjsnFile(String path, Boolean isMovie) {
