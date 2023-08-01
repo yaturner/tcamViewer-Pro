@@ -1,12 +1,8 @@
 package com.darcangel.tcamViewer.model;
 
-import android.os.Parcelable;
-
 import com.darcangel.tcamViewer.constants.Constants;
-import com.darcangel.tcamViewer.utils.CameraUtils;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
