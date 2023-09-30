@@ -1,5 +1,6 @@
 package com.darcangel.tcamViewer.ui.camera;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -21,8 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.internal.view.SupportMenuItem;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
@@ -353,7 +357,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 disposable = cameraService.getImageChannel()
                         .map(obj -> {
-                            if(showFrameRate && BuildConfig.DEBUG) {
+                            if (showFrameRate && BuildConfig.DEBUG) {
                                 if (prevImageTime != 0L) {
                                     float elapsedTime = SystemClock.elapsedRealtime() - prevImageTime;
                                     float frameRate = (1000.0f / elapsedTime);
@@ -450,10 +454,10 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                 }
                 obj = null;
             } else if (response.equalsIgnoreCase("cam_info")) {
-                if(obj.has("cam_info")) {
+                if (obj.has("cam_info")) {
                     JSONObject info = obj.getJSONObject("cam_info");
-                    if(info.has("info_string")) {
-                        if(info.getString("info_string").contains("failed")) {
+                    if (info.has("info_string")) {
+                        if (info.getString("info_string").contains("failed")) {
                             throw new RuntimeException("Failed: " + info.getString("info_string"));
                         }
                     }
@@ -644,18 +648,6 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
             itemStreamStart.setVisible(true);
             itemRecordStart.setVisible(true);
             itemStop.setVisible(false);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case Constants.REQUEST_WRITE_PERMISSION:
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 &&
-                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                }
         }
     }
 

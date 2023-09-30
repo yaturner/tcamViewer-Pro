@@ -40,9 +40,9 @@ public class FileUtils {
     public static String generateNewFilename(boolean isMovie) {
         Date now = new Date();
         if (isMovie) {
-            return new String("mov_" + Constants.simpleDateFormatFile.format(now));
+            return "mov_" + Constants.simpleDateFormatFile.format(now);
         } else {
-            return new String("img_" + Constants.simpleDateFormatFile.format(now));
+            return "img_" + Constants.simpleDateFormatFile.format(now);
         }
     }
 
@@ -67,4 +67,5 @@ public class FileUtils {
             outputStream.close();
         }
     }
+
 }

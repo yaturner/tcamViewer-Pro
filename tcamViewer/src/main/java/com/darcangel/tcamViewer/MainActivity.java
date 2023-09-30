@@ -1,16 +1,20 @@
 package com.darcangel.tcamViewer;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -38,6 +42,7 @@ import com.darcangel.tcamViewer.ui.settings.SettingsViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -77,6 +82,86 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     private NavController navController;
     private ThreadPoolExecutor executor;
     private MutableLiveData<Boolean> mBound;
+    private static final int EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE = 101;
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, you can proceed with writing to the directory
+                ///////writeToMoviesDirectory();
+            } else {
+                 //Permission denied, inform the user
+                //showPermissionExplanationDialog(this);
+            }
+        }
+    }
+
+    public void getPermissions() {
+        // Call this method when you need to request the permission
+            // Check if we already have the permission
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                // We don't have permission, so we need to request it
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+            } else {
+                // We already have permission, you can proceed with your task
+                // For example, you can start writing to external storage here
+            }
+        }
+//        if (ContextCompat.checkSelfPermission(
+//                this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+//                PackageManager.PERMISSION_GRANTED) {
+//        } else {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+//                    EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+//        }
+
+
+//    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+//            new ActivityResultContracts.RequestPermission(),
+//            result -> {
+//                if (result) {
+//                    //Permission granted
+//                } else {
+//                    //permission denied
+//                    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+//                        shouldShowRequestPermissionRationale("test");
+//                    } else {
+//                        //display error dialog
+//                    }
+//                };
+//
+//            }
+//    );
+
+    // Check if the app has external storage permission
+    public static boolean hasExternalStoragePermission(Activity activity) {
+        int permission = ContextCompat.checkSelfPermission(activity,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return permission == PackageManager.PERMISSION_GRANTED;
+    }
+
+    // Request external storage permission
+    public static void requestExternalStoragePermission(Activity activity) {
+        ActivityCompat.requestPermissions(activity,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                EXTERNAL_STORAGE_PERMISSION_REQUEST_CODE);
+    }
+
+    // Show a dialog explaining why the permission is needed
+    public static void showPermissionExplanationDialog(Activity activity) {
+        new AlertDialog.Builder(activity)
+                .setTitle("Permission Required")
+                .setMessage("This app needs access to your external storage to perform certain actions.")
+                .setPositiveButton("OK", (dialog, which) -> requestExternalStoragePermission(activity))
+                .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,19 +250,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         });
     }
 
-    private void getPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
-                PackageManager.PERMISSION_GRANTED) {
-            // You can use the API that requires the permission.
-            //performAction(...);
-        } else {
-            // You can directly ask for the permission.
-            // The registered ActivityResultCallback gets the result of this request.
-            ActivityCompat.requestPermissions(this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE },
-                    Constants.REQUEST_WRITE_PERMISSION);
-        }
-    }
 
     private void putSharedPreferences(final String key, final Object value) {
         SharedPreferences.Editor editor = sharedPreferences.edit();

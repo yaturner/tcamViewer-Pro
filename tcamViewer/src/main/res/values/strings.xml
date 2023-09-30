@@ -99,4 +99,5 @@
     <string name="image_raw">Image+Raw</string>
     <string name="export_raw">Export Raw</string>
     <string name="AGC">AGC</string>
+    <string name="please_grant_write_external_storage">Please grant write external storage</string>
 </resources>
