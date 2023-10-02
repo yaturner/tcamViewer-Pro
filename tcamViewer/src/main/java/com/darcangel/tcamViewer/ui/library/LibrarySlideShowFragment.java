@@ -33,6 +33,7 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -339,6 +340,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         MenuItem itemRecording = menu.findItem(R.id.action_recording);
         MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
         MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
+        MenuItem itemSave = menu.findItem(R.id.action_movie_save);
         if(binding.vpSlideshow != null) {
             int position = binding.vpSlideshow.getCurrentItem();
             itemRecording.setEnabled(imageDtos.get(position).isMovie());
@@ -403,19 +405,29 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             mainActivity.getNavController().navigate(navDirections);
             return true;
         } else if(id == R.id.action_movie_play) {
-            libraryViewModel.setRecordingDto(new RecordingDto());
-            libraryViewModel.setPlaybackImageDto(imageDtos.get(position));
-            libraryViewModel.resetFrameOffset();
-            libraryViewModel.resetFrameSize();
-            libraryViewModel.resetFrameDelay();
-            navDirections = LibrarySlideShowFragmentDirections.
-//                    actionNavigationLibrarySlideShowFragmentToExoPlaybackFragment();
-                    actionNavigationLibrarySlideShowFragmentToPlaybackFragment();
-            mainActivity.getNavController().navigate(navDirections);
+            xferToPlayback(Constants.PLAYBACK_ACTION_PLAY, position);
+            return true;
+        } else if(id == R.id.action_movie_save) {
+            xferToPlayback(Constants.PLAYBACK_ACTION_SAVE, position);
             return true;
         } else {
             return false;
         }
+    }
+
+    private void xferToPlayback(Integer action, Integer position) {
+        ImageDto imageDto = imageDtos.get(position);
+        if(imageDto == null) {
+            //TODO handle error
+        }
+        libraryViewModel.setPlaybackImageDto(imageDto);
+        libraryViewModel.setRecordingDto(new RecordingDto());
+        libraryViewModel.resetFrameOffset();
+        libraryViewModel.resetFrameSize();
+        libraryViewModel.resetFrameDelay();
+        Bundle bundle = new Bundle();
+        bundle.putInt(Constants.PLAYBACK_ACTION, action);
+        Navigation.findNavController(getView()).navigate(R.id.action_navigation_librarySlideShowFragment_to_playbackFragment, bundle);
     }
 
     @Override

@@ -279,6 +279,10 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
     }
 
     public void dismissProgressDialog() {
+        if(progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();;
+            progressDialog = null;
+        }
     }
 
     public void showSocketError() {

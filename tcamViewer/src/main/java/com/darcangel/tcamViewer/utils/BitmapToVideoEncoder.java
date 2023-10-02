@@ -16,6 +16,8 @@ import java.util.concurrent.CountDownLatch;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import timber.log.Timber;
 
@@ -83,7 +85,7 @@ public class BitmapToVideoEncoder {
         try {
             colorFormat = selectColorFormat(codecInfo, MIME_TYPE);
         } catch (Exception e) {
-            colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_Format24bitBGR888;
+            colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_Format32bitABGR8888;
         }
 
         try {
@@ -170,8 +172,10 @@ public class BitmapToVideoEncoder {
         Timber.d( "Encoder started");
 
         while(true) {
-            if (mNoMoreFrames && (mEncodeQueue.size() ==  0)) break;
-
+            if (mNoMoreFrames && (mEncodeQueue.size() ==  0)) {
+                break;
+            }
+            Timber.d("Encoder queue size = %d",   mEncodeQueue.size());
             Bitmap bitmap = mEncodeQueue.poll();
             if (bitmap ==  null) {
                 synchronized (mFrameSync) {
@@ -301,7 +305,7 @@ public class BitmapToVideoEncoder {
         byte[] yuv = new byte[inputWidth * inputHeight * 3 / 2];
         encodeYUV420SP(yuv, argb, inputWidth, inputHeight);
 
-        scaled.recycle();
+        ////JMT scaled.recycle();
 
         return yuv;
     }

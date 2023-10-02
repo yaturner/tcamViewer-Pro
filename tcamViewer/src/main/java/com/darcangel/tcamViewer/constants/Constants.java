@@ -2,6 +2,8 @@ package com.darcangel.tcamViewer.constants;
 
 import android.annotation.SuppressLint;
 
+import com.darcangel.tcamViewer.model.ImageDto;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -154,6 +156,11 @@ public final class Constants {
             "}\n" +
             "}";
 
+    //Constants for playback fragment
+    public static String PLAYBACK_ACTION = "playback_action";
+    public static final Integer PLAYBACK_ACTION_PLAY = 0;
+    public static final Integer PLAYBACK_ACTION_ANALYZE = 1;
+    public static final Integer PLAYBACK_ACTION_SAVE = 2;
 
 
     private Constants() {

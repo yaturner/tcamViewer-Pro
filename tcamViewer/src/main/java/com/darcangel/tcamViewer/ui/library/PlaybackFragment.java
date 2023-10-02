@@ -20,8 +20,12 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
+import androidx.navigation.Navigator;
 
 import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentPlaybackBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.RecordingDto;
@@ -50,6 +54,7 @@ import java.util.Scanner;
 import java.util.Timer;
 
 import io.sentry.Sentry;
+import io.socket.client.IO;
 import timber.log.Timber;
 
 public class PlaybackFragment extends Fragment implements MenuProvider {
@@ -72,7 +77,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     private LibraryViewModel libraryViewModel;
     private Settings settings;
     private RecordingDto recordingDto;
-    private int numFrames;
+    private Integer numFrames;
     private long fileSize;
     private final char[] buffer = new char[64767];
     private ArrayList<Pair<Bitmap, Integer>> movieInfoArray;
@@ -80,24 +85,51 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     private AndroidSequenceEncoder encoder;
     private File videoFile = null;
     private String videoFilename = null;
+    private Integer action;
+    private BitmapToVideoEncoder videoEncoder;
+    private ArrayList<Pair<Bitmap, Integer>> videoFrameArray;
 
-    private Runnable imagePlayer = new Runnable() {
+
+    private Runnable playImage = new Runnable() {
         @Override
         public void run() {
             try {
-                numFrames = libraryViewModel.getRecordingDto().getNumFrames();
+                int nFrames;
+                if(videoFrameArray == null) {
+                    numFrames = libraryViewModel.getRecordingDto().getNumFrames();
+                    videoFrameArray = new ArrayList<Pair<Bitmap, Integer>>(numFrames);
+                }
                 int len = libraryViewModel.getFrameSize().get(frameIndex);
                 int bytesRead = recodingFile.read(buffer, 0, len);
                 assert bytesRead == len;
                 ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, len)),
                         "Rainbow");
-                displayImage(imageDto);
+                if(action == Constants.PLAYBACK_ACTION_PLAY) {
+                    displayImage(imageDto);
+                } else if(action == Constants.PLAYBACK_ACTION_ANALYZE) {
+
+                } else if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                    Long delay = libraryViewModel.getFrameDelay().get(frameIndex);
+                    nFrames = (int) (((float) delay / 1000.0) * 30.0);
+                    nFrames = nFrames==0?1:nFrames;
+                    Bitmap bitmap = imageDto.getBitmap();
+                    Timber.d("encoding nFrames = %d", nFrames);
+                    videoFrameArray.add(new Pair<Bitmap, Integer>(bitmap, nFrames));
+                }
                 recodingFile.skip(1); //skip over \03
                 frameIndex = frameIndex + 1;
                 if (frameIndex < numFrames) {
                     imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex-1));
                 } else {
                     imageTimerHandler.removeCallbacks(this);
+                    if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                        for(Pair<Bitmap, Integer> pair : videoFrameArray) {
+                            for(int i = 0; i < pair.second; i++) {
+                                videoEncoder.queueFrame(pair.first);
+                            }
+                        }
+                        videoEncoder.stopEncoding();
+                    }
                     if(recodingFile != null) {
                         recodingFile.close();
                         recodingFile = null;
@@ -106,56 +138,13 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
                 Sentry.captureException(e);
+                if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                    videoEncoder.abortEncoding();
+                }
             }
         }
     };
 
-    private final Runnable videoGenerator = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                int len, bytesRead;
-                JSONObject obj = null;
-                ImageDto imageDto = null;
-                String jsonString = null;
-                movieInfoArray = new ArrayList<>();
-                String filename = FileUtils.generateNewFilename(true);
-                numFrames = libraryViewModel.getRecordingDto().getNumFrames();
-                ArrayList<Bitmap> bitmaps = new ArrayList<>(numFrames);
-                ArrayList<Integer> frameRepeat = new ArrayList<>(numFrames);
-                for(int frameIndex = 0; frameIndex < numFrames; frameIndex++) {
-                    len = libraryViewModel.getFrameSize().get(frameIndex);
-                    bytesRead = bufferedReader.read(buffer, 0, len);
-                    assert bytesRead == len;
-                    buffer[bytesRead] = 0;
-                    jsonString = new String(buffer, 0, bytesRead);
-                    try {
-                        obj = new JSONObject(jsonString);
-                    } catch (StackOverflowError ee) {
-                        ee.printStackTrace();
-                    }
-                    imageDto = new ImageDto(obj,"Rainbow");
-                    bitmaps.add(imageDto.getBitmap());
-                    int delay = (int) (libraryViewModel.getFrameDelay().get(frameIndex)/30);
-                    frameRepeat.add(delay==0?1:delay);
-                    bufferedReader.skip(1L); //skip over '\03'
-                    movieInfoArray.add(new Pair(bitmaps.get(frameIndex), delay));
-                }
-                // Check if the external storage is writable
-                if (!FileUtils.isExternalStorageWritable()) {
-                    throw new IOException("External storage is not writable.");
-                }
-                // Get the directory for public storage
-                File publicDir = FileUtils.getPublicStorageDir();
-                if (publicDir == null) {
-                    throw new IOException("Failed to get public storage directory.");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                Sentry.captureException(e);
-            }
-        }
-    };
 
     //N. B. The navigation bar is hidden in MainActivity
 
@@ -165,6 +154,12 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Bundle bundle = getArguments();
+        if(bundle == null) {
+            action = Constants.PLAYBACK_ACTION_PLAY;
+        } else {
+            action = bundle.getInt(Constants.PLAYBACK_ACTION, Constants.PLAYBACK_ACTION_PLAY);
+        }
         mainActivity = MainActivity.getInstance();
         libraryViewModel = mainActivity.getLibraryViewModel();
         settings = mainActivity.getSettings();
@@ -194,15 +189,20 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         try {
             openRecordingFile();
             openInfoFile();
-            if(true/*JMT recordingDto == null*/) {
+            if(recordingDto == null) {
                 analyzeRecording();
                 recordingFooterDto = new RecordingFooterDto(getFooterInfo());
                 numFrames = recordingFooterDto.getNumFrames();
             } else {
                 libraryViewModel.setRecordingDto(recordingDto);
             }
-            generateMovie();
-            playRecording();
+            if(action == Constants.PLAYBACK_ACTION_PLAY) {
+                playRecording();
+            } else if(action == Constants.PLAYBACK_ACTION_ANALYZE) {
+
+            } else if(action == Constants.PLAYBACK_ACTION_SAVE) {
+                saveRecording();
+            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Sentry.captureException(e);
@@ -241,22 +241,35 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         }
     }
 
-    private void generateMovie() {
-        new Thread(videoGenerator).start();
-    }
-
-    private void playRecording() throws IOException{
+    private void playRecording() throws IOException {
         frameIndex = 0;
         openRecordingFile();
         openInfoFile();
-        imageTimerHandler.postDelayed(imagePlayer, 500);
+        imageTimerHandler.postDelayed(playImage, 500);
     }
 
+    private void saveRecording() throws IOException {
+        String videoFilename = filename.substring(filename.lastIndexOf("/")+1);
+        videoFilename = videoFilename.replace(".tmjsn", "");
+        String videoOutputPath =
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/" + videoFilename + ".mp4";
+        mainActivity.showProgressDialog(getString(R.string.saving_movie)  + " " + videoFilename + ".mp4");
+        videoEncoder = new BitmapToVideoEncoder(new BitmapToVideoEncoder.IBitmapToVideoEncoderCallback() {
+            @Override
+            public void onEncodingComplete(File outputFile) {
+                mainActivity.dismissProgressDialog();
+                Navigation.findNavController(getView()).navigate(R.id.action_playbackFragment_to_navigation_librarySlideShowFragment);
+                numFrames = null;
+                videoFrameArray = null;
+            }
+        });
+
+        videoEncoder.startEncoding(160, 120, new File(videoOutputPath));
+        imageTimerHandler.postDelayed(playImage, 500);
+    }
 
     private void analyzeRecording() throws IOException, JSONException {
         int c, bufferPos = 0;
-        ArrayList<Bitmap> videoBitmaps = new ArrayList<>();
-        String videoOutputPath = null;
         frameIndex = 0;
         bytesRead = 0;
         long currTime;
@@ -271,7 +284,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                     libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
                 } else {
                     if(imageDto.getCreationDate().getTime() <= libraryViewModel.getFrameDelay().get(frameIndex-1)) {
-                        Timber.d("oopppsssss");
+                        Timber.d("creation time is less than last frame + delay");
                     }
                     libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
                     libraryViewModel.getFrameDelay().set(frameIndex-1,
@@ -279,17 +292,6 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                     libraryViewModel.getFrameDelay().get(frameIndex-1));
                 }
 
-                //Create the mp4 movie
-                try {
-                    if(videoOutputPath == null) {
-                        videoOutputPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/output.mp4";
-                    }
-                    // Encode the image
-                    videoBitmaps.add(imageDto.getBitmap());
-                } catch(Exception e) {
-                    Timber.e("exception while encoding move: %s", e.toString());
-                    Sentry.captureException(e);
-                }
                 imageDto = null;
                 frameIndex = frameIndex + 1;
                 libraryViewModel.getFrameOffset().add(frameIndex, bytesRead + 1); //skip over \03
@@ -303,19 +305,6 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             }
             bytesRead = bytesRead + 1;
         }
-        //TODO encoder goes here
-        BitmapToVideoEncoder bitmapToVideoEncoder = new BitmapToVideoEncoder(new BitmapToVideoEncoder.IBitmapToVideoEncoderCallback() {
-            @Override
-            public void onEncodingComplete(File outputFile) {
-                Toast.makeText(getActivity(),  "Encoding complete!", Toast.LENGTH_LONG).show();
-            }
-        });
-
-        bitmapToVideoEncoder.startEncoding(160, 120, new File(videoOutputPath));
-        for(Bitmap bitmap : videoBitmaps) {
-            bitmapToVideoEncoder.queueFrame(bitmap);
-        }
-        bitmapToVideoEncoder.stopEncoding();
         libraryViewModel.getFrameSize().add(frameIndex,
                 (int) (bytesRead - libraryViewModel.getFrameOffset().get(frameIndex - 1)));
         numFrames = libraryViewModel.getFrameOffset().size() - 1; // less footer and final \03
@@ -422,6 +411,10 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     @Override
     public void onPause() {
         super.onPause();
-        imageTimerHandler.removeCallbacks(imagePlayer);
+        imageTimerHandler.removeCallbacks(playImage);
+        if(videoEncoder != null && videoEncoder.isEncodingStarted()) {
+            mainActivity.dismissProgressDialog();
+            videoEncoder.abortEncoding();
+        }
     }
 }
