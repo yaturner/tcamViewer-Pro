@@ -37,10 +37,10 @@
                 android:title="@string/play"
                 android:icon="@drawable/ff_w_20_20"
                 android:visible="true"/>
-            <item android:id="@+id/action_movie_analyze"
-                android:title="@string/analyze"
-                android:icon="@drawable/ic_baseline_share_24"
-                android:visible="true"/>
+<!--            <item android:id="@+id/action_movie_analyze"-->
+<!--                android:title="@string/analyze"-->
+<!--                android:icon="@drawable/ic_baseline_share_24"-->
+<!--                android:visible="true"/>-->
             <item android:id="@+id/action_movie_save"
                 android:title="Save"
                 android:icon="@drawable/file_save_30_30"

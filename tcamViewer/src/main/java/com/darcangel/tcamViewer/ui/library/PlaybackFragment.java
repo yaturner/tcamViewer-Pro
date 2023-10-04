@@ -118,8 +118,12 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                 }
                 recodingFile.skip(1); //skip over \03
                 frameIndex = frameIndex + 1;
-                if (frameIndex < numFrames) {
-                    imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex-1));
+                if (frameIndex < numFrames ) {
+                    if(action == Constants.PLAYBACK_ACTION_PLAY) {
+                        imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex - 1));
+                    } else {
+                        imageTimerHandler.postDelayed(this, 10);
+                    }
                 } else {
                     imageTimerHandler.removeCallbacks(this);
                     if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
@@ -257,13 +261,18 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         videoEncoder = new BitmapToVideoEncoder(new BitmapToVideoEncoder.IBitmapToVideoEncoderCallback() {
             @Override
             public void onEncodingComplete(File outputFile) {
-                mainActivity.dismissProgressDialog();
                 numFrames = null;
                 for(Pair<Bitmap, Integer> pair : videoFrameArray) {
                     pair.first.recycle();
                 }
                 videoFrameArray = null;
-                Navigation.findNavController(getView()).navigate(R.id.action_playbackFragment_to_navigation_librarySlideShowFragment);
+                mainActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mainActivity.dismissProgressDialog();
+                        Navigation.findNavController(getView()).popBackStack();
+                    }
+                });
             }
         });
 

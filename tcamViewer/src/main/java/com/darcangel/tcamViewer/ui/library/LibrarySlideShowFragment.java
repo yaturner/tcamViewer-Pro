@@ -339,7 +339,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
         MenuItem itemRecording = menu.findItem(R.id.action_recording);
         MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
-        MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
+//        MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
         MenuItem itemSave = menu.findItem(R.id.action_movie_save);
         if(binding.vpSlideshow != null) {
             int position = binding.vpSlideshow.getCurrentItem();
