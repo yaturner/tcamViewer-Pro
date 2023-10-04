@@ -53,7 +53,9 @@
                 <!--Heading-->
                 <TextView
                     style="@style/SettingsHeading"
-                    android:text="@string/scan_for_camera"/>
+                    android:text="@string/scan_for_camera"
+                    android:layout_gravity="center_horizontal"
+                    android:paddingBottom="15sp"/>
 
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 

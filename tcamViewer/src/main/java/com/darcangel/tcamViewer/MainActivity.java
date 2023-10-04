@@ -241,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
                 if(navDestination.getId() == R.id.navigation_librarySlideShowFragment ||
                         navDestination.getId() == R.id.navigation_settings ||
                         navDestination.getId() == R.id.wifiSettingsFragment ||
+                        navDestination.getId() == R.id.cameraDiscoveryFragment ||
                         navDestination.getId() == R.id.playbackFragment) {
                     navBar.setVisibility(View.GONE);
                 } else {

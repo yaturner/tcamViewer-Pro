@@ -24,13 +24,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentCameraDiscoveryBinding;
-import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
+import com.darcangel.tcamViewer.model.Settings;
 
 import java.net.InetAddress;
 
@@ -46,6 +46,8 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
     private SettingsViewModel settingsViewModel;
     private FragmentCameraDiscoveryBinding binding;
     private ViewGroup container;
+    private Settings settings;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -59,13 +61,18 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
 
         binding = FragmentCameraDiscoveryBinding.inflate(inflater, container, false);
 
+        mainActivity.getSupportActionBar().setTitle(R.string.title_camera_discovery);
+
+        //get the settings model
+        settings = mainActivity.getSettings();
+        binding.setSettings(settings);
+
+        binding.btnCancelSave.btnSave.setOnClickListener(this);
+        binding.btnCancelSave.btnCancel.setOnClickListener(this);
+
         initializeDiscoveryListener();
         initializeResolveListener();
         mNsdManager = (NsdManager) (mainActivity.getSystemService(Context.NSD_SERVICE));
-        WifiManager.MulticastLock multicastLock = ((WifiManager)(mainActivity.getSystemService(Context.WIFI_SERVICE)))
-                .createMulticastLock("CameraDiscovery");
-        multicastLock.setReferenceCounted(true);
-        multicastLock.acquire();
         mNsdManager.discoverServices(Constants.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
 
         return binding.getRoot();
@@ -89,8 +96,15 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
                 String type = service.getServiceType();
                 Timber.d("\\\\NSD\\\\ Service Name=" + name);
                 Timber.d("\\\\NSD\\\\ Service Type=" + type);
-                if (type.equals(Constants.SERVICE_TYPE) && name.contains("_tcam-socket._tcp.")) {
+                if (type.equals(Constants.SERVICE_TYPE)) {
                     Timber.d("\\\\NSD\\\\ Service Found @ '" + name + "'");
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.tvCameraName.setText(name);
+                        }
+                    });
+
                     mNsdManager.resolveService(service, mResolveListener);
                 }
             }
@@ -138,15 +152,24 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
                 //int port = mServiceInfo.getPort();
 
                 InetAddress host = mServiceInfo.getHost();
-                String address = host.getHostAddress();
-                Timber.d("\\\\NSD\\\\ Resolved address = " + address);
-                mCameraAddress = address;
+                mCameraAddress = host.getHostAddress();
+                Timber.d("\\\\NSD\\\\ Resolved address = " + mCameraAddress);
+                mainActivity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        binding.tvCameraAddress.setText(mCameraAddress);
+                    }
+                });
             }
         };
     }
 
     @Override
     public void onClick(View v) {
-
+        int id = v.getId();
+        if(id == R.id.btnSave) {
+            settings.setCameraAddress(mCameraAddress);
+        }
+        mainActivity.getNavController().popBackStack();
     }
 }

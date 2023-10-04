@@ -55,6 +55,7 @@ public class Settings extends BaseObservable implements Parcelable {
     private MutableLiveData<String> password;
     private MutableLiveData<String> staticIPAddress;
     private MutableLiveData<String> staticNetmask;
+
     //Camera settings
     private String apSSID;
     private String staticSSID;
@@ -920,4 +921,4 @@ public class Settings extends BaseObservable implements Parcelable {
             notifyPropertyChanged(BR.staticNetmask);
         }
     }
-}
+ }
