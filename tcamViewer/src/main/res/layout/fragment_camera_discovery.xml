@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="settings"
+            type="com.darcangel.tcamViewer.model.Settings" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/llCameraDiscovery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="5dp"
+        tools:context=".ui.settings.CameraDiscoveryFragment">
+
+        <include
+            layout="@layout/guidelines" />
+
+        <include
+            android:id="@+id/btnCancelSave"
+            layout="@layout/btn_cancel_save"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/svSettings"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:scrollbarAlwaysDrawVerticalTrack="true"
+            app:layout_constraintBottom_toTopOf="@+id/btnCancelSave"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <!--Scrollview Container-->
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toTopOf="@+id/btnCancelSave"
+                app:layout_constraintEnd_toEndOf="@+id/glEnd"
+                app:layout_constraintStart_toStartOf="@+id/glStart"
+                app:layout_constraintTop_toBottomOf="@+id/glTitle">
+
+                <!--Heading-->
+                <TextView
+                    style="@style/SettingsHeading"
+                    android:text="@string/scan_for_camera"/>
+
+                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                    <TextView
+                        style="@style/SettingsTextStart"
+                        android:text="@string/camera" />
+
+                    <TextView
+                        style="@style/SettingsEditTextEnd"
+                        android:text="@string/ip_address" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
+
+                    <TextView
+                        android:id="@+id/tvCameraName"
+                        style="@style/SettingsTextStart"
+                        android:text="" />
+
+                    <TextView
+                        android:id="@+id/tvCameraAddress"
+                        style="@style/SettingsEditTextEnd"
+                        android:text="" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.core.widget.NestedScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

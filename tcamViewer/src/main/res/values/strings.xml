@@ -101,4 +101,7 @@
     <string name="AGC">AGC</string>
     <string name="please_grant_write_external_storage">Please grant write external storage</string>
     <string name="saving_movie">Saving Video Stream as</string>
+    <string name="scan_for_camera">Scan for Camera</string>
+    <string name="camera">CAMERA</string>
+    <string name="ip_address">IP ADDRESS</string>
 </resources>

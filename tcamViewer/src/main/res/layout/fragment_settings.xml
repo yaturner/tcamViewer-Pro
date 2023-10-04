@@ -164,6 +164,12 @@
                         android:text="@={settings.cameraAddress}"
                         android:inputType="textUri|number"
                         android:textAlignment="textEnd" />
+
+                    <ImageButton
+                        android:id="@+id/btnCameraDiscovery"
+                        style="@style/SettingsBtnEnd"
+                        app:srcCompat="@drawable/ic_baseline_keyboard_arrow_right_24" />
+
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Export Picture on Save-->

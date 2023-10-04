@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.view.LayoutInflater;
@@ -158,6 +157,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                 settings.snapshot(snapshot);
             }
         });
+
         root = binding.getRoot();
         return root;
     }
@@ -177,24 +177,21 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
         binding.switchManualRange.setOnCheckedChangeListener(this);
         binding.rgUnits.setOnCheckedChangeListener(this);
 
+        binding.btnCameraDiscovery.setOnClickListener(this);
+
         //If Manual Range is checked show the values
         if(settings.getManualRange().getValue()) {
             binding.layoutManualRange.setVisibility(View.VISIBLE);
         }
     }
 
-    private String getMyIPAddress() {
-        WifiManager wm = (WifiManager) requireContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        int ip = wm.getConnectionInfo().getIpAddress();
-        byte[] buffer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(ip).array();
-
-        try {
-            String dotNotation = InetAddress.getByAddress(buffer).getHostAddress();
-            return dotNotation;
-        } catch (UnknownHostException ignore) {
-            return null;
-        }
+    private void discoverCameraAddress() {
+        CameraDiscoveryFragment cameraDiscovery = new CameraDiscoveryFragment();
+        String mRPiAddress = "";
+        navDirections = SettingsFragmentDirections.actionNavigationSettingsToCameraDiscoveryFragment();
+        mainActivity.getNavController().navigate(navDirections);
     }
+
 
     private void handleCameraResponse(JSONObject obj) throws JSONException {
 //        info_value:
@@ -422,6 +419,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
             // create and show the alert dialog
             dialog = builder.create();
             dialog.show();
+        } else if(id == R.id.btnCameraDiscovery) {
+            discoverCameraAddress();
         } else if (id == R.id.btnSave) {
             createSaveDialog().show();
         } else if (id == R.id.btnCancel) {

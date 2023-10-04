@@ -29,6 +29,9 @@
         <action
             android:id="@+id/action_navigation_settings_to_privacyDisclosure"
             app:destination="@id/privacyDisclosure" />
+        <action
+            android:id="@+id/action_navigation_settings_to_cameraDiscoveryFragment"
+            app:destination="@id/cameraDiscoveryFragment" />
     </fragment>
 
     <fragment
@@ -88,6 +91,14 @@
         <action
             android:id="@+id/action_playbackFragment_to_navigation_librarySlideShowFragment"
             app:destination="@id/navigation_librarySlideShowFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/cameraDiscoveryFragment"
+        android:name="com.darcangel.tcamViewer.ui.settings.CameraDiscoveryFragment"
+        android:label="CameraDiscoveryFragment" >
+        <action
+            android:id="@+id/action_cameraDiscoveryFragment_to_navigation_settings"
+            app:destination="@id/navigation_settings" />
     </fragment>
 
 </navigation>

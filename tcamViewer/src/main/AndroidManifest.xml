@@ -16,6 +16,8 @@
          that other apps created. -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.WRITE_MEDIA_VIDEO" />
+    <!-- CameraDiscovery -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 
     <application
         android:name="com.darcangel.tcamViewer.Application"

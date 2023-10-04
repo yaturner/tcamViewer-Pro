@@ -162,6 +162,10 @@ public final class Constants {
     public static final Integer PLAYBACK_ACTION_ANALYZE = 1;
     public static final Integer PLAYBACK_ACTION_SAVE = 2;
 
+    // mNDS
+    public static final String SERVICE_TYPE = "_tcam-socket._tcp.";
+//    public static final String SERVICE_TYPE = "_services._dns-sd._udp";
+
 
     private Constants() {
     }

@@ -258,9 +258,12 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             @Override
             public void onEncodingComplete(File outputFile) {
                 mainActivity.dismissProgressDialog();
-                Navigation.findNavController(getView()).navigate(R.id.action_playbackFragment_to_navigation_librarySlideShowFragment);
                 numFrames = null;
+                for(Pair<Bitmap, Integer> pair : videoFrameArray) {
+                    pair.first.recycle();
+                }
                 videoFrameArray = null;
+                Navigation.findNavController(getView()).navigate(R.id.action_playbackFragment_to_navigation_librarySlideShowFragment);
             }
         });
 
