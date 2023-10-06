@@ -18,8 +18,7 @@
         android:layout_marginEnd="5dp"
         tools:context=".ui.settings.CameraDiscoveryFragment">
 
-        <include
-            layout="@layout/guidelines" />
+        <include layout="@layout/guidelines" />
 
         <include
             android:id="@+id/btnCancelSave"
@@ -29,62 +28,46 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="parent" />
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/svSettings"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="vertical"
-            android:scrollbarAlwaysDrawVerticalTrack="true"
-            app:layout_constraintBottom_toTopOf="@+id/btnCancelSave"
+        <!-- scan button -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnScan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="15sp"
+            android:text="@string/scan_for_camera"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/glTitle" />
 
-            <!--Scrollview Container-->
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            style="@style/SettingsLayout"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnScan"
+            app:layout_constraintBottom_toTopOf="@+id/btnCancel">
+
             <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/llHeading"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toTopOf="@+id/btnCancelSave"
-                app:layout_constraintEnd_toEndOf="@+id/glEnd"
-                app:layout_constraintStart_toStartOf="@+id/glStart"
-                app:layout_constraintTop_toBottomOf="@+id/glTitle">
+                android:layout_height="match_parent">
 
-                <!--Heading-->
                 <TextView
-                    style="@style/SettingsHeading"
-                    android:text="@string/scan_for_camera"
-                    android:layout_gravity="center_horizontal"
-                    android:paddingBottom="15sp"/>
+                    style="@style/SettingsTextStart"
+                    android:text="@string/camera" />
 
-                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
-
-                    <TextView
-                        style="@style/SettingsTextStart"
-                        android:text="@string/camera" />
-
-                    <TextView
-                        style="@style/SettingsEditTextEnd"
-                        android:text="@string/ip_address" />
-
-                </androidx.appcompat.widget.LinearLayoutCompat>
-
-
-                <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
-
-                    <TextView
-                        android:id="@+id/tvCameraName"
-                        style="@style/SettingsTextStart"
-                        android:text="" />
-
-                    <TextView
-                        android:id="@+id/tvCameraAddress"
-                        style="@style/SettingsEditTextEnd"
-                        android:text="" />
-
-                </androidx.appcompat.widget.LinearLayoutCompat>
-
+                <TextView
+                    style="@style/SettingsEditTextEnd"
+                    android:text="@string/ip_address" />
             </androidx.appcompat.widget.LinearLayoutCompat>
-        </androidx.core.widget.NestedScrollView>
+
+
+            <ListView
+                android:id="@+id/lvCamera_discovery"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -17,26 +17,31 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
+import com.darcangel.tcamViewer.adapters.CameraDiscoveryAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentCameraDiscoveryBinding;
 import com.darcangel.tcamViewer.model.Settings;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.concurrent.Semaphore;
 
 import timber.log.Timber;
 
-public class CameraDiscoveryFragment extends Fragment implements View.OnClickListener {
+public class CameraDiscoveryFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
     private NsdManager mNsdManager;
     private NsdManager.DiscoveryListener mDiscoveryListener;
     private NsdManager.ResolveListener mResolveListener;
@@ -47,6 +52,10 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
     private FragmentCameraDiscoveryBinding binding;
     private ViewGroup container;
     private Settings settings;
+    private ArrayList<Pair<String, String>> cameraArray;
+    private CameraDiscoveryAdapter mCameraAdapter;
+    private Semaphore resolveSemaphore;
+    private String selectedIPAddess;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -62,6 +71,9 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
         binding = FragmentCameraDiscoveryBinding.inflate(inflater, container, false);
 
         mainActivity.getSupportActionBar().setTitle(R.string.title_camera_discovery);
+        cameraArray = new ArrayList<>();
+
+        mCameraAdapter = new CameraDiscoveryAdapter(getContext(), cameraArray);
 
         //get the settings model
         settings = mainActivity.getSettings();
@@ -69,11 +81,17 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
 
         binding.btnCancelSave.btnSave.setOnClickListener(this);
         binding.btnCancelSave.btnCancel.setOnClickListener(this);
+        binding.btnScan.setOnClickListener(this);
+        binding.lvCameraDiscovery.setOnItemClickListener(this);
+
+
+        binding.lvCameraDiscovery.setAdapter(mCameraAdapter);
+
+        cameraArray = new ArrayList<Pair<String, String>>();
+        resolveSemaphore = new Semaphore(1);
 
         initializeDiscoveryListener();
-        initializeResolveListener();
-        mNsdManager = (NsdManager) (mainActivity.getSystemService(Context.NSD_SERVICE));
-        mNsdManager.discoverServices(Constants.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+        //initializeResolveListener();
 
         return binding.getRoot();
     }
@@ -98,17 +116,50 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
                 Timber.d("\\\\NSD\\\\ Service Type=" + type);
                 if (type.equals(Constants.SERVICE_TYPE)) {
                     Timber.d("\\\\NSD\\\\ Service Found @ '" + name + "'");
-                    mainActivity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            binding.tvCameraName.setText(name);
-                        }
-                    });
+                    if (!cameraArray.contains(name)) {
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    resolveSemaphore.acquire();
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
 
-                    mNsdManager.resolveService(service, mResolveListener);
+                                mNsdManager.resolveService(service, new NsdManager.ResolveListener() {
+                                    @Override
+                                    public void onResolveFailed(NsdServiceInfo nsdServiceInfo, int errorCode) {
+                                        // Called when the resolve fails.  Use the error code to debug.
+                                        Timber.e("\\\\NSD\\\\ Resolve failed error = " + errorCode);
+                                        resolveSemaphore.release();
+                                    }
+
+                                    @Override
+                                    public void onServiceResolved(NsdServiceInfo nsdServiceInfo) {
+                                        mServiceInfo = nsdServiceInfo;
+
+                                        // Port is being returned as 9. Not needed.
+                                        //int port = mServiceInfo.getPort();
+
+                                        InetAddress host = mServiceInfo.getHost();
+                                        mCameraAddress = host.getHostAddress();
+                                        cameraArray.add(new Pair<>(name, mCameraAddress));
+                                        mainActivity.runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                mCameraAdapter.updateItems(new Pair<>(name, mCameraAddress));
+                                            }
+                                        });
+                                        Timber.d("\\\\NSD\\\\ Resolved address = " + mCameraAddress);
+                                        resolveSemaphore.release();
+                                    }
+                                });
+                            }
+                        });
+
+                    }
                 }
             }
-
             @Override
             public void onServiceLost(NsdServiceInfo service) {
                 // When the network service is no longer available.
@@ -135,41 +186,32 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
         };
     }
 
-    private void initializeResolveListener() {
-        mResolveListener = new NsdManager.ResolveListener() {
-
-            @Override
-            public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-                // Called when the resolve fails.  Use the error code to debug.
-                Timber.e("\\\\NSD\\\\ Resolve failed" + errorCode);
-            }
-
-            @Override
-            public void onServiceResolved(NsdServiceInfo serviceInfo) {
-                mServiceInfo = serviceInfo;
-
-                // Port is being returned as 9. Not needed.
-                //int port = mServiceInfo.getPort();
-
-                InetAddress host = mServiceInfo.getHost();
-                mCameraAddress = host.getHostAddress();
-                Timber.d("\\\\NSD\\\\ Resolved address = " + mCameraAddress);
-                mainActivity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        binding.tvCameraAddress.setText(mCameraAddress);
-                    }
-                });
-            }
-        };
-    }
-
     @Override
     public void onClick(View v) {
         int id = v.getId();
         if(id == R.id.btnSave) {
-            settings.setCameraAddress(mCameraAddress);
+            if(selectedIPAddess == null || selectedIPAddess.isEmpty()) {
+                Toast.makeText(getContext(), "You must select a camera first", Toast.LENGTH_LONG).show();
+                return;
+            }
+            settings.setCameraAddress(selectedIPAddess);
+            mainActivity.getNavController().popBackStack();
+        } else if(id == R.id.btnCancel) {
+            mainActivity.getNavController().popBackStack();
+        } else if(id == R.id.btnScan) {
+            if(mNsdManager == null) {
+                selectedIPAddess = null;
+                mNsdManager = (NsdManager) (mainActivity.getSystemService(Context.NSD_SERVICE));
+                initializeDiscoveryListener();
+                mNsdManager.discoverServices(Constants.SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+            }
+            return;
         }
-        mainActivity.getNavController().popBackStack();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Pair<String, String> pair = mCameraAdapter.getItem(position);
+        selectedIPAddess = pair.second;
     }
 }
