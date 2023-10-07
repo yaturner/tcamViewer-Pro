@@ -20,12 +20,16 @@ import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -34,6 +38,7 @@ import com.darcangel.tcamViewer.adapters.CameraDiscoveryAdapter;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentCameraDiscoveryBinding;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.model.SettingsViewModel;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -41,7 +46,8 @@ import java.util.concurrent.Semaphore;
 
 import timber.log.Timber;
 
-public class CameraDiscoveryFragment extends Fragment implements View.OnClickListener, AdapterView.OnItemClickListener {
+public class CameraDiscoveryFragment extends Fragment implements View.OnClickListener,
+        AdapterView.OnItemClickListener {
     private NsdManager mNsdManager;
     private NsdManager.DiscoveryListener mDiscoveryListener;
     private NsdManager.ResolveListener mResolveListener;
@@ -62,6 +68,11 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
                              ViewGroup container, Bundle savedInstanceState) {
         this.container = container;
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+
+        if (mainActivity.getSupportActionBar() != null) {
+            mainActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            mainActivity.getSupportActionBar().setHomeButtonEnabled(false);
+        }
 
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
@@ -213,5 +224,13 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Pair<String, String> pair = mCameraAdapter.getItem(position);
         selectedIPAddess = pair.second;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(mNsdManager != null) {
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+        }
     }
 }

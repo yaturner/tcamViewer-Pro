@@ -25,8 +25,9 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentWifiSettingsBinding;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.model.SettingsViewModel;
 import com.darcangel.tcamViewer.services.CameraService;
-import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
+import com.darcangel.tcamViewer.model.CameraViewModel;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.Locale;

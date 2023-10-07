@@ -314,8 +314,8 @@ public class ImageDto {
     }
 
 
-    public void rotateColormap(int direction) {
-        cameraUtils.rotateColormap(this, direction);
+    public String rotateColormap(int direction) {
+        return cameraUtils.rotateColormap(this, direction);
     }
 
     public Date getCreationDate() {

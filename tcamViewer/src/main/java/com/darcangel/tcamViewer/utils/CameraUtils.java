@@ -1,8 +1,5 @@
 package com.darcangel.tcamViewer.utils;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -12,8 +9,6 @@ import android.graphics.Rect;
 import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.BaseObservable;
@@ -23,13 +18,11 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
-import com.darcangel.tcamViewer.ui.camera.CameraFragment;
-import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
+import com.darcangel.tcamViewer.model.CameraViewModel;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,18 +31,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import io.sentry.Sentry;
-import timber.log.Timber;
 
 
 public class CameraUtils extends BaseObservable {
@@ -388,8 +377,9 @@ public class CameraUtils extends BaseObservable {
         return tempBitmap;
     }
 
-    public void rotateColormap(ImageDto imageDto, int direction) {
+    public String rotateColormap(ImageDto imageDto, int direction) {
         String pal = imageDto.getPaletteName();
+        String paletteName = pal;
         ArrayList<String> paletteNames = new
                 ArrayList<String>(Arrays.asList(mainActivity.getPaletteFactory().getPaletteNames()));
         Collections.sort(paletteNames, new Comparator<String>() {
@@ -407,7 +397,7 @@ public class CameraUtils extends BaseObservable {
                 if (index == paletteNames.size() - 1) {
                     index = -1;
                 }
-                String paletteName = paletteNames.get(index + 1);
+                paletteName = paletteNames.get(index + 1);
                 if (settings == null) {
                     settings = MainActivity.getInstance().getSettings();
                 }
@@ -421,8 +411,32 @@ public class CameraUtils extends BaseObservable {
                 break;
             }
         }
+        return paletteName;
     }
 
+    public String getNextPalette(String currPalette, int direction) {
+        ArrayList<String> paletteNames = new
+                ArrayList<String>(Arrays.asList(mainActivity.getPaletteFactory().getPaletteNames()));
+        Collections.sort(paletteNames, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                if (direction == Constants.ROTATE_FORWARD) {
+                    return o1.compareTo(o2);
+                } else {
+                    return o2.compareTo(o1);
+                }
+            }
+        });
+        for (int index = 0; index < paletteNames.size(); index++) {
+            if (currPalette.equalsIgnoreCase(paletteNames.get(index))) {
+                if (index == paletteNames.size() - 1) {
+                    index = -1;
+                }
+                return paletteNames.get(index + 1);
+            }
+        }
+        return "Rainbow";
+    }
 
     public boolean isUnitsCelsius() {
         if (cameraViewModel == null) {

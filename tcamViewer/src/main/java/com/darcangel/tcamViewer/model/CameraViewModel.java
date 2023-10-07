@@ -1,4 +1,4 @@
-package com.darcangel.tcamViewer.ui.camera;
+package com.darcangel.tcamViewer.model;
 
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;

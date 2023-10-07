@@ -32,18 +32,15 @@ import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentSettingsBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.model.SettingsViewModel;
 import com.darcangel.tcamViewer.services.CameraService;
-import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
+import com.darcangel.tcamViewer.model.CameraViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Iterator;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -187,7 +184,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
 
     private void discoverCameraAddress() {
         CameraDiscoveryFragment cameraDiscovery = new CameraDiscoveryFragment();
-        String mRPiAddress = "";
         navDirections = SettingsFragmentDirections.actionNavigationSettingsToCameraDiscoveryFragment();
         mainActivity.getNavController().navigate(navDirections);
     }

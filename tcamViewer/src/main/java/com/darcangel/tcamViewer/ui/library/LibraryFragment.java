@@ -26,13 +26,12 @@ import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.darcangel.tcamViewer.BuildConfig;
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.adapters.LibrarySelectionAdapter;
-import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentLibraryBinding;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.LibraryViewModel;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.darcangel.tcamViewer.viewholders.LibraryItemViewHolder;

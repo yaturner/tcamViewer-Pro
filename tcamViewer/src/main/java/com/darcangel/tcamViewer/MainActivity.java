@@ -8,13 +8,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -36,13 +33,12 @@ import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.services.CameraService;
-import com.darcangel.tcamViewer.ui.camera.CameraViewModel;
-import com.darcangel.tcamViewer.ui.library.LibraryViewModel;
-import com.darcangel.tcamViewer.ui.settings.SettingsViewModel;
+import com.darcangel.tcamViewer.model.CameraViewModel;
+import com.darcangel.tcamViewer.model.LibraryViewModel;
+import com.darcangel.tcamViewer.model.SettingsViewModel;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.snackbar.Snackbar;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -223,10 +219,13 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
 
     private void init() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
+        //This set up the navigation bar at the bottom of the window
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_camera, R.id.navigation_settings, R.id.navigation_library)
+                R.id.navigation_camera,
+                R.id.navigation_settings,
+                R.id.navigation_library)
                 .build();
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);

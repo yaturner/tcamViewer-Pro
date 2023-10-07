@@ -9,9 +9,9 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,24 +21,22 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
-import androidx.navigation.Navigator;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.FragmentPlaybackBinding;
+import com.darcangel.tcamViewer.factory.PaletteFactory;
 import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.LibraryViewModel;
 import com.darcangel.tcamViewer.model.RecordingDto;
 import com.darcangel.tcamViewer.model.RecordingFooterDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.BitmapToVideoEncoder;
 import com.darcangel.tcamViewer.utils.CameraUtils;
-import com.darcangel.tcamViewer.utils.FileUtils;
 
 import org.jcodec.api.android.AndroidSequenceEncoder;
-import org.jcodec.common.io.NIOUtils;
 import org.jcodec.common.io.SeekableByteChannel;
-import org.jcodec.common.model.Rational;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,12 +50,14 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.sentry.Sentry;
-import io.socket.client.IO;
 import timber.log.Timber;
 
-public class PlaybackFragment extends Fragment implements MenuProvider {
+public class PlaybackFragment extends Fragment implements
+        MenuProvider,
+        View.OnTouchListener {
     private String filename;
     private ImageDto[] imageDtos;
     private int frameIndex;
@@ -76,6 +76,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     private View root;
     private LibraryViewModel libraryViewModel;
     private Settings settings;
+    private PaletteFactory paletteFactory;
     private RecordingDto recordingDto;
     private Integer numFrames;
     private long fileSize;
@@ -88,14 +89,16 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     private Integer action;
     private BitmapToVideoEncoder videoEncoder;
     private ArrayList<Pair<Bitmap, Integer>> videoFrameArray;
-
+    private String currentPalette = "Rainbow";
+    private boolean remapNeeded = false;
+    private AtomicBoolean abortPlayback;
 
     private Runnable playImage = new Runnable() {
         @Override
         public void run() {
             try {
                 int nFrames;
-                if(videoFrameArray == null) {
+                if (videoFrameArray == null) {
                     numFrames = libraryViewModel.getRecordingDto().getNumFrames();
                     videoFrameArray = new ArrayList<Pair<Bitmap, Integer>>(numFrames);
                 }
@@ -103,38 +106,47 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                 int bytesRead = recodingFile.read(buffer, 0, len);
                 assert bytesRead == len;
                 ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, len)),
-                        "Rainbow");
-                if(action == Constants.PLAYBACK_ACTION_PLAY) {
+                        currentPalette);
+                if (remapNeeded) {
+                    int[][] palette = paletteFactory.getPaletteByName(currentPalette);
+                    imageDto.setPalette(palette);
+                    imageDto.remapImage();
+                }
+                if (action == Constants.PLAYBACK_ACTION_PLAY) {
                     displayImage(imageDto);
-                } else if(action == Constants.PLAYBACK_ACTION_ANALYZE) {
+                } else if (action == Constants.PLAYBACK_ACTION_ANALYZE) {
 
-                } else if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                } else if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
                     Long delay = libraryViewModel.getFrameDelay().get(frameIndex);
                     nFrames = (int) (((float) delay / 1000.0) * 30.0);
-                    nFrames = nFrames==0?1:nFrames;
+                    nFrames = nFrames == 0 ? 1 : nFrames;
                     Bitmap bitmap = imageDto.getBitmap();
                     Timber.d("encoding nFrames = %d", nFrames);
                     videoFrameArray.add(new Pair<Bitmap, Integer>(bitmap, nFrames));
                 }
                 recodingFile.skip(1); //skip over \03
                 frameIndex = frameIndex + 1;
-                if (frameIndex < numFrames ) {
-                    if(action == Constants.PLAYBACK_ACTION_PLAY) {
+                if (frameIndex < numFrames) {
+                    if (abortPlayback.get()) {
+                        abortPlayback.set(false);
+                        return;
+                    }
+                    if (action == Constants.PLAYBACK_ACTION_PLAY) {
                         imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex - 1));
                     } else {
                         imageTimerHandler.postDelayed(this, 10);
                     }
                 } else {
                     imageTimerHandler.removeCallbacks(this);
-                    if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
-                        for(Pair<Bitmap, Integer> pair : videoFrameArray) {
-                            for(int i = 0; i < pair.second; i++) {
+                    if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                        for (Pair<Bitmap, Integer> pair : videoFrameArray) {
+                            for (int i = 0; i < pair.second; i++) {
                                 videoEncoder.queueFrame(pair.first);
                             }
                         }
                         videoEncoder.stopEncoding();
                     }
-                    if(recodingFile != null) {
+                    if (recodingFile != null) {
                         recodingFile.close();
                         recodingFile = null;
                     }
@@ -142,7 +154,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
                 Sentry.captureException(e);
-                if(action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
                     videoEncoder.abortEncoding();
                 }
             }
@@ -159,7 +171,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle bundle = getArguments();
-        if(bundle == null) {
+        if (bundle == null) {
             action = Constants.PLAYBACK_ACTION_PLAY;
         } else {
             action = bundle.getInt(Constants.PLAYBACK_ACTION, Constants.PLAYBACK_ACTION_PLAY);
@@ -183,6 +195,8 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         binding = FragmentPlaybackBinding.inflate(inflater, container, false);
         MenuHost menuHost = requireActivity();
         menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
+        paletteFactory = mainActivity.getPaletteFactory();
+        abortPlayback = new AtomicBoolean(false);
         root = binding.getRoot();
         return root;
     }
@@ -190,21 +204,22 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        binding.ivColorBar.setOnTouchListener(this);
         try {
             openRecordingFile();
             openInfoFile();
-            if(recordingDto == null) {
+            if (recordingDto == null) {
                 analyzeRecording();
                 recordingFooterDto = new RecordingFooterDto(getFooterInfo());
                 numFrames = recordingFooterDto.getNumFrames();
             } else {
                 libraryViewModel.setRecordingDto(recordingDto);
             }
-            if(action == Constants.PLAYBACK_ACTION_PLAY) {
+            if (action == Constants.PLAYBACK_ACTION_PLAY) {
                 playRecording();
-            } else if(action == Constants.PLAYBACK_ACTION_ANALYZE) {
+            } else if (action == Constants.PLAYBACK_ACTION_ANALYZE) {
 
-            } else if(action == Constants.PLAYBACK_ACTION_SAVE) {
+            } else if (action == Constants.PLAYBACK_ACTION_SAVE) {
                 saveRecording();
             }
         } catch (FileNotFoundException e) {
@@ -253,16 +268,16 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     }
 
     private void saveRecording() throws IOException {
-        String videoFilename = filename.substring(filename.lastIndexOf("/")+1);
+        String videoFilename = filename.substring(filename.lastIndexOf("/") + 1);
         videoFilename = videoFilename.replace(".tmjsn", "");
         String videoOutputPath =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/" + videoFilename + ".mp4";
-        mainActivity.showProgressDialog(getString(R.string.saving_movie)  + " " + videoFilename + ".mp4");
+        mainActivity.showProgressDialog(getString(R.string.saving_movie) + " " + videoFilename + ".mp4");
         videoEncoder = new BitmapToVideoEncoder(new BitmapToVideoEncoder.IBitmapToVideoEncoderCallback() {
             @Override
             public void onEncodingComplete(File outputFile) {
                 numFrames = null;
-                for(Pair<Bitmap, Integer> pair : videoFrameArray) {
+                for (Pair<Bitmap, Integer> pair : videoFrameArray) {
                     pair.first.recycle();
                 }
                 videoFrameArray = null;
@@ -292,16 +307,16 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             if (c == 3 && bytesRead < fileSize - 1) {
                 ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, bufferPos)),
                         "Rainbow");
-                if(frameIndex == 0) {
+                if (frameIndex == 0) {
                     libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
                 } else {
-                    if(imageDto.getCreationDate().getTime() <= libraryViewModel.getFrameDelay().get(frameIndex-1)) {
+                    if (imageDto.getCreationDate().getTime() <= libraryViewModel.getFrameDelay().get(frameIndex - 1)) {
                         Timber.d("creation time is less than last frame + delay");
                     }
                     libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
-                    libraryViewModel.getFrameDelay().set(frameIndex-1,
+                    libraryViewModel.getFrameDelay().set(frameIndex - 1,
                             libraryViewModel.getFrameDelay().get(frameIndex) -
-                    libraryViewModel.getFrameDelay().get(frameIndex-1));
+                                    libraryViewModel.getFrameDelay().get(frameIndex - 1));
                 }
 
                 imageDto = null;
@@ -312,7 +327,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
                         (frameIndex == 0 ? 0 : (libraryViewModel.getFrameOffset().get(frameIndex - 1))));
                 bufferPos = 0;
             } else {
-                buffer[bufferPos] = (char)c;
+                buffer[bufferPos] = (char) c;
                 bufferPos = bufferPos + 1;
             }
             bytesRead = bytesRead + 1;
@@ -320,7 +335,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         libraryViewModel.getFrameSize().add(frameIndex,
                 (int) (bytesRead - libraryViewModel.getFrameOffset().get(frameIndex - 1)));
         numFrames = libraryViewModel.getFrameOffset().size() - 1; // less footer and final \03
-        libraryViewModel.getFrameDelay().remove(numFrames-1); //last value is for the footer
+        libraryViewModel.getFrameDelay().remove(numFrames - 1); //last value is for the footer
         Timber.d("read %d frames", frameIndex);
     }
 
@@ -343,7 +358,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
             e.printStackTrace();
             Sentry.captureException(e);
         } finally {
-            if(bufferedReader != null) {
+            if (bufferedReader != null) {
                 try {
                     bufferedReader.close();
                     bufferedReader = null;
@@ -396,6 +411,7 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
         NavDirections navDirections;
 
         if (id == android.R.id.home) {
+            abortPlayback.set(true);
             navDirections = PlaybackFragmentDirections.actionPlaybackFragmentToNavigationLibrarySlideShowFragment();
             mainActivity.getNavController().navigate(navDirections);
             return true;
@@ -424,9 +440,26 @@ public class PlaybackFragment extends Fragment implements MenuProvider {
     public void onPause() {
         super.onPause();
         imageTimerHandler.removeCallbacks(playImage);
-        if(videoEncoder != null && videoEncoder.isEncodingStarted()) {
+        if (videoEncoder != null && videoEncoder.isEncodingStarted()) {
             mainActivity.dismissProgressDialog();
             videoEncoder.abortEncoding();
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        int id = v.getId();
+        if (id == R.id.ivColorBar) {
+            int h = binding.ivColorBar.getHeight();
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getY() > (h / 2)) {
+                    currentPalette = cameraUtils.getNextPalette(currentPalette, Constants.ROTATE_FORWARD);
+                } else {
+                    currentPalette = cameraUtils.getNextPalette(currentPalette, Constants.ROTATE_BACKWARD);
+                }
+                remapNeeded = true;
+            }
+        }
+        return true;
     }
 }

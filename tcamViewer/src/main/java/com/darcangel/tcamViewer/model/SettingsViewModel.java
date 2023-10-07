@@ -1,4 +1,4 @@
-package com.darcangel.tcamViewer.ui.settings;
+package com.darcangel.tcamViewer.model;
 
 import android.content.ContentValues;
 import android.content.res.Resources;
