@@ -72,10 +72,10 @@ public class PlaybackFragment extends Fragment implements
     private ObjectInputStream infoInputStream;
     private MainActivity mainActivity;
     private CameraUtils cameraUtils;
+    private Settings settings;
     private FragmentPlaybackBinding binding;
     private View root;
     private LibraryViewModel libraryViewModel;
-    private Settings settings;
     private PaletteFactory paletteFactory;
     private RecordingDto recordingDto;
     private Integer numFrames;
@@ -134,7 +134,7 @@ public class PlaybackFragment extends Fragment implements
                     if (action == Constants.PLAYBACK_ACTION_PLAY) {
                         imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex - 1));
                     } else {
-                        imageTimerHandler.postDelayed(this, 10);
+                        imageTimerHandler.postDelayed(this, 1);
                     }
                 } else {
                     imageTimerHandler.removeCallbacks(this);
@@ -290,8 +290,13 @@ public class PlaybackFragment extends Fragment implements
                 });
             }
         });
-
-        videoEncoder.startEncoding(160, 120, new File(videoOutputPath));
+        int[] height = getContext().getResources().getIntArray(R.array.resolution_heights);
+        int[] width = getContext().getResources().getIntArray(R.array.resolution_widths);
+        int index = settings.getExportResolution().getValue();
+        if(index < 0 || index > height.length) {
+            index = 0;
+        }
+        videoEncoder.startEncoding(width[index], height[index], new File(videoOutputPath));
         imageTimerHandler.postDelayed(playImage, 500);
     }
 

@@ -97,7 +97,7 @@
     <string name="image">Image</string>
     <string name="raw">Raw</string>
     <string name="image_raw">Image+Raw</string>
-    <string name="export_raw">Export Raw</string>
+    <string name="export_raw">Export TJSN</string>
     <string name="AGC">AGC</string>
     <string name="please_grant_write_external_storage">Please grant write external storage</string>
     <string name="saving_movie">Saving Video Stream as</string>

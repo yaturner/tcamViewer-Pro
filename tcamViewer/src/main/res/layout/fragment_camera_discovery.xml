@@ -67,7 +67,9 @@
             <ListView
                 android:id="@+id/lvCamera_discovery"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:choiceMode="singleChoice"
+                android:listSelector="@color/main_cyan_color"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
