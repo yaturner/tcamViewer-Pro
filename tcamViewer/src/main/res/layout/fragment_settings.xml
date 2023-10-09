@@ -9,6 +9,7 @@
             type="com.darcangel.tcamViewer.model.Settings" />
     </data>
 
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/llCameraSettings"
         android:layout_width="match_parent"
@@ -259,7 +260,7 @@
                 <androidx.appcompat.widget.LinearLayoutCompat style="@style/SettingsLayout">
 
                     <TextView
-                        style="@style/SettingsBtnStart"
+                        style="@style/SettingsTextStart"
                         android:text="@string/palette" />
 
                     <ImageButton
