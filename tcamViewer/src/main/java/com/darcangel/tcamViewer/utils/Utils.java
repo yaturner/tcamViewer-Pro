@@ -159,10 +159,15 @@ public class Utils {
                 textSize = 8f;
         }
 
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1)
-                .replace(".tjsn", "");
+        String imageName;
+        if(path != null && !path.isEmpty()) {
+            imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1)
+                    .replace(".tjsn", "");
+        } else {
+            imageName = "";
+        }
         String hotspotString = settings.getDisplaySpotmeter().getValue()?
-            cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter()):"";
+                cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter()):"";
         if(imageDto.isAGC()) {
             maxString = "AGC";
             minString = "AGC";
