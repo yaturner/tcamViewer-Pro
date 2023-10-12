@@ -1,8 +1,6 @@
 package com.darcangel.tcamViewer.ui.library;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -14,13 +12,9 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
@@ -40,7 +34,6 @@ import com.darcangel.tcamViewer.model.RecordingFooterDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.BitmapToVideoEncoder;
 import com.darcangel.tcamViewer.utils.CameraUtils;
-import com.darcangel.tcamViewer.utils.Utils;
 
 import org.jcodec.api.android.AndroidSequenceEncoder;
 import org.jcodec.common.io.SeekableByteChannel;
@@ -54,9 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,7 +73,6 @@ public class PlaybackFragment extends Fragment implements
     private MainActivity mainActivity;
     private CameraUtils cameraUtils;
     private Settings settings;
-    private Utils utils;
     private FragmentPlaybackBinding binding;
     private View root;
     private LibraryViewModel libraryViewModel;
@@ -190,7 +180,6 @@ public class PlaybackFragment extends Fragment implements
         libraryViewModel = mainActivity.getLibraryViewModel();
         settings = mainActivity.getSettings();
         cameraUtils = mainActivity.getCameraUtils();
-        utils = mainActivity.getUtils();
         frameIndex = 0;
         bytesRead = 0;
         //prime the pump
@@ -389,68 +378,26 @@ public class PlaybackFragment extends Fragment implements
 
     private void displayImage(final ImageDto imageDto) {
         assert imageDto != null;
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-        String maxString, minString;
-        StringBuilder stringBuilder = new StringBuilder();
-        Resources resources = mainActivity.getResources();
-        Pair<Float, Float> temps = imageDto.getTemperatures();
-        String path = imageDto.getFilename();
-
-        String imageName;
-        if(path != null && !path.isEmpty()) {
-            imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1)
-                    .replace(".tjsn", "");
-        } else {
-            imageName = "";
-        }
-        String hotspotString = settings.getDisplaySpotmeter().getValue()?
-                cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter()):"";
-        if(imageDto.isAGC()) {
-            maxString = "AGC";
-            minString = "AGC";
-        } else {
-            maxString = cameraUtils.createTemperatureString(temps.second);
-            minString = cameraUtils.createTemperatureString(temps.first);
-        }
-
-        int gain = imageDto.getGainMode();
-        float emissivity = (float) imageDto.getEmissivity() / 8192f;
-
-        binding.clPlayback.clItemLayout.setBackgroundColor(resources.getColor(R.color.black, mainActivity.getTheme()));
-
-        binding.clPlayback.tvMaxTemperature.setText(maxString);
-        binding.clPlayback.tvMaxTemperature.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-        binding.clPlayback.tvMinTemperature.setText(minString);
-        binding.clPlayback.tvMinTemperature.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-
-       binding.clPlayback.tvLogo.setText(R.string.appName);
-       binding.clPlayback.tvLogo.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-       binding.clPlayback.tvSpotmeterTemperature.setText(hotspotString);
-       binding.clPlayback.tvSpotmeterTemperature.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-        binding.clPlayback.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-        binding.clPlayback.tvEmissivity.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-
-        binding.clPlayback.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-        binding.clPlayback.tvDateTime.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-        binding.clPlayback.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-        binding.clPlayback.tvGain.setTextColor(resources.getColor(R.color.white, mainActivity.getTheme()));
-
-//        ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame
-//                .findViewById(R.id.clItemLayout);
-//        constraintLayout.setDrawingCacheEnabled(true);
-//        constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0,
-//                        View.MeasureSpec.UNSPECIFIED),
-//                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-//        layoutHeight = constraintLayout.getMeasuredHeight();
-//        layoutWidth = constraintLayout.getMeasuredWidth();
-//        constraintLayout.layout(0, 0, layoutWidth, layoutHeight);
-//        constraintLayout.buildDrawingCache(true);
-//
         Bitmap bitmap = imageDto.drawHotspot();
-        binding.clPlayback.ivCamera.setImageBitmap(bitmap);
+        imageDto.remapImage();
+        binding.ivCamera.setImageBitmap(bitmap);
+        binding.ivCamera.setTag(this);
+        if (settings.getDisplaySpotmeter().getValue()) {
+            binding.tvSpotmeterTemperature.setText(cameraUtils.createTemperatureString(imageDto.
+                    getMeanTemperatureAtSpotmeter()));
+        } else {
+            binding.tvSpotmeterTemperature.setText("");
+        }
         Bitmap colorbar = imageDto.createColorBar();
-        binding.clPlayback.ivColorBar.setImageBitmap(colorbar);
-
+        binding.ivColorBar.setImageBitmap(colorbar);
+        Pair<Float, Float> temps = imageDto.getTemperatures();
+        if (imageDto.isAGC()) {
+            binding.tvMaxTemperature.setText("AGC");
+            binding.tvMinTemperature.setText("AGC");
+        } else {
+            binding.tvMaxTemperature.setText(cameraUtils.createTemperatureString(temps.second));
+            binding.tvMinTemperature.setText(cameraUtils.createTemperatureString(temps.first));
+        }
     }
 
     @Override
