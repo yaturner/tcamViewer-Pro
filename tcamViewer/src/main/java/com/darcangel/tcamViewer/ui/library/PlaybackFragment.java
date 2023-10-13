@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
@@ -157,10 +158,6 @@ public class PlaybackFragment extends Fragment implements
                         }
                         videoEncoder.stopEncoding();
                     }
-                    if (recodingFile != null) {
-                        recodingFile.close();
-                        recodingFile = null;
-                    }
                 }
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
@@ -194,7 +191,6 @@ public class PlaybackFragment extends Fragment implements
         utils = mainActivity.getUtils();
         frameIndex = 0;
         bytesRead = 0;
-        //prime the pump
         filename = libraryViewModel.getPlaybackImageDto().getFilename();
         imageTimer = new Timer("imageTimer");
         imageTimerHandler = new Handler();
@@ -298,6 +294,15 @@ public class PlaybackFragment extends Fragment implements
                     public void run() {
                         mainActivity.dismissProgressDialog();
                         Navigation.findNavController(getView()).popBackStack();
+                        if(recodingFile != null) {
+                            try {
+                                recodingFile.close();
+                                recodingFile = null;
+                            } catch (IOException e) {
+                                Sentry.captureException(e);
+                                throw new RuntimeException(e);
+                            }
+                        }
                     }
                 });
             }
@@ -436,17 +441,6 @@ public class PlaybackFragment extends Fragment implements
         binding.clPlayback.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
         binding.clPlayback.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
 
-//        ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame
-//                .findViewById(R.id.clItemLayout);
-//        constraintLayout.setDrawingCacheEnabled(true);
-//        constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0,
-//                        View.MeasureSpec.UNSPECIFIED),
-//                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-//        layoutHeight = constraintLayout.getMeasuredHeight();
-//        layoutWidth = constraintLayout.getMeasuredWidth();
-//        constraintLayout.layout(0, 0, layoutWidth, layoutHeight);
-//        constraintLayout.buildDrawingCache(true);
-//
         Bitmap bitmap = imageDto.drawHotspot();
         binding.clPlayback.ivCamera.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
@@ -457,11 +451,14 @@ public class PlaybackFragment extends Fragment implements
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
+        MenuItem save = menu.findItem(R.id.action_save);
+        if(mainActivity.isRunningOnEmulator()) {
+            save.setEnabled(false);
+        }
     }
 
     @Override
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-
     }
 
     @Override

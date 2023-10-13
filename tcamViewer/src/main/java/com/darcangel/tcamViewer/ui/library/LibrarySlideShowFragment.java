@@ -351,6 +351,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
+        MenuItem save = menu.findItem(R.id.action_movie_save);
+        if(mainActivity.isRunningOnEmulator()) {
+            save.setEnabled(false);
+            save.setVisible(false);
+        }
     }
 
     @Override
