@@ -1,8 +1,6 @@
 package com.darcangel.tcamViewer.ui.library;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -14,15 +12,10 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ImageButton;
 
-import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
@@ -50,16 +43,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,7 +62,7 @@ import timber.log.Timber;
 
 public class PlaybackFragment extends Fragment implements
         MenuProvider,
-        View.OnTouchListener {
+        View.OnTouchListener, View.OnClickListener {
     private String filename;
     private ImageDto[] imageDtos;
     private int frameIndex;
@@ -76,10 +70,10 @@ public class PlaybackFragment extends Fragment implements
     private RecordingFooterDto recordingFooterDto;
     private Timer imageTimer;
     private Handler imageTimerHandler;
-    private Scanner scanner;
     private BufferedReader bufferedReader;
     private BufferedReader bufferedInfoReader;
-    private InputStreamReader recodingFile;
+    /////private InputStreamReader recodingFile;
+    private RandomAccessFile randomAccessFile;
     private ObjectInputStream infoInputStream;
     private MainActivity mainActivity;
     private CameraUtils cameraUtils;
@@ -92,7 +86,7 @@ public class PlaybackFragment extends Fragment implements
     private RecordingDto recordingDto;
     private Integer numFrames;
     private long fileSize;
-    private final char[] buffer = new char[64767];
+    private final byte[] buffer = new byte[64767];
     private ArrayList<Pair<Bitmap, Integer>> movieInfoArray;
     private SeekableByteChannel out = null;
     private AndroidSequenceEncoder encoder;
@@ -102,30 +96,45 @@ public class PlaybackFragment extends Fragment implements
     private BitmapToVideoEncoder videoEncoder;
     private ArrayList<Pair<Bitmap, Integer>> videoFrameArray;
     private String currentPalette = "Rainbow";
+    private ImageDto imageDto = null;
     private boolean remapNeeded = false;
     private AtomicBoolean abortPlayback;
+    private enum PLAYBACK_STATE {
+        REWIND,
+        PLAYING,
+        PAUSED,
+        FAST_FORWARD};
+    private PLAYBACK_STATE playbackState;
 
-    private Runnable playImage = new Runnable() {
+    private Runnable playVideo = new Runnable() {
         @Override
         public void run() {
             try {
                 int nFrames;
+                int len, bytesRead;
                 if (videoFrameArray == null) {
                     numFrames = libraryViewModel.getRecordingDto().getNumFrames();
                     videoFrameArray = new ArrayList<Pair<Bitmap, Integer>>(numFrames);
                 }
-                int len = libraryViewModel.getFrameSize().get(frameIndex);
-                int bytesRead = recodingFile.read(buffer, 0, len);
-                assert bytesRead == len;
-                ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, len)),
-                        currentPalette);
+//                    len = libraryViewModel.getFrameSize().get(frameIndex);
+//                    bytesRead = recodingFile.read(buffer, 0, len);
+//                    assert bytesRead == len;
+//                    imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, len)),
+//                            currentPalette);
+                imageDto = getImageDtoFromFile(frameIndex);
                 if (remapNeeded) {
                     int[][] palette = paletteFactory.getPaletteByName(currentPalette);
                     imageDto.setPalette(palette);
                     imageDto.remapImage();
                 }
+
                 if (action == Constants.PLAYBACK_ACTION_PLAY) {
-                    displayImage(imageDto);
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            displayImage(imageDto);
+                        }
+                    });
                 } else if (action == Constants.PLAYBACK_ACTION_ANALYZE) {
 
                 } else if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
@@ -136,8 +145,8 @@ public class PlaybackFragment extends Fragment implements
                     Timber.d("encoding nFrames = %d", nFrames);
                     videoFrameArray.add(new Pair<Bitmap, Integer>(bitmap, nFrames));
                 }
-                recodingFile.skip(1); //skip over \03
-                frameIndex = frameIndex + 1;
+//                recodingFile.skip(1); //skip over \03
+                    frameIndex = frameIndex + 1;
                 if (frameIndex < numFrames) {
                     if (abortPlayback.get()) {
                         abortPlayback.set(false);
@@ -169,6 +178,18 @@ public class PlaybackFragment extends Fragment implements
         }
     };
 
+    private ImageDto getImageDtoFromFile(int frameIndex) throws JSONException, IOException {
+        int len = libraryViewModel.getFrameSize().get(frameIndex);
+        long pos = libraryViewModel.getFrameOffset().get(frameIndex);
+        randomAccessFile.seek(pos);
+        randomAccessFile.readFully(buffer, 0, len);
+//        assert bytesRead == len;
+        String str = new String(buffer, 0, len);
+        JSONObject jsonObject = new JSONObject(str);
+        imageDto = new ImageDto(new JSONObject(new String(buffer, 0, len)),
+                currentPalette);
+        return imageDto;
+    }
 
     //N. B. The navigation bar is hidden in MainActivity
 
@@ -212,6 +233,11 @@ public class PlaybackFragment extends Fragment implements
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        binding.mediaController.prev.setOnClickListener(this);
+        binding.mediaController.rew.setOnClickListener(this);
+        binding.mediaController.pause.setOnClickListener(this);
+        binding.mediaController.ffwd.setOnClickListener(this);
+        binding.mediaController.next.setOnClickListener(this);
         binding.clPlayback.ivColorBar.setOnTouchListener(this);
         try {
             openRecordingFile();
@@ -224,6 +250,7 @@ public class PlaybackFragment extends Fragment implements
                 libraryViewModel.setRecordingDto(recordingDto);
             }
             if (action == Constants.PLAYBACK_ACTION_PLAY) {
+                playbackState = PLAYBACK_STATE.PLAYING;
                 playRecording();
             } else if (action == Constants.PLAYBACK_ACTION_ANALYZE) {
 
@@ -242,10 +269,25 @@ public class PlaybackFragment extends Fragment implements
         }
     }
 
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if(id == R.id.pause) {
+            if(playbackState == PLAYBACK_STATE.PLAYING) {
+                ((ImageButton)v).setImageResource(android.R.drawable.ic_media_pause);
+                playbackState = PLAYBACK_STATE.PAUSED;
+            } else {
+                ((ImageButton)v).setImageResource(android.R.drawable.ic_media_play);
+                playbackState = PLAYBACK_STATE.PLAYING;
+            }
+        }
+    }
+
     private void openRecordingFile() throws IOException {
         File file = new File(filename);
         fileSize = file.length();
-        recodingFile = new InputStreamReader(new FileInputStream(file));
+//        recodingFile = new InputStreamReader(new FileInputStream(file));
+        randomAccessFile = new RandomAccessFile(file, "rws");
     }
 
     private void openInfoFile() {
@@ -272,7 +314,10 @@ public class PlaybackFragment extends Fragment implements
         frameIndex = 0;
         openRecordingFile();
         openInfoFile();
-        imageTimerHandler.postDelayed(playImage, 500);
+        Thread playbackThread = new Thread(playVideo);
+        playbackThread.start();
+
+        //imageTimerHandler.postDelayed(playImage, 500);
     }
 
     private void saveRecording() throws IOException {
@@ -294,10 +339,10 @@ public class PlaybackFragment extends Fragment implements
                     public void run() {
                         mainActivity.dismissProgressDialog();
                         Navigation.findNavController(getView()).popBackStack();
-                        if(recodingFile != null) {
+                        if(randomAccessFile != null) {
                             try {
-                                recodingFile.close();
-                                recodingFile = null;
+                                randomAccessFile.close();
+                                randomAccessFile = null;
                             } catch (IOException e) {
                                 Sentry.captureException(e);
                                 throw new RuntimeException(e);
@@ -314,7 +359,7 @@ public class PlaybackFragment extends Fragment implements
             index = 0;
         }
         videoEncoder.startEncoding(width[index], height[index], new File(videoOutputPath));
-        imageTimerHandler.postDelayed(playImage, 500);
+        imageTimerHandler.postDelayed(playVideo, 500);
     }
 
     private void analyzeRecording() throws IOException, JSONException {
@@ -323,42 +368,46 @@ public class PlaybackFragment extends Fragment implements
         bytesRead = 0;
         long currTime;
         libraryViewModel.setRecordingDto(new RecordingDto());
-        libraryViewModel.getFrameOffset().add(frameIndex, bytesRead);
+        long pos = randomAccessFile.getFilePointer();
+        libraryViewModel.getFrameOffset().add(frameIndex, pos);
         //TODO use Scanner here
-        while ((c = recodingFile.read()) != -1) {
-            if (c == 3 && bytesRead < fileSize - 1) {
-                ImageDto imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, bufferPos)),
-                        "Rainbow");
-                if (frameIndex == 0) {
-                    libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
-                } else {
-                    if (imageDto.getCreationDate().getTime() <= libraryViewModel.getFrameDelay().get(frameIndex - 1)) {
-                        Timber.d("creation time is less than last frame + delay");
+        try {
+            while ((c = randomAccessFile.readByte()) != -1) {
+                if (c == 3 && bytesRead < fileSize - 1) {
+                    ImageDto imageDto = new ImageDto(new JSONObject(new String(buffer, 0, bufferPos)),
+                            "Rainbow");
+                    if (frameIndex == 0) {
+                        libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
+                    } else {
+                        if (imageDto.getCreationDate().getTime() <= libraryViewModel.getFrameDelay().get(frameIndex - 1)) {
+                            Timber.d("creation time is less than last frame + delay");
+                        }
+                        libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
+                        libraryViewModel.getFrameDelay().set(frameIndex - 1,
+                                libraryViewModel.getFrameDelay().get(frameIndex) -
+                                        libraryViewModel.getFrameDelay().get(frameIndex - 1));
                     }
-                    libraryViewModel.getFrameDelay().add(frameIndex, imageDto.getCreationDate().getTime());
-                    libraryViewModel.getFrameDelay().set(frameIndex - 1,
-                            libraryViewModel.getFrameDelay().get(frameIndex) -
-                                    libraryViewModel.getFrameDelay().get(frameIndex - 1));
-                }
 
-                imageDto = null;
-                frameIndex = frameIndex + 1;
-                libraryViewModel.getFrameOffset().add(frameIndex, bytesRead + 1); //skip over \03
-                libraryViewModel.getFrameSize().add(frameIndex - 1, bufferPos);
-                assert bufferPos == (int) (bytesRead -
-                        (frameIndex == 0 ? 0 : (libraryViewModel.getFrameOffset().get(frameIndex - 1))));
-                bufferPos = 0;
-            } else {
-                buffer[bufferPos] = (char) c;
-                bufferPos = bufferPos + 1;
+                    imageDto = null;
+                    frameIndex = frameIndex + 1;
+                    libraryViewModel.getFrameOffset().add(frameIndex, randomAccessFile.getFilePointer());
+                    libraryViewModel.getFrameSize().add(frameIndex - 1, bufferPos);
+                    assert bufferPos == (int) (bytesRead -
+                            (frameIndex == 0 ? 0 : (libraryViewModel.getFrameOffset().get(frameIndex - 1))));
+                    bufferPos = 0;
+                } else {
+                    buffer[bufferPos] = (byte) c;
+                    bufferPos = bufferPos + 1;
+                }
+                bytesRead = bytesRead + 1;
             }
-            bytesRead = bytesRead + 1;
+        } catch (EOFException e) {
+            libraryViewModel.getFrameSize().add(frameIndex,
+                    (int) (bytesRead - libraryViewModel.getFrameOffset().get(frameIndex - 1)));
+            numFrames = libraryViewModel.getFrameOffset().size() - 1; // less footer and final \03
+            libraryViewModel.getFrameDelay().remove(numFrames - 1); //last value is for the footer
+            Timber.d("read %d frames", frameIndex);
         }
-        libraryViewModel.getFrameSize().add(frameIndex,
-                (int) (bytesRead - libraryViewModel.getFrameOffset().get(frameIndex - 1)));
-        numFrames = libraryViewModel.getFrameOffset().size() - 1; // less footer and final \03
-        libraryViewModel.getFrameDelay().remove(numFrames - 1); //last value is for the footer
-        Timber.d("read %d frames", frameIndex);
     }
 
     private JSONObject getFooterInfo() {
@@ -452,7 +501,7 @@ public class PlaybackFragment extends Fragment implements
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
         MenuItem save = menu.findItem(R.id.action_save);
-        if(mainActivity.isRunningOnEmulator()) {
+        if(save != null && mainActivity.isRunningOnEmulator()) {
             save.setEnabled(false);
         }
     }
@@ -495,7 +544,7 @@ public class PlaybackFragment extends Fragment implements
     @Override
     public void onPause() {
         super.onPause();
-        imageTimerHandler.removeCallbacks(playImage);
+        imageTimerHandler.removeCallbacks(playVideo);
         if (videoEncoder != null && videoEncoder.isEncodingStarted()) {
             mainActivity.dismissProgressDialog();
             videoEncoder.abortEncoding();
@@ -506,7 +555,7 @@ public class PlaybackFragment extends Fragment implements
     public boolean onTouch(View v, MotionEvent event) {
         int id = v.getId();
         if (id == R.id.ivColorBar) {
-            int h = binding.ivColorBar.getHeight();
+            int h = binding.clPlayback.ivColorBar.getHeight();
             if (event.getAction() == MotionEvent.ACTION_UP) {
                 if (event.getY() > (h / 2)) {
                     currentPalette = cameraUtils.getNextPalette(currentPalette, Constants.ROTATE_FORWARD);

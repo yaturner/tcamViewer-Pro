@@ -425,6 +425,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         if (cameraViewModel.getFrameCount() == 0) {
                             recordingDto = cameraViewModel.getRecordingDto();
                             cameraViewModel.setRecordingStartDate();
+                            recordingDto.getFrameOffset().add(0L);
                         }
                         byte[] bytes = obj.toString().getBytes(StandardCharsets.UTF_8);
                         recordingOutputStream.write(bytes);

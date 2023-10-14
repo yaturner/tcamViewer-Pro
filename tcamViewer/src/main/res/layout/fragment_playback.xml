@@ -35,104 +35,23 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent=".95" />
 
-        <TextView
-            android:id="@+id/tvSpotmeterTemperature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center_horizontal"
-            android:text=""
-            app:layout_constraintTop_toTopOf="@+id/glTop"
-            app:layout_constraintStart_toStartOf="@+id/glLeft"
-            app:layout_constraintEnd_toStartOf="@+id/glRight"/>
-
-
         <include layout="@layout/export_library_image"
             android:id="@+id/clPlayback"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:background="@color/black"
             app:layout_constraintTop_toBottomOf="@+id/glTop"
             app:layout_constraintEnd_toStartOf="@+id/glRight"
             app:layout_constraintStart_toStartOf="@id/glLeft"/>
 
-        <TextView
-            android:id="@+id/tvMaxTemperature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:gravity="right"
-            android:text=""
-            android:textSize="12sp"
-            app:layout_constraintTop_toTopOf="@+id/ivCamera"
-            app:layout_constraintBottom_toTopOf="@+id/ivColorBar"
-            app:layout_constraintStart_toEndOf="@+id/ivCamera"
-            app:layout_constraintEnd_toEndOf="@+id/ivColorBar"/>
-
-        <ImageView
-            android:id="@+id/ivColorBar"
-            android:layout_width="@dimen/colorbar_width"
+        <include layout="@layout/media_controller"
+            android:id="@+id/mediaController"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginEnd="5dp"
-            android:gravity="center_horizontal"
-            android:scaleType="fitXY"
-            android:clickable="true"
-            app:layout_constraintTop_toBottomOf="@+id/tvMaxTemperature"
-            app:layout_constraintBottom_toTopOf="@+id/tvMinTemperature"
-            app:layout_constraintStart_toEndOf="@+id/ivCamera"/>
+            app:layout_constraintTop_toBottomOf="@+id/clPlayback"
+            app:layout_constraintEnd_toStartOf="@+id/glRight"
+            app:layout_constraintStart_toStartOf="@id/glLeft"/>
 
-        <TextView
-            android:id="@+id/tvMinTemperature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:layout_gravity="right"
-            android:gravity="right"
-            android:textSize="12sp"
-            app:layout_constraintTop_toBottomOf="@+id/ivColorBar"
-            app:layout_constraintBottom_toBottomOf="@+id/ivCamera"
-            app:layout_constraintStart_toEndOf="@+id/ivCamera"
-            app:layout_constraintEnd_toEndOf="@+id/ivColorBar"/>
-
-        <TextView
-            android:id="@+id/tvFilename"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            app:layout_constraintTop_toBottomOf="@+id/ivCamera"
-            app:layout_constraintStart_toStartOf="@+id/glLeft"
-            app:layout_constraintEnd_toStartOf="@+id/glRight"/>
-
-<!--        <RadioGroup-->
-<!--            android:id="@+id/rgVideoControls"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:gravity="center_horizontal|fill_horizontal"-->
-<!--            android:orientation="horizontal"-->
-<!--            app:layout_constraintStart_toStartOf="@id/ivCamera"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/tvFilename"-->
-<!--            app:layout_constraintEnd_toEndOf="@id/ivCamera">-->
-
-<!--            <Button-->
-<!--                android:id="@+id/btnRewind"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:foreground="@drawable/backward_68_68" />-->
-
-<!--            <Button-->
-<!--                android:id="@+id/btnPlay"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:foreground="@drawable/ff_w_20_20" />-->
-
-<!--            <Button-->
-<!--                android:id="@+id/btnFastForward"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:foreground="@drawable/forward_68_68" />-->
-
-<!--        </RadioGroup>-->
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
