@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -62,9 +63,9 @@ import timber.log.Timber;
 
 public class PlaybackFragment extends Fragment implements
         MenuProvider,
-        View.OnTouchListener, View.OnClickListener {
+        View.OnTouchListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
     private String filename;
-    private ImageDto[] imageDtos;
+    private int numFrames;
     private int frameIndex;
     private long bytesRead;
     private RecordingFooterDto recordingFooterDto;
@@ -72,7 +73,6 @@ public class PlaybackFragment extends Fragment implements
     private Handler imageTimerHandler;
     private BufferedReader bufferedReader;
     private BufferedReader bufferedInfoReader;
-    /////private InputStreamReader recodingFile;
     private RandomAccessFile randomAccessFile;
     private ObjectInputStream infoInputStream;
     private MainActivity mainActivity;
@@ -84,7 +84,6 @@ public class PlaybackFragment extends Fragment implements
     private LibraryViewModel libraryViewModel;
     private PaletteFactory paletteFactory;
     private RecordingDto recordingDto;
-    private Integer numFrames;
     private long fileSize;
     private final byte[] buffer = new byte[64767];
     private ArrayList<Pair<Bitmap, Integer>> movieInfoArray;
@@ -103,8 +102,15 @@ public class PlaybackFragment extends Fragment implements
         REWIND,
         PLAYING,
         PAUSED,
-        FAST_FORWARD};
+        FAST_FORWARD,
+        COMPLETED
+    };
     private PLAYBACK_STATE playbackState;
+    private enum PLAYBACK_DIRECTION {
+        FORWARD,
+        BACKWARD
+    }
+    PLAYBACK_DIRECTION playbackDirection = PLAYBACK_DIRECTION.FORWARD;
 
     private Runnable playVideo = new Runnable() {
         @Override
@@ -116,12 +122,9 @@ public class PlaybackFragment extends Fragment implements
                     numFrames = libraryViewModel.getRecordingDto().getNumFrames();
                     videoFrameArray = new ArrayList<Pair<Bitmap, Integer>>(numFrames);
                 }
-//                    len = libraryViewModel.getFrameSize().get(frameIndex);
-//                    bytesRead = recodingFile.read(buffer, 0, len);
-//                    assert bytesRead == len;
-//                    imageDto = new ImageDto(new JSONObject(String.copyValueOf(buffer, 0, len)),
-//                            currentPalette);
-                imageDto = getImageDtoFromFile(frameIndex);
+                if(playbackState == PLAYBACK_STATE.PLAYING) {
+                    imageDto = getImageDtoFromFile(frameIndex);
+                }
                 if (remapNeeded) {
                     int[][] palette = paletteFactory.getPaletteByName(currentPalette);
                     imageDto.setPalette(palette);
@@ -145,20 +148,52 @@ public class PlaybackFragment extends Fragment implements
                     Timber.d("encoding nFrames = %d", nFrames);
                     videoFrameArray.add(new Pair<Bitmap, Integer>(bitmap, nFrames));
                 }
-//                recodingFile.skip(1); //skip over \03
-                    frameIndex = frameIndex + 1;
-                if (frameIndex < numFrames) {
+                if(playbackState == PLAYBACK_STATE.PLAYING) {
+                    if(playbackDirection == PLAYBACK_DIRECTION.FORWARD) {
+                        frameIndex = frameIndex + 1;
+                    } else {
+                        frameIndex = frameIndex - 1;
+                    }
+                }
+                updateSeekBar(frameIndex, numFrames);
+                /*
+                 * check for end/start of video
+                 */
+                if (playbackDirection == PLAYBACK_DIRECTION.FORWARD && frameIndex < numFrames ||
+                        playbackDirection == PLAYBACK_DIRECTION.BACKWARD && frameIndex > 0) {
+                    //check for aborting the playback
                     if (abortPlayback.get()) {
                         abortPlayback.set(false);
                         return;
                     }
+                    //next frame
                     if (action == Constants.PLAYBACK_ACTION_PLAY) {
-                        imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex - 1));
+                        if (playbackDirection == PLAYBACK_DIRECTION.FORWARD) {
+                            imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex - 1));
+                        } else {
+                            imageTimerHandler.postDelayed(this, libraryViewModel.getFrameDelay().get(frameIndex + 1));
+                        }
                     } else {
                         imageTimerHandler.postDelayed(this, 1);
                     }
                 } else {
+                    /*
+                     * completed
+                     */
+                    playbackDirection = PLAYBACK_DIRECTION.FORWARD;
+                    playbackState = PLAYBACK_STATE.COMPLETED;
+                    frameIndex = 0;
+                    imageDto = getImageDtoFromFile(frameIndex);
+                    displayImage(imageDto);
+                    binding.mediaController.mediacontrollerProgress.setProgress(0, true);
                     imageTimerHandler.removeCallbacks(this);
+                    if(randomAccessFile != null) {
+                        randomAccessFile.close();
+                    }
+                    if(infoInputStream != null) {
+                        infoInputStream.close();;
+                    }
+                    //encode the video
                     if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
                         for (Pair<Bitmap, Integer> pair : videoFrameArray) {
                             for (int i = 0; i < pair.second; i++) {
@@ -178,12 +213,16 @@ public class PlaybackFragment extends Fragment implements
         }
     };
 
+    private void updateSeekBar(int frameIndex, int numFrames) {
+        int percent = (int)(((float)frameIndex/(float)numFrames) * 100.0);
+        binding.mediaController.mediacontrollerProgress.setProgress(percent, true);
+    }
+
     private ImageDto getImageDtoFromFile(int frameIndex) throws JSONException, IOException {
         int len = libraryViewModel.getFrameSize().get(frameIndex);
         long pos = libraryViewModel.getFrameOffset().get(frameIndex);
         randomAccessFile.seek(pos);
         randomAccessFile.readFully(buffer, 0, len);
-//        assert bytesRead == len;
         String str = new String(buffer, 0, len);
         JSONObject jsonObject = new JSONObject(str);
         imageDto = new ImageDto(new JSONObject(new String(buffer, 0, len)),
@@ -238,6 +277,8 @@ public class PlaybackFragment extends Fragment implements
         binding.mediaController.pause.setOnClickListener(this);
         binding.mediaController.ffwd.setOnClickListener(this);
         binding.mediaController.next.setOnClickListener(this);
+        binding.mediaController.mediacontrollerProgress.setOnSeekBarChangeListener(this);
+        binding.mediaController.mediacontrollerProgress.setOnTouchListener(this);
         binding.clPlayback.ivColorBar.setOnTouchListener(this);
         try {
             openRecordingFile();
@@ -272,21 +313,32 @@ public class PlaybackFragment extends Fragment implements
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if(id == R.id.pause) {
-            if(playbackState == PLAYBACK_STATE.PLAYING) {
-                ((ImageButton)v).setImageResource(android.R.drawable.ic_media_pause);
+        if (id == R.id.pause) {
+            if (playbackState == PLAYBACK_STATE.PLAYING) {
+                ((ImageButton) v).setImageResource(android.R.drawable.ic_media_pause);
                 playbackState = PLAYBACK_STATE.PAUSED;
-            } else {
-                ((ImageButton)v).setImageResource(android.R.drawable.ic_media_play);
+            } else if(playbackState == PLAYBACK_STATE.PAUSED) {
+                ((ImageButton) v).setImageResource(android.R.drawable.ic_media_play);
                 playbackState = PLAYBACK_STATE.PLAYING;
+            } else if(playbackState == PLAYBACK_STATE.COMPLETED) {
+                try {
+                    playbackState = PLAYBACK_STATE.PLAYING;
+                    playRecording();
+                } catch (IOException e) {
+                    Sentry.captureException(e);
+                    throw new RuntimeException(e);
+                }
             }
+        } else if (id == R.id.ffwd) {
+            playbackDirection = PLAYBACK_DIRECTION.FORWARD;
+        } else if (id == R.id.rew) {
+            playbackDirection = PLAYBACK_DIRECTION.BACKWARD;
         }
     }
 
     private void openRecordingFile() throws IOException {
         File file = new File(filename);
         fileSize = file.length();
-//        recodingFile = new InputStreamReader(new FileInputStream(file));
         randomAccessFile = new RandomAccessFile(file, "rws");
     }
 
@@ -311,13 +363,11 @@ public class PlaybackFragment extends Fragment implements
     }
 
     private void playRecording() throws IOException {
-        frameIndex = 0;
+        frameIndex = 1;
         openRecordingFile();
         openInfoFile();
         Thread playbackThread = new Thread(playVideo);
         playbackThread.start();
-
-        //imageTimerHandler.postDelayed(playImage, 500);
     }
 
     private void saveRecording() throws IOException {
@@ -329,7 +379,7 @@ public class PlaybackFragment extends Fragment implements
         videoEncoder = new BitmapToVideoEncoder(new BitmapToVideoEncoder.IBitmapToVideoEncoderCallback() {
             @Override
             public void onEncodingComplete(File outputFile) {
-                numFrames = null;
+                numFrames = 0;
                 for (Pair<Bitmap, Integer> pair : videoFrameArray) {
                     pair.first.recycle();
                 }
@@ -494,7 +544,7 @@ public class PlaybackFragment extends Fragment implements
         binding.clPlayback.ivCamera.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
         binding.clPlayback.ivColorBar.setImageBitmap(colorbar);
-
+        binding.mediaController.mediacontrollerProgress.setThumbOffset(10);
     }
 
     @Override
@@ -523,6 +573,11 @@ public class PlaybackFragment extends Fragment implements
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void onMenuClosed(@NonNull Menu menu) {
+        MenuProvider.super.onMenuClosed(menu);
     }
 
     private static boolean isExternalStorageReadOnly() {
@@ -566,5 +621,20 @@ public class PlaybackFragment extends Fragment implements
             }
         }
         return true;
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
     }
 }

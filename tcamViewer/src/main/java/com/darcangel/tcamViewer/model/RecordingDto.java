@@ -16,10 +16,12 @@ public class RecordingDto implements Serializable {
     private ArrayList<Long> frameOffset;
     private ArrayList<Integer> frameSize;
     private ArrayList<Long> frameDelay;
+    private long videoDuration;
     private int version;
 
     public RecordingDto() {
         numFrames = 0;
+        videoDuration = 0L;
         version = 1;
         frameDelay = new ArrayList<>();
         frameOffset = new ArrayList<>();
@@ -108,7 +110,13 @@ public class RecordingDto implements Serializable {
         long now = new Date().getTime();
         Timber.d("\\\\addFrameDelay\\\\ now = %d, start = %d, diff = %d",
                 now, startDate.getTime(), diff);
-        frameDelay.add(now - startDate.getTime());
+        long delay = now - startDate.getTime();
+        frameDelay.add(delay);
+        videoDuration += delay;
+    }
+
+    public long getVideoDuration() {
+        return videoDuration;
     }
 
     public static final class RecordingDtoBuilder {
