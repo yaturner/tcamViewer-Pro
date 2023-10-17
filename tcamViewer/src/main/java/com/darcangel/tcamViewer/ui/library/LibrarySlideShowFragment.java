@@ -204,44 +204,44 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         tab = binding.vpSlideshow.getCurrentItem();
         setNavigationArrows(tab);
         // Images left navigation
-        binding.leftNav.setOnClickListener(v ->{
-                tab = binding.vpSlideshow.getCurrentItem();
-                if (tab > 0) {
-                    tab--;
-                    binding.vpSlideshow.setCurrentItem(tab);
-                } else if (tab == 0) {
-                    binding.vpSlideshow.setCurrentItem(tab);
-                }
-                setNavigationArrows(tab);
-                mainActivity.invalidateOptionsMenu();
-            });
-
-        // Images right navigation
-        binding.rightNav.setOnClickListener(v -> {
-            tab = binding.vpSlideshow.getCurrentItem();
-            tab++;
-            binding.vpSlideshow.setCurrentItem(tab);
-            setNavigationArrows(tab);
-            mainActivity.invalidateOptionsMenu();
-        });
+//        binding.leftNav.setOnClickListener(v ->{
+//                tab = binding.vpSlideshow.getCurrentItem();
+//                if (tab > 0) {
+//                    tab--;
+//                    binding.vpSlideshow.setCurrentItem(tab);
+//                } else if (tab == 0) {
+//                    binding.vpSlideshow.setCurrentItem(tab);
+//                }
+//                setNavigationArrows(tab);
+//                mainActivity.invalidateOptionsMenu();
+//            });
+//
+//        // Images right navigation
+//        binding.rightNav.setOnClickListener(v -> {
+//            tab = binding.vpSlideshow.getCurrentItem();
+//            tab++;
+//            binding.vpSlideshow.setCurrentItem(tab);
+//            setNavigationArrows(tab);
+//            mainActivity.invalidateOptionsMenu();
+//        });
     }
 
     private void setNavigationArrows(int tab) {
         //set the arrows visibility
-        int nImages = binding.vpSlideshow.getAdapter().getItemCount();
-        if(nImages == 1) {
-            binding.leftNav.setVisibility(View.GONE);
-            binding.rightNav.setVisibility(View.GONE);
-        } else if(tab == 0) {
-            binding.leftNav.setVisibility(View.GONE);
-            binding.rightNav.setVisibility(View.VISIBLE);
-        } else if(tab == nImages - 1) {
-            binding.rightNav.setVisibility(View.GONE);
-            binding.leftNav.setVisibility(View.VISIBLE);
-        } else {
-            binding.rightNav.setVisibility(View.VISIBLE);
-            binding.leftNav.setVisibility(View.VISIBLE);
-        }
+//        int nImages = binding.vpSlideshow.getAdapter().getItemCount();
+//        if(nImages == 1) {
+//            binding.leftNav.setVisibility(View.GONE);
+//            binding.rightNav.setVisibility(View.GONE);
+//        } else if(tab == 0) {
+//            binding.leftNav.setVisibility(View.GONE);
+//            binding.rightNav.setVisibility(View.VISIBLE);
+//        } else if(tab == nImages - 1) {
+//            binding.rightNav.setVisibility(View.GONE);
+//            binding.leftNav.setVisibility(View.VISIBLE);
+//        } else {
+//            binding.rightNav.setVisibility(View.VISIBLE);
+//            binding.leftNav.setVisibility(View.VISIBLE);
+//        }
     }
 
     private void shareImage(final int position) {

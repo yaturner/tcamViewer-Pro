@@ -8,9 +8,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.darcangel.tcamViewer.MainActivity;
@@ -18,17 +20,16 @@ import com.darcangel.tcamViewer.R;
 import com.darcangel.tcamViewer.model.ImageDto;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.utils.CameraUtils;
-import com.darcangel.tcamViewer.utils.Utils;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
-
-import timber.log.Timber;
 
 public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
     private static TouchListener touchListener;
+    private final MainActivity mainActivity = MainActivity.getInstance();
 
     // Array of images
     private final ArrayList<ImageDto> imageDtos;
@@ -57,29 +58,60 @@ public class LibrarySlideshowAdapter
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ImageDto imageDto = imageDtos.get(holder.getAbsoluteAdapterPosition());
         assert imageDto != null;
-        Bitmap bitmap = imageDto.drawHotspot();
-        imageDto.remapImage();
-        holder.ivImageView.setImageBitmap(bitmap);
-        holder.ivImageView.setTag(this);
-        String path = imageDto.getFilename();
-        String imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
-        holder.position = position;
-        holder.tvFilename.setText(imageName);
-        holder.tvSpotmeterTemperature.setText(cameraUtils.createTemperatureString(imageDto.
-                getMeanTemperatureAtSpotmeter()));
-        Bitmap colorbar = imageDto.createColorBar();
-        holder.ivColorBar.setImageBitmap(colorbar);
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String maxString, minString, imageName;
+        StringBuilder stringBuilder = new StringBuilder();
+
         Pair<Float, Float> temps = imageDto.getTemperatures();
+        String path = imageDto.getFilename();
+
+        String hotspotString = settings.getDisplaySpotmeter().getValue() ?
+                cameraUtils.createTemperatureString(imageDto.getMeanTemperatureAtSpotmeter()) : "";
         if (imageDto.isAGC()) {
-            holder.tvMaxTemperature.setText(R.string.AGC);
-            holder.tvMinTemperature.setText(R.string.AGC);
+            maxString = "AGC";
+            minString = "AGC";
         } else {
-            holder.tvMaxTemperature.setText(cameraUtils.createTemperatureString(temps.second));
-            holder.tvMinTemperature.setText(cameraUtils.createTemperatureString(temps.first));
+            maxString = cameraUtils.createTemperatureString(temps.second);
+            minString = cameraUtils.createTemperatureString(temps.first);
         }
 
-        holder.imageDto = imageDto;
+        int gain = imageDto.getGainMode();
+        float emissivity = (float) imageDto.getEmissivity() / 8192f;
 
+        holder.clPlayback.setBackgroundColor(mainActivity.getResources().getColor(R.color.black, mainActivity.getTheme()));
+
+        holder.tvMaxTemperature.setText(maxString);
+        holder.tvMaxTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        holder.tvMinTemperature.setText(minString);
+        holder.tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+
+        holder.tvLogo.setText(R.string.appName);
+        holder.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        holder.tvSpotmeterTemperature.setText(hotspotString);
+        holder.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        holder.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
+        holder.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+
+        holder.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
+        holder.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        holder.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
+        holder.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+
+        Bitmap bitmap = imageDto.drawHotspot();
+        holder.ivCamera.setImageBitmap(bitmap);
+        Bitmap colorbar = imageDto.createColorBar();
+        holder.ivColorBar.setImageBitmap(colorbar);
+        if (path != null && !path.isEmpty()) {
+            if (imageDto.isMovie()) {
+                imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tjsn", "");
+            } else {
+                imageName = path.substring(path.lastIndexOf(File.separatorChar) + 1).replace(".tmjsn", "");
+                holder.llMediaController.setVisibility(View.GONE);
+            }
+            holder.tvFilename.setText(imageName);
+            holder.tvFilename.setTextAppearance(R.style.Theme_Acam);
+            holder.tvFilename.setTextColor(mainActivity.getResources().getColor(R.color.black, null));
+        }
     }
 
     // This Method returns the size of the Array
@@ -115,15 +147,32 @@ public class LibrarySlideshowAdapter
         TextView tvMinTemperature;
         TextView tvFilename;
         ImageDto imageDto;
+        ConstraintLayout clPlayback;
+        LinearLayout llMediaController;
+        TextView tvLogo;
+        TextView tvEmissivity;
+        TextView tvDateTime;
+        TextView tvGain;
+        TextView getTvFilename;
+        ImageView ivCamera;
+
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            ivImageView = itemView.findViewById(R.id.ivCamera);
-            tvSpotmeterTemperature = itemView.findViewById(R.id.tvSpotmeterTemperature);
-            tvMaxTemperature = itemView.findViewById(R.id.tvMaxTemperature);
-            ivColorBar = itemView.findViewById(R.id.ivColorBar);
-            tvMinTemperature = itemView.findViewById(R.id.tvMinTemperature);
+            clPlayback = itemView.findViewById(R.id.clPlayback);
+            llMediaController = itemView.findViewById(R.id.mediaController);
+            ivImageView = clPlayback.findViewById(R.id.ivCamera);
+            tvSpotmeterTemperature = clPlayback.findViewById(R.id.tvSpotmeterTemperature);
+            tvMaxTemperature = clPlayback.findViewById(R.id.tvMaxTemperature);
+            ivColorBar = clPlayback.findViewById(R.id.ivColorBar);
+            tvMinTemperature = clPlayback.findViewById(R.id.tvMinTemperature);
             tvFilename = itemView.findViewById(R.id.tvFilename);
+            tvLogo = itemView.findViewById(R.id.tvLogo);
+            tvEmissivity = itemView.findViewById(R.id.tvEmissivity);
+            tvDateTime = itemView.findViewById(R.id.tvDateTime);
+            tvGain = itemView.findViewById(R.id.tvGain);
+            tvFilename = itemView.findViewById(R.id.tvFilename);
+            ivCamera = itemView.findViewById(R.id.ivCamera);
             ivColorBar.setOnTouchListener(this);
         }
 
