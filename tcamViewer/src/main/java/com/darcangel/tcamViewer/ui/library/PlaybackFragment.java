@@ -122,7 +122,7 @@ public class PlaybackFragment extends Fragment implements
                     numFrames = libraryViewModel.getRecordingDto().getNumFrames();
                     videoFrameArray = new ArrayList<Pair<Bitmap, Integer>>(numFrames);
                 }
-                if(playbackState == PLAYBACK_STATE.PLAYING) {
+                if(playbackState == PLAYBACK_STATE.PLAYING || action == Constants.PLAYBACK_ACTION_SAVE) {
                     imageDto = getImageDtoFromFile(frameIndex);
                 }
                 if (remapNeeded) {
@@ -144,8 +144,20 @@ public class PlaybackFragment extends Fragment implements
                     Long delay = libraryViewModel.getFrameDelay().get(frameIndex);
                     nFrames = (int) (((float) delay / 1000.0) * 30.0);
                     nFrames = nFrames == 0 ? 1 : nFrames;
-                    Bitmap bitmap = imageDto.getBitmap();
+                    Bitmap bitmap = null;
+                    int res = settings.getExportResolution().getValue();
+                    //if we are not exporting at the default resolution (160x120) resize the bitmap
+                    if(res != 0) {
+                        Pair<Integer, Integer> exportResolution = getExportBitmapSize();
+                        if (exportResolution.first == 160 && exportResolution.second == 120) {
+                            bitmap = imageDto.getBitmap();
+                        } else {
+                            bitmap = Bitmap.createScaledBitmap(imageDto.getBitmap(),
+                                    exportResolution.first, exportResolution.second, false);
+                        }
+                    }
                     Timber.d("encoding nFrames = %d", nFrames);
+                    frameIndex = frameIndex + 1;
                     videoFrameArray.add(new Pair<Bitmap, Integer>(bitmap, nFrames));
                 }
                 if(playbackState == PLAYBACK_STATE.PLAYING) {
@@ -184,7 +196,12 @@ public class PlaybackFragment extends Fragment implements
                     playbackState = PLAYBACK_STATE.COMPLETED;
                     frameIndex = 0;
                     imageDto = getImageDtoFromFile(frameIndex);
-                    displayImage(imageDto);
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            displayImage(imageDto);
+                        }
+                    });
                     binding.mediaController.mediacontrollerProgress.setProgress(0, true);
                     imageTimerHandler.removeCallbacks(this);
                     if(randomAccessFile != null) {
@@ -204,10 +221,12 @@ public class PlaybackFragment extends Fragment implements
                     }
                 }
             } catch (JSONException | IOException e) {
-                e.printStackTrace();
-                Sentry.captureException(e);
-                if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
-                    videoEncoder.abortEncoding();
+                if(!(e instanceof EOFException)) { //EOF is expected
+                    e.printStackTrace();
+                    Sentry.captureException(e);
+                    if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
+                        videoEncoder.abortEncoding();
+                    }
                 }
             }
         }
@@ -231,9 +250,6 @@ public class PlaybackFragment extends Fragment implements
     }
 
     //N. B. The navigation bar is hidden in MainActivity
-
-    public PlaybackFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -357,13 +373,15 @@ public class PlaybackFragment extends Fragment implements
                 recordingDto = null;
             }
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            Sentry.captureException(e);
+            if (!(e instanceof EOFException)) {
+                e.printStackTrace();
+                Sentry.captureException(e);
+            }
         }
     }
 
     private void playRecording() throws IOException {
-        frameIndex = 1;
+        frameIndex = 0;
         openRecordingFile();
         openInfoFile();
         Thread playbackThread = new Thread(playVideo);
@@ -375,7 +393,13 @@ public class PlaybackFragment extends Fragment implements
         videoFilename = videoFilename.replace(".tmjsn", "");
         String videoOutputPath =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/" + videoFilename + ".mp4";
-        mainActivity.showProgressDialog(getString(R.string.saving_movie) + " " + videoFilename + ".mp4");
+        String finalVideoFilename = videoFilename; //for the Runnable
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.showProgressDialog(getString(R.string.saving_movie) + " " + finalVideoFilename + ".mp4");
+            }
+        });
         videoEncoder = new BitmapToVideoEncoder(new BitmapToVideoEncoder.IBitmapToVideoEncoderCallback() {
             @Override
             public void onEncodingComplete(File outputFile) {
@@ -402,16 +426,22 @@ public class PlaybackFragment extends Fragment implements
                 });
             }
         });
+        Pair<Integer, Integer> exportResolution = getExportBitmapSize();
+        frameIndex = 0;  //may have been changed by Analyze()
+        videoEncoder.startEncoding(exportResolution.first, exportResolution.second, new File(videoOutputPath));
+        playRecording();
+    }
+
+    private Pair<Integer, Integer> getExportBitmapSize() {
         int[] height = getContext().getResources().getIntArray(R.array.resolution_heights);
         int[] width = getContext().getResources().getIntArray(R.array.resolution_widths);
         int index = settings.getExportResolution().getValue();
         if(index < 0 || index > height.length) {
             index = 0;
         }
-        videoEncoder.startEncoding(width[index], height[index], new File(videoOutputPath));
-        imageTimerHandler.postDelayed(playVideo, 500);
-    }
+        return new Pair<Integer, Integer>(width[index], height[index]);
 
+    }
     private void analyzeRecording() throws IOException, JSONException {
         int c, bufferPos = 0;
         frameIndex = 0;
@@ -420,7 +450,6 @@ public class PlaybackFragment extends Fragment implements
         libraryViewModel.setRecordingDto(new RecordingDto());
         long pos = randomAccessFile.getFilePointer();
         libraryViewModel.getFrameOffset().add(frameIndex, pos);
-        //TODO use Scanner here
         try {
             while ((c = randomAccessFile.readByte()) != -1) {
                 if (c == 3 && bytesRead < fileSize - 1) {
@@ -457,6 +486,10 @@ public class PlaybackFragment extends Fragment implements
             numFrames = libraryViewModel.getFrameOffset().size() - 1; // less footer and final \03
             libraryViewModel.getFrameDelay().remove(numFrames - 1); //last value is for the footer
             Timber.d("read %d frames", frameIndex);
+        } finally {
+            if(randomAccessFile != null) {
+                randomAccessFile.close();
+            }
         }
     }
 

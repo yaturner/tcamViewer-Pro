@@ -350,24 +350,24 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
-        MenuItem itemRecording = menu.findItem(R.id.action_recording);
+//        MenuItem itemRecording = menu.findItem(R.id.action_recording);
 //        MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
 //        MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
         MenuItem itemSave = menu.findItem(R.id.action_movie_save);
-        if(binding.vpSlideshow != null) {
-            int position = binding.vpSlideshow.getCurrentItem();
-            itemRecording.setEnabled(imageDtos.get(position).isMovie());
-        }
+//        if(binding.vpSlideshow != null) {
+//            int position = binding.vpSlideshow.getCurrentItem();
+//            menu.findItem(R.id.action_save).setEnabled(imageDtos.get(position).isMovie());
+//        }
     }
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
         MenuItem save = menu.findItem(R.id.action_movie_save);
-        if(mainActivity.isRunningOnEmulator()) {
-            save.setEnabled(false);
-            save.setVisible(false);
-        }
+//        if(mainActivity.isRunningOnEmulator()) {
+//            save.setEnabled(false);
+//            save.setVisible(false);
+//        }
     }
 
     @Override
