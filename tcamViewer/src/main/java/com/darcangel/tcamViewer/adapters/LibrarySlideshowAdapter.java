@@ -29,6 +29,7 @@ import java.util.Locale;
 public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
     private static TouchListener touchListener;
+    private static ClickListener clickListener;
     private final MainActivity mainActivity = MainActivity.getInstance();
 
     // Array of images
@@ -36,7 +37,6 @@ public class LibrarySlideshowAdapter
     private final Context ctx;
     private final CameraUtils cameraUtils;
     private final Settings settings;
-
     // Constructor of our ViewPager2Adapter class
     public LibrarySlideshowAdapter(Context ctx, ArrayList<ImageDto> images) {
         this.ctx = ctx;
@@ -112,6 +112,11 @@ public class LibrarySlideshowAdapter
             holder.tvFilename.setTextAppearance(R.style.Theme_Acam);
             holder.tvFilename.setTextColor(mainActivity.getResources().getColor(R.color.black, null));
         }
+        holder.llMediaController.findViewById(R.id.ffwd).setVisibility(View.GONE);
+        holder.llMediaController.findViewById(R.id.rew).setVisibility(View.GONE);
+        holder.llMediaController.findViewById(R.id.prev).setVisibility(View.GONE);
+        holder.llMediaController.findViewById(R.id.next).setVisibility(View.GONE);
+        holder.llMediaController.findViewById(R.id.mediacontroller_progress).setVisibility(View.GONE);
     }
 
     // This Method returns the size of the Array
@@ -135,8 +140,18 @@ public class LibrarySlideshowAdapter
         void onTouch(ImageDto imageDto, View v, MotionEvent event);
     }
 
+    public void setOnClickListener(ClickListener clickListener) {
+        LibrarySlideshowAdapter.clickListener = clickListener;
+    }
+
+    public interface ClickListener {
+        void onClick(ImageDto imageDto, View v);
+    }
+
     // The ViewHolder class holds the view
-    public static class ViewHolder extends RecyclerView.ViewHolder implements View.OnTouchListener
+    public static class ViewHolder extends RecyclerView.ViewHolder implements
+            View.OnTouchListener,
+            View.OnClickListener
     {
         int position;
         String imageFilename;
@@ -174,12 +189,18 @@ public class LibrarySlideshowAdapter
             tvFilename = itemView.findViewById(R.id.tvFilename);
             ivCamera = itemView.findViewById(R.id.ivCamera);
             ivColorBar.setOnTouchListener(this);
+            llMediaController.findViewById(R.id.pause).setOnClickListener(this);
         }
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             LibrarySlideshowAdapter.touchListener.onTouch(imageDto, v, event);
             return false; //TODO shouldn't this be true
+        }
+
+        @Override
+        public void onClick(View v) {
+          LibrarySlideshowAdapter.clickListener.onClick(imageDto, v);
         }
     }
 }

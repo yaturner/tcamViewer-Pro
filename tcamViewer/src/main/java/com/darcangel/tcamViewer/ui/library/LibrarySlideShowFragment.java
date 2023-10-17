@@ -63,7 +63,8 @@ import timber.log.Timber;
 import static android.app.Activity.RESULT_OK;
 
 
-public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
+public class LibrarySlideShowFragment extends Fragment implements MenuProvider
+{
     private ViewGroup container;
     private ViewPager2 viewPager;
     private ArrayList<ImageDto> imageDtos;
@@ -183,6 +184,17 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
                 }
             }
         });
+
+        slideshowAdapter.setOnClickListener((new LibrarySlideshowAdapter.ClickListener() {
+            @Override
+            public void onClick(ImageDto imageDto, View v) {
+                int id = v.getId();
+                if(id == R.id.pause) {
+                    int position = binding.vpSlideshow.getCurrentItem();
+                    xferToPlayback(Constants.PLAYBACK_ACTION_PLAY, position);
+                }
+            }
+        }));
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -202,7 +214,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         tab = binding.vpSlideshow.getCurrentItem();
-        setNavigationArrows(tab);
+//        setNavigationArrows(tab);
         // Images left navigation
 //        binding.leftNav.setOnClickListener(v ->{
 //                tab = binding.vpSlideshow.getCurrentItem();
@@ -339,7 +351,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
         MenuItem itemRecording = menu.findItem(R.id.action_recording);
-        MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
+//        MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
 //        MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
         MenuItem itemSave = menu.findItem(R.id.action_movie_save);
         if(binding.vpSlideshow != null) {
@@ -410,9 +422,9 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider {
             navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
             mainActivity.getNavController().navigate(navDirections);
             return true;
-        } else if(id == R.id.action_movie_play) {
-            xferToPlayback(Constants.PLAYBACK_ACTION_PLAY, position);
-            return true;
+//        } else if(id == R.id.action_movie_play) {
+//            xferToPlayback(Constants.PLAYBACK_ACTION_PLAY, position);
+//            return true;
         } else if(id == R.id.action_movie_save) {
             xferToPlayback(Constants.PLAYBACK_ACTION_SAVE, position);
             return true;
