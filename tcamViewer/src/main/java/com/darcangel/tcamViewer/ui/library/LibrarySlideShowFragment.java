@@ -63,10 +63,11 @@ import timber.log.Timber;
 import static android.app.Activity.RESULT_OK;
 
 
-public class LibrarySlideShowFragment extends Fragment implements MenuProvider
+public class LibrarySlideShowFragment extends Fragment implements
+        MenuProvider,
+        View.OnScrollChangeListener
 {
     private ViewGroup container;
-    private ViewPager2 viewPager;
     private ArrayList<ImageDto> imageDtos;
     private LibrarySlideshowAdapter slideshowAdapter;
     private FragmentLibrarySlideshowBinding binding;
@@ -77,7 +78,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
     private Utils utils;
     private View root;
     private int sharedImagePosition = -1;
-    private int tab;
+    private ImageDto currentImageDto = null;
 
     private final ActivityResultLauncher<Intent> saveActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -213,47 +214,30 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        tab = binding.vpSlideshow.getCurrentItem();
-//        setNavigationArrows(tab);
-        // Images left navigation
-//        binding.leftNav.setOnClickListener(v ->{
-//                tab = binding.vpSlideshow.getCurrentItem();
-//                if (tab > 0) {
-//                    tab--;
-//                    binding.vpSlideshow.setCurrentItem(tab);
-//                } else if (tab == 0) {
-//                    binding.vpSlideshow.setCurrentItem(tab);
-//                }
-//                setNavigationArrows(tab);
-//                mainActivity.invalidateOptionsMenu();
-//            });
-//
-//        // Images right navigation
-//        binding.rightNav.setOnClickListener(v -> {
-//            tab = binding.vpSlideshow.getCurrentItem();
-//            tab++;
-//            binding.vpSlideshow.setCurrentItem(tab);
-//            setNavigationArrows(tab);
-//            mainActivity.invalidateOptionsMenu();
-//        });
-    }
+        int pos = binding.vpSlideshow.getCurrentItem();
+        currentImageDto = imageDtos.get(pos);
+        binding.vpSlideshow.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                super.onPageScrolled(position, positionOffset, positionOffsetPixels);
+            }
 
-    private void setNavigationArrows(int tab) {
-        //set the arrows visibility
-//        int nImages = binding.vpSlideshow.getAdapter().getItemCount();
-//        if(nImages == 1) {
-//            binding.leftNav.setVisibility(View.GONE);
-//            binding.rightNav.setVisibility(View.GONE);
-//        } else if(tab == 0) {
-//            binding.leftNav.setVisibility(View.GONE);
-//            binding.rightNav.setVisibility(View.VISIBLE);
-//        } else if(tab == nImages - 1) {
-//            binding.rightNav.setVisibility(View.GONE);
-//            binding.leftNav.setVisibility(View.VISIBLE);
-//        } else {
-//            binding.rightNav.setVisibility(View.VISIBLE);
-//            binding.leftNav.setVisibility(View.VISIBLE);
-//        }
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                int pos = binding.vpSlideshow.getCurrentItem();
+                if(imageDtos.get(pos).isMovie()) {
+
+                } else {
+
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                super.onPageScrollStateChanged(state);
+            }
+        });
     }
 
     private void shareImage(final int position) {
@@ -340,7 +324,6 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
                         } else {
                             binding.vpSlideshow.setAdapter(slideshowAdapter);
                         }
-                        setNavigationArrows(binding.vpSlideshow.getCurrentItem());
                     })
                     .show();
     }
@@ -350,24 +333,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
         MenuItem itemSlideShow = menu.findItem(R.id.action_item_share);
-//        MenuItem itemRecording = menu.findItem(R.id.action_recording);
-//        MenuItem itemPlay = menu.findItem(R.id.action_movie_play);
-//        MenuItem itemAnalyze = menu.findItem(R.id.action_movie_analyze);
-        MenuItem itemSave = menu.findItem(R.id.action_movie_save);
-//        if(binding.vpSlideshow != null) {
-//            int position = binding.vpSlideshow.getCurrentItem();
-//            menu.findItem(R.id.action_save).setEnabled(imageDtos.get(position).isMovie());
-//        }
     }
 
     @Override
     public void onPrepareMenu(@NonNull Menu menu) {
         MenuProvider.super.onPrepareMenu(menu);
-        MenuItem save = menu.findItem(R.id.action_movie_save);
-//        if(mainActivity.isRunningOnEmulator()) {
-//            save.setEnabled(false);
-//            save.setVisible(false);
-//        }
     }
 
     @Override
@@ -394,7 +364,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
             //export image
             try {
                 ImageDto imageDto = imageDtos.get(position);
-                utils.exportImage(imageDto);
+                if(imageDto.isMovie()) {
+                    xferToPlayback(Constants.PLAYBACK_ACTION_SAVE, position);
+                } else {
+                    utils.exportImage(imageDto);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 Sentry.captureException(e);
@@ -422,13 +396,7 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
             navDirections = LibrarySlideShowFragmentDirections.actionLibrarySlideShowFragmentToNavigationLibrary();
             mainActivity.getNavController().navigate(navDirections);
             return true;
-//        } else if(id == R.id.action_movie_play) {
-//            xferToPlayback(Constants.PLAYBACK_ACTION_PLAY, position);
-//            return true;
-        } else if(id == R.id.action_movie_save) {
-            xferToPlayback(Constants.PLAYBACK_ACTION_SAVE, position);
-            return true;
-        } else {
+       } else {
             return false;
         }
     }
@@ -456,6 +424,11 @@ public class LibrarySlideShowFragment extends Fragment implements MenuProvider
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+
     }
 }
 

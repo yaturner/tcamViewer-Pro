@@ -63,7 +63,9 @@ import timber.log.Timber;
 
 public class PlaybackFragment extends Fragment implements
         MenuProvider,
-        View.OnTouchListener, View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+        View.OnTouchListener,
+        View.OnClickListener,
+        SeekBar.OnSeekBarChangeListener {
     private String filename;
     private int numFrames;
     private int frameIndex;
@@ -103,7 +105,9 @@ public class PlaybackFragment extends Fragment implements
         PLAYING,
         PAUSED,
         FAST_FORWARD,
-        COMPLETED
+        COMPLETED,
+        FIRST_FRAME,
+        LAST_FRAME
     };
     private PLAYBACK_STATE playbackState;
     private enum PLAYBACK_DIRECTION {
@@ -147,14 +151,12 @@ public class PlaybackFragment extends Fragment implements
                     Bitmap bitmap = null;
                     int res = settings.getExportResolution().getValue();
                     //if we are not exporting at the default resolution (160x120) resize the bitmap
-                    if(res != 0) {
-                        Pair<Integer, Integer> exportResolution = getExportBitmapSize();
-                        if (exportResolution.first == 160 && exportResolution.second == 120) {
-                            bitmap = imageDto.getBitmap();
-                        } else {
-                            bitmap = Bitmap.createScaledBitmap(imageDto.getBitmap(),
-                                    exportResolution.first, exportResolution.second, false);
-                        }
+                    Pair<Integer, Integer> exportResolution = getExportBitmapSize();
+                    if (exportResolution.first == 160 && exportResolution.second == 120) {
+                        bitmap = imageDto.getBitmap();
+                    } else {
+                        bitmap = Bitmap.createScaledBitmap(imageDto.getBitmap(),
+                                exportResolution.first, exportResolution.second, false);
                     }
                     Timber.d("encoding nFrames = %d", nFrames);
                     frameIndex = frameIndex + 1;
@@ -166,6 +168,24 @@ public class PlaybackFragment extends Fragment implements
                     } else {
                         frameIndex = frameIndex - 1;
                     }
+                } else if(playbackState == PLAYBACK_STATE.LAST_FRAME) {
+                    frameIndex = numFrames - 1;
+                    playbackState = PLAYBACK_STATE.PAUSED;
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.mediaController.pause.setImageResource(android.R.drawable.ic_media_play);
+                        }
+                    });
+                } else if(playbackState == PLAYBACK_STATE.FIRST_FRAME) {
+                    frameIndex = 1;
+                    playbackState = PLAYBACK_STATE.PAUSED;
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            binding.mediaController.pause.setImageResource(android.R.drawable.ic_media_play);
+                        }
+                    });
                 }
                 updateSeekBar(frameIndex, numFrames);
                 /*
@@ -194,15 +214,19 @@ public class PlaybackFragment extends Fragment implements
                      */
                     playbackDirection = PLAYBACK_DIRECTION.FORWARD;
                     playbackState = PLAYBACK_STATE.COMPLETED;
+                    binding.mediaController.pause.setImageResource(android.R.drawable.ic_media_play);
+
                     frameIndex = 0;
                     imageDto = getImageDtoFromFile(frameIndex);
+                    String str = String.format("%d/%d", 0, numFrames);
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             displayImage(imageDto);
+                            binding.mediaController.mediacontrollerProgress.setProgress(0, true);
+                            binding.mediaController.timeCurrent.setText(str);
                         }
                     });
-                    binding.mediaController.mediacontrollerProgress.setProgress(0, true);
                     imageTimerHandler.removeCallbacks(this);
                     if(randomAccessFile != null) {
                         randomAccessFile.close();
@@ -234,7 +258,14 @@ public class PlaybackFragment extends Fragment implements
 
     private void updateSeekBar(int frameIndex, int numFrames) {
         int percent = (int)(((float)frameIndex/(float)numFrames) * 100.0);
-        binding.mediaController.mediacontrollerProgress.setProgress(percent, true);
+        String str = String.format("%d/%d", frameIndex, numFrames);
+        mainActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                binding.mediaController.mediacontrollerProgress.setProgress(percent, true);
+                binding.mediaController.timeCurrent.setText(str);
+            }
+        });
     }
 
     private ImageDto getImageDtoFromFile(int frameIndex) throws JSONException, IOException {
@@ -296,6 +327,7 @@ public class PlaybackFragment extends Fragment implements
         binding.mediaController.mediacontrollerProgress.setOnSeekBarChangeListener(this);
         binding.mediaController.mediacontrollerProgress.setOnTouchListener(this);
         binding.clPlayback.ivColorBar.setOnTouchListener(this);
+        binding.mediaController.pause.setImageResource(android.R.drawable.ic_media_pause);
         try {
             openRecordingFile();
             openInfoFile();
@@ -331,15 +363,16 @@ public class PlaybackFragment extends Fragment implements
         int id = v.getId();
         if (id == R.id.pause) {
             if (playbackState == PLAYBACK_STATE.PLAYING) {
-                ((ImageButton) v).setImageResource(android.R.drawable.ic_media_pause);
+                ((ImageButton) v).setImageResource(android.R.drawable.ic_media_play);
                 playbackState = PLAYBACK_STATE.PAUSED;
             } else if(playbackState == PLAYBACK_STATE.PAUSED) {
-                ((ImageButton) v).setImageResource(android.R.drawable.ic_media_play);
+                ((ImageButton) v).setImageResource(android.R.drawable.ic_media_pause);
                 playbackState = PLAYBACK_STATE.PLAYING;
             } else if(playbackState == PLAYBACK_STATE.COMPLETED) {
                 try {
                     playbackState = PLAYBACK_STATE.PLAYING;
                     playRecording();
+                    ((ImageButton) v).setImageResource(android.R.drawable.ic_media_pause);
                 } catch (IOException e) {
                     Sentry.captureException(e);
                     throw new RuntimeException(e);
@@ -349,6 +382,10 @@ public class PlaybackFragment extends Fragment implements
             playbackDirection = PLAYBACK_DIRECTION.FORWARD;
         } else if (id == R.id.rew) {
             playbackDirection = PLAYBACK_DIRECTION.BACKWARD;
+        } else if(id == R.id.next) {
+            playbackState = PLAYBACK_STATE.LAST_FRAME;
+        } else if(id == R.id.prev) {
+            playbackState = PLAYBACK_STATE.FIRST_FRAME;
         }
     }
 
@@ -561,23 +598,24 @@ public class PlaybackFragment extends Fragment implements
         binding.clPlayback.tvMinTemperature.setText(minString);
         binding.clPlayback.tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
 
-       binding.clPlayback.tvLogo.setText(R.string.appName);
-       binding.clPlayback.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-       binding.clPlayback.tvSpotmeterTemperature.setText(hotspotString);
-       binding.clPlayback.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        binding.clPlayback.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-        binding.clPlayback.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        if(settings.getExportMetaData().getValue()) {
+            binding.clPlayback.tvLogo.setText(R.string.appName);
+            binding.clPlayback.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvSpotmeterTemperature.setText(hotspotString);
+            binding.clPlayback.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
+            binding.clPlayback.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
 
-        binding.clPlayback.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-        binding.clPlayback.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        binding.clPlayback.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-        binding.clPlayback.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
+            binding.clPlayback.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
+            binding.clPlayback.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        }
 
         Bitmap bitmap = imageDto.drawHotspot();
         binding.clPlayback.ivCamera.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
         binding.clPlayback.ivColorBar.setImageBitmap(colorbar);
-        binding.mediaController.mediacontrollerProgress.setThumbOffset(10);
     }
 
     @Override
@@ -658,12 +696,23 @@ public class PlaybackFragment extends Fragment implements
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
+        Timber.d("Progress changed, progress = %d", progress);
     }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-
+        playbackState = PLAYBACK_STATE.PAUSED;
+        frameIndex = seekBar.getProgress();
+        try {
+            imageDto = getImageDtoFromFile(frameIndex);
+        } catch (JSONException e) {
+            Sentry.captureException(e);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            Sentry.captureException(e);
+            throw new RuntimeException(e);
+        }
+        displayImage(imageDto);
     }
 
     @Override

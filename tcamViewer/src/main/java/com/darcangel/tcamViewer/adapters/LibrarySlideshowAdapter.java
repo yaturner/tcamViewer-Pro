@@ -31,7 +31,6 @@ public class LibrarySlideshowAdapter
     private static TouchListener touchListener;
     private static ClickListener clickListener;
     private final MainActivity mainActivity = MainActivity.getInstance();
-
     // Array of images
     private final ArrayList<ImageDto> imageDtos;
     private final Context ctx;
@@ -85,17 +84,19 @@ public class LibrarySlideshowAdapter
         holder.tvMinTemperature.setText(minString);
         holder.tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
 
-        holder.tvLogo.setText(R.string.appName);
-        holder.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        holder.tvSpotmeterTemperature.setText(hotspotString);
-        holder.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        holder.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-        holder.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        if(settings.getExportMetaData().getValue()) {
+            holder.tvLogo.setText(R.string.appName);
+            holder.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvSpotmeterTemperature.setText(hotspotString);
+            holder.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
+            holder.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
 
-        holder.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-        holder.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        holder.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-        holder.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
+            holder.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
+            holder.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        }
 
         Bitmap bitmap = imageDto.drawHotspot();
         holder.ivCamera.setImageBitmap(bitmap);

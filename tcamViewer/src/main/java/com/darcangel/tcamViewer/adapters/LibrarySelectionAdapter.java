@@ -2,6 +2,7 @@ package com.darcangel.tcamViewer.adapters;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +39,7 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
     private final Settings settings;
     private int itemCount;
 
-    private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.tjsn$");
+    private final Pattern PATTERN = Pattern.compile("\\.*img_([0-9_]*)\\.[t,tm]jsn$");
 
     public LibrarySelectionAdapter(ArrayList<ImageDto> imageDtos) {
         super();
@@ -73,19 +74,22 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
         itemHolder.setImagePath(path);
         itemHolder.setImageDto(imageDto);
         if (!imageName.isEmpty()) {
-            Matcher matcher = PATTERN.matcher(imageName);
-            if(matcher.find()) {
-                String imageTime = matcher.group(1).replace("_", ":");
+            int index = imageName.lastIndexOf(".");
+            if(index > 0) {
+                imageName = imageName.substring(0, index);
+                String imageTime = imageName.replace("_", ":");
                 itemHolder.getTitleView().setText(imageDate + '\n' + imageTime);
+                itemHolder.getTitleView().setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
+                if(imageDto.isMovie()) {
+                    itemHolder.getTitleView().setTextColor(mainActivity.getResources().getColor(R.color.purple_700,
+                            mainActivity.getTheme()));
+                }
             } else {
                 itemHolder.getTitleView().setText("");
             }
         } else {
             itemHolder.getTitleView().setText("");
         }
-//        Timber.d("\\\\onBindItemViewHolder\\\\ title = %s, position = %d, selected = %s",
-//                itemHolder.getTitleView().getText(), position, (itemHolder.isSelected()?"true":"false"));
-
 
         //TODO this is the position within the section
         itemHolder.bind(Long.valueOf(position));
