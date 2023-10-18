@@ -29,8 +29,11 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.MenuHost;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
+import androidx.navigation.NavDirections;
 
 import com.darcangel.tcamViewer.MainActivity;
 import com.darcangel.tcamViewer.R;
@@ -46,8 +49,11 @@ import java.util.concurrent.Semaphore;
 
 import timber.log.Timber;
 
-public class CameraDiscoveryFragment extends Fragment implements View.OnClickListener,
-        AdapterView.OnItemClickListener {
+public class CameraDiscoveryFragment extends Fragment implements
+        View.OnClickListener,
+        AdapterView.OnItemClickListener,
+        MenuProvider
+{
     private NsdManager mNsdManager;
     private NsdManager.DiscoveryListener mDiscoveryListener;
     private NsdManager.ResolveListener mResolveListener;
@@ -69,10 +75,10 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
         this.container = container;
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
 
-        if (mainActivity.getSupportActionBar() != null) {
-            mainActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
-            mainActivity.getSupportActionBar().setHomeButtonEnabled(false);
-        }
+//        if (mainActivity.getSupportActionBar() != null) {
+//            mainActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+//            mainActivity.getSupportActionBar().setHomeButtonEnabled(false);
+//        }
 
         if (mainActivity == null) {
             mainActivity = MainActivity.getInstance();
@@ -103,6 +109,8 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
 
         initializeDiscoveryListener();
         //initializeResolveListener();
+        MenuHost menuHost = requireActivity();
+        menuHost.addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return binding.getRoot();
     }
@@ -232,5 +240,57 @@ public class CameraDiscoveryFragment extends Fragment implements View.OnClickLis
         if(mNsdManager != null) {
             mNsdManager.stopServiceDiscovery(mDiscoveryListener);
         }
+    }
+
+    /**
+     * Called by the {@link MenuHost} right before the {@link Menu} is shown.
+     * This should be called when the menu has been dynamically updated.
+     *
+     * @param menu the menu that is to be prepared
+     * @see #onCreateMenu(Menu, MenuInflater)
+     */
+    @Override
+    public void onPrepareMenu(@NonNull Menu menu) {
+        MenuProvider.super.onPrepareMenu(menu);
+    }
+
+    /**
+     * Called by the {@link MenuHost} to allow the {@link MenuProvider}
+     * to inflate {@link MenuItem}s into the menu.
+     *
+     * @param menu         the menu to inflate the new menu items into
+     * @param menuInflater the inflater to be used to inflate the updated menu
+     */
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+
+    }
+
+    /**
+     * Called by the {@link MenuHost} when a {@link MenuItem} is selected from the menu.
+     *
+     * @param menuItem the menu item that was selected
+     * @return {@code true} if the given menu item is handled by this menu provider,
+     * {@code false} otherwise
+     */
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        int id = menuItem.getItemId();
+        if(id == android.R.id.home) {
+            mainActivity.getNavController().popBackStack();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Called by the {@link MenuHost} when the {@link Menu} is closed.
+     *
+     * @param menu the menu that was closed
+     */
+    @Override
+    public void onMenuClosed(@NonNull Menu menu) {
+        MenuProvider.super.onMenuClosed(menu);
     }
 }

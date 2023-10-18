@@ -638,8 +638,7 @@ public class PlaybackFragment extends Fragment implements
 
         if (id == android.R.id.home) {
             abortPlayback.set(true);
-            navDirections = PlaybackFragmentDirections.actionPlaybackFragmentToNavigationLibrarySlideShowFragment();
-            mainActivity.getNavController().navigate(navDirections);
+            mainActivity.getNavController().popBackStack();
             return true;
         } else {
             return false;
