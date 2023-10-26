@@ -60,7 +60,8 @@ public class LibrarySlideshowAdapter
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String maxString, minString, imageName;
         StringBuilder stringBuilder = new StringBuilder();
-
+        int black = mainActivity.getResources().getColor(R.color.black, mainActivity.getTheme());
+        int white = mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme());
         Pair<Float, Float> temps = imageDto.getTemperatures();
         String path = imageDto.getFilename();
 
@@ -77,25 +78,25 @@ public class LibrarySlideshowAdapter
         int gain = imageDto.getGainMode();
         float emissivity = (float) imageDto.getEmissivity() / 8192f;
 
-        holder.clPlayback.setBackgroundColor(mainActivity.getResources().getColor(R.color.black, mainActivity.getTheme()));
+        holder.clPlayback.setBackgroundColor(black);
 
         holder.tvMaxTemperature.setText(maxString);
-        holder.tvMaxTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        holder.tvMaxTemperature.setTextColor(white);
         holder.tvMinTemperature.setText(minString);
-        holder.tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        holder.tvMinTemperature.setTextColor(white);
 
         if(settings.getExportMetaData().getValue()) {
             holder.tvLogo.setText(R.string.appName);
-            holder.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvLogo.setTextColor(white);
             holder.tvSpotmeterTemperature.setText(hotspotString);
-            holder.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvSpotmeterTemperature.setTextColor(white);
             holder.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-            holder.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvEmissivity.setTextColor(white);
 
             holder.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-            holder.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvDateTime.setTextColor(white);
             holder.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-            holder.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            holder.tvGain.setTextColor(white);
         }
 
         Bitmap bitmap = imageDto.drawHotspot();
@@ -196,7 +197,7 @@ public class LibrarySlideshowAdapter
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             LibrarySlideshowAdapter.touchListener.onTouch(imageDto, v, event);
-            return false; //TODO shouldn't this be true
+            return true;
         }
 
         @Override

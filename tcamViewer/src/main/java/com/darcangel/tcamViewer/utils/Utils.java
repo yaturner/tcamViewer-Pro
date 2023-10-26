@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Environment;
@@ -73,41 +74,6 @@ public class Utils {
         Toast.makeText(mainActivity, "Image exported as " + imageName, Toast.LENGTH_LONG).show();
     }
 
-//    @NonNull
-//    public Uri saveTjsn(@NonNull final String tjsnString,
-//                        @NonNull final String imageDirectory,
-//                        @NonNull final String imageName) throws IOException {
-//        final int CREATE_FILE = 1001;
-//        activityResultLauncher = mainActivity.registerForActivityResult(
-//                new ActivityResultContracts.StartActivityForResult(),
-//                new ActivityResultCallback<ActivityResult>() {
-//                    @Override
-//                    public void onActivityResult(ActivityResult result) {
-//                        if (result.getResultCode() == Activity.RESULT_OK) {
-//                            // There are no request codes
-//                            Intent data = result.getData();
-//                            ////doSomeOperations();
-//                        }
-//                    }
-//                });
-//
-//        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-//        intent.addCategory(Intent.CATEGORY_OPENABLE);
-//        intent.setType("text/plain");
-//        intent.putExtra(Intent.EXTRA_TITLE, "test.tjsn");
-//
-//        Uri pickerInitialUri = Uri.parse(imageDirectory);
-//
-//        // Optionally, specify a URI for the directory that should be opened in
-//        // the system file picker when your app creates the document.
-//        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Environment.DIRECTORY_DOCUMENTS + "/" + imageDirectory);
-//
-//        activityResultLauncher.launch(intent);
-//
-//        return null;
-//    }
-
-
     /**
      * createExportImage
      *
@@ -136,6 +102,7 @@ public class Utils {
         String maxString, minString;
         StringBuilder stringBuilder = new StringBuilder();
         int res = settings.getExportResolution().getValue();
+        int white = mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme());
         resources = mainActivity.getResources();
         int[] width = resources.getIntArray(R.array.resolution_widths);
         int[] height = resources.getIntArray(R.array.resolution_heights);
@@ -176,7 +143,7 @@ public class Utils {
             minString = cameraUtils.createTemperatureString(temps.first);
         }
         View inflatedFrame = mainActivity.getLayoutInflater()
-                .inflate(R.layout.export_library_image, null);
+                .inflate(R.layout.fragment_slideshow_item, null);
 
         tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);
         ivColorBar = inflatedFrame.findViewById(R.id.ivColorBar);
@@ -192,44 +159,39 @@ public class Utils {
         ivImageView.setLayoutParams(lp);
 
         tvMaxTemperature.setText(maxString);
-        tvMaxTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        tvMaxTemperature.setTextColor(white);
         tvMaxTemperature.setTextSize(textSize);
         tvMinTemperature.setText(minString);
-        tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        tvMinTemperature.setTextColor(white);
         tvMinTemperature.setTextSize(textSize);
 
-        if (!settings.getExportMetaData().getValue()) {
-            //scale to resolution in settings
-            return Bitmap.createScaledBitmap(imageDto.getBitmap(),
-                    width[res], height[res], false);
+        if (settings.getExportMetaData().getValue()) {
+            LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
+            tvLogo.setText(R.string.appName);
+            tvLogo.setTextSize(textSize);
+            tvLogo.setTextColor(white);
+            tvSpotmeterTemperature.setText(hotspotString);
+            tvSpotmeterTemperature.setTextSize(textSize);
+            tvSpotmeterTemperature.setTextColor(white);
+            float emissivity = (float) imageDto.getEmissivity() / 8192f;
+            tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
+            tvEmissivity.setTextSize(textSize);
+            tvEmissivity.setTextColor(white);
+            lline1.requestLayout();
+
+            LinearLayoutCompat lline2 = inflatedFrame.findViewById(R.id.llAnnotation_line_2);
+            tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
+            tvDateTime.setTextSize(textSize);
+            tvDateTime.setTextColor(white);
+            int gain = imageDto.getGainMode();
+            tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
+            tvGain.setTextSize(textSize);
+            tvGain.setTextColor(white);
+            lline2.requestLayout();
+            inflatedFrame.requestLayout();
         }
-
-        LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
-        tvLogo.setText(R.string.appName);
-        tvLogo.setTextSize(textSize);
-        tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        tvSpotmeterTemperature.setText(hotspotString);
-        tvSpotmeterTemperature.setTextSize(textSize);
-        tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        float emissivity = (float) imageDto.getEmissivity() / 8192f;
-        tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-        tvEmissivity.setTextSize(textSize);
-        tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        lline1.requestLayout();
-
-        LinearLayoutCompat lline2 = inflatedFrame.findViewById(R.id.llAnnotation_line_2);
-        tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-        tvDateTime.setTextSize(textSize);
-        tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        int gain = imageDto.getGainMode();
-        tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-        tvGain.setTextSize(textSize);
-        tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
-        lline2.requestLayout();
-        inflatedFrame.requestLayout();
-
         ConstraintLayout constraintLayout = (ConstraintLayout) inflatedFrame
-                .findViewById(R.id.clItemLayout);
+                .findViewById(R.id.clPlayback);
         constraintLayout.setDrawingCacheEnabled(true);
         constraintLayout.measure(View.MeasureSpec.makeMeasureSpec(0,
                         View.MeasureSpec.UNSPECIFIED),

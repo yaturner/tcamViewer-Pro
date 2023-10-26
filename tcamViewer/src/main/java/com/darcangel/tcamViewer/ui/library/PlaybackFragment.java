@@ -1,6 +1,7 @@
 package com.darcangel.tcamViewer.ui.library;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -100,6 +101,9 @@ public class PlaybackFragment extends Fragment implements
     private ImageDto imageDto = null;
     private boolean remapNeeded = false;
     private AtomicBoolean abortPlayback;
+    private Bitmap videoBitmap;
+    private int frameNumber;
+
     private enum PLAYBACK_STATE {
         REWIND,
         PLAYING,
@@ -120,7 +124,6 @@ public class PlaybackFragment extends Fragment implements
         @Override
         public void run() {
             try {
-                int nFrames;
                 int len, bytesRead;
                 if (videoFrameArray == null) {
                     numFrames = libraryViewModel.getRecordingDto().getNumFrames();
@@ -146,21 +149,26 @@ public class PlaybackFragment extends Fragment implements
 
                 } else if (action == Constants.PLAYBACK_ACTION_SAVE && videoEncoder != null) {
                     Long delay = libraryViewModel.getFrameDelay().get(frameIndex);
-                    nFrames = (int) (((float) delay / 1000.0) * 30.0);
-                    nFrames = nFrames == 0 ? 1 : nFrames;
-                    Bitmap bitmap = null;
+                    frameNumber = (int) (((float) delay / 1000.0) * 30.0);
+                    frameNumber = frameNumber == 0 ? 1 : frameNumber;
                     int res = settings.getExportResolution().getValue();
                     //if we are not exporting at the default resolution (160x120) resize the bitmap
                     Pair<Integer, Integer> exportResolution = getExportBitmapSize();
-                    if (exportResolution.first == 160 && exportResolution.second == 120) {
-                        bitmap = imageDto.getBitmap();
-                    } else {
-                        bitmap = Bitmap.createScaledBitmap(imageDto.getBitmap(),
-                                exportResolution.first, exportResolution.second, false);
-                    }
-                    Timber.d("encoding nFrames = %d", nFrames);
+                    mainActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (exportResolution.first == 160 && exportResolution.second == 120) {
+                                videoBitmap = utils.createExportImage(imageDto);
+                            } else {
+                                videoBitmap = Bitmap.createScaledBitmap(utils.createExportImage(imageDto),
+                                        exportResolution.first, exportResolution.second, false);
+                            }
+                            videoFrameArray.add(new Pair<Bitmap, Integer>(Bitmap.createBitmap(videoBitmap), frameNumber));
+                        }
+                    });
+                    Timber.d("encoding nFrames = %d", frameNumber);
                     frameIndex = frameIndex + 1;
-                    videoFrameArray.add(new Pair<Bitmap, Integer>(bitmap, nFrames));
+
                 }
                 if(playbackState == PLAYBACK_STATE.PLAYING) {
                     if(playbackDirection == PLAYBACK_DIRECTION.FORWARD) {
@@ -567,6 +575,8 @@ public class PlaybackFragment extends Fragment implements
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String maxString, minString;
         StringBuilder stringBuilder = new StringBuilder();
+        int black = mainActivity.getResources().getColor(R.color.black, mainActivity.getTheme());
+        int white = mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme());
 
         Pair<Float, Float> temps = imageDto.getTemperatures();
         String path = imageDto.getFilename();
@@ -591,25 +601,25 @@ public class PlaybackFragment extends Fragment implements
         int gain = imageDto.getGainMode();
         float emissivity = (float) imageDto.getEmissivity() / 8192f;
 
-        binding.clPlayback.clItemLayout.setBackgroundColor(mainActivity.getResources().getColor(R.color.black, mainActivity.getTheme()));
+        binding.clPlayback.clItemLayout.setBackgroundColor(black);
 
         binding.clPlayback.tvMaxTemperature.setText(maxString);
-        binding.clPlayback.tvMaxTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        binding.clPlayback.tvMaxTemperature.setTextColor(white);
         binding.clPlayback.tvMinTemperature.setText(minString);
-        binding.clPlayback.tvMinTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+        binding.clPlayback.tvMinTemperature.setTextColor(white);
 
         if(settings.getExportMetaData().getValue()) {
             binding.clPlayback.tvLogo.setText(R.string.appName);
-            binding.clPlayback.tvLogo.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvLogo.setTextColor(white);
             binding.clPlayback.tvSpotmeterTemperature.setText(hotspotString);
-            binding.clPlayback.tvSpotmeterTemperature.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvSpotmeterTemperature.setTextColor(white);
             binding.clPlayback.tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
-            binding.clPlayback.tvEmissivity.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvEmissivity.setTextColor(white);
 
             binding.clPlayback.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
-            binding.clPlayback.tvDateTime.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvDateTime.setTextColor(white);
             binding.clPlayback.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
-            binding.clPlayback.tvGain.setTextColor(mainActivity.getResources().getColor(R.color.white, mainActivity.getTheme()));
+            binding.clPlayback.tvGain.setTextColor(white);
         }
 
         Bitmap bitmap = imageDto.drawHotspot();

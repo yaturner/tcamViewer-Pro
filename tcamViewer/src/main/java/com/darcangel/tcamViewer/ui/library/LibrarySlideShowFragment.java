@@ -225,8 +225,9 @@ public class LibrarySlideShowFragment extends Fragment implements
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
+                currentImageDto = imageDtos.get(position);
                 int pos = binding.vpSlideshow.getCurrentItem();
-                if(imageDtos.get(pos).isMovie()) {
+                if(currentImageDto.isMovie()) {
 
                 } else {
 
