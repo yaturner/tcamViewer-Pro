@@ -169,16 +169,17 @@ public class LibrarySlideShowFragment extends Fragment implements
 
         slideshowAdapter.setOnTouchListener(new LibrarySlideshowAdapter.TouchListener() {
             @Override
-            public void onTouch(ImageDto imageDto, View v, MotionEvent event) {
-                if(imageDto == null) {
+            public void onTouch(View v, MotionEvent event) {
+                //TODO remove imageDto, it is always NULL
+                if(currentImageDto == null) {
                     return;
                 }
                 int h = v.getHeight();
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (event.getY() > (h / 2)) {
-                        imageDto.rotateColormap(Constants.ROTATE_FORWARD);
+                        currentImageDto.rotateColormap(Constants.ROTATE_FORWARD);
                     } else {
-                        imageDto.rotateColormap(Constants.ROTATE_BACKWARD);
+                        currentImageDto.rotateColormap(Constants.ROTATE_BACKWARD);
                     }
                     v.getRootView().invalidate();
                     slideshowAdapter.notifyDataSetChanged();
@@ -188,7 +189,7 @@ public class LibrarySlideShowFragment extends Fragment implements
 
         slideshowAdapter.setOnClickListener((new LibrarySlideshowAdapter.ClickListener() {
             @Override
-            public void onClick(ImageDto imageDto, View v) {
+            public void onClick(View v) {
                 int id = v.getId();
                 if(id == R.id.pause) {
                     int position = binding.vpSlideshow.getCurrentItem();

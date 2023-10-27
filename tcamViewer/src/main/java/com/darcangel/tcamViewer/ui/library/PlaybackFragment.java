@@ -163,6 +163,7 @@ public class PlaybackFragment extends Fragment implements
                                 videoBitmap = Bitmap.createScaledBitmap(utils.createExportImage(imageDto),
                                         exportResolution.first, exportResolution.second, false);
                             }
+                            //make a copy of the bitmap for the encoding at the end
                             videoFrameArray.add(new Pair<Bitmap, Integer>(Bitmap.createBitmap(videoBitmap), frameNumber));
                         }
                     });

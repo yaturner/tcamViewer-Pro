@@ -139,7 +139,7 @@ public class LibrarySlideshowAdapter
     }
 
     public interface TouchListener {
-        void onTouch(ImageDto imageDto, View v, MotionEvent event);
+        void onTouch(View v, MotionEvent event);
     }
 
     public void setOnClickListener(ClickListener clickListener) {
@@ -147,7 +147,7 @@ public class LibrarySlideshowAdapter
     }
 
     public interface ClickListener {
-        void onClick(ImageDto imageDto, View v);
+        void onClick(View v);
     }
 
     // The ViewHolder class holds the view
@@ -173,7 +173,6 @@ public class LibrarySlideshowAdapter
         TextView getTvFilename;
         ImageView ivCamera;
 
-
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             clPlayback = itemView.findViewById(R.id.clPlayback);
@@ -192,17 +191,18 @@ public class LibrarySlideshowAdapter
             ivCamera = itemView.findViewById(R.id.ivCamera);
             ivColorBar.setOnTouchListener(this);
             llMediaController.findViewById(R.id.pause).setOnClickListener(this);
+            position = getAbsoluteAdapterPosition();
         }
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            LibrarySlideshowAdapter.touchListener.onTouch(imageDto, v, event);
+            LibrarySlideshowAdapter.touchListener.onTouch(v, event);
             return true;
         }
 
         @Override
         public void onClick(View v) {
-          LibrarySlideshowAdapter.clickListener.onClick(imageDto, v);
+          LibrarySlideshowAdapter.clickListener.onClick(v);
         }
     }
 }
