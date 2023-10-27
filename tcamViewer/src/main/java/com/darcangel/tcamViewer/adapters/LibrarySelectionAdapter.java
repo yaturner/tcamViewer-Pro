@@ -81,7 +81,7 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
                 itemHolder.getTitleView().setText(imageDate + '\n' + imageTime);
                 itemHolder.getTitleView().setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
                 if(imageDto.isMovie()) {
-                    itemHolder.getTitleView().setTextColor(mainActivity.getResources().getColor(R.color.purple_700,
+                    itemHolder.getTitleView().setTextColor(mainActivity.getResources().getColor(R.color.purple_200,
                             mainActivity.getTheme()));
                 }
             } else {
@@ -93,7 +93,7 @@ public class LibrarySelectionAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         //TODO this is the position within the section
         itemHolder.bind(Long.valueOf(position));
-
+        mainActivity.invalidateMenu();
     }
 
     @Override

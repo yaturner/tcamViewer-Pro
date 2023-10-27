@@ -170,7 +170,6 @@ public class LibrarySlideShowFragment extends Fragment implements
         slideshowAdapter.setOnTouchListener(new LibrarySlideshowAdapter.TouchListener() {
             @Override
             public void onTouch(View v, MotionEvent event) {
-                //TODO remove imageDto, it is always NULL
                 if(currentImageDto == null) {
                     return;
                 }
@@ -346,6 +345,9 @@ public class LibrarySlideShowFragment extends Fragment implements
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.library_slideshow_item_menu, menu);
         setMenuItems(menu);
+        MenuItem trash = menu.findItem(R.id.action_item_delete);
+        trash.setEnabled(true);
+        trash.getIcon().setTint(getActivity().getResources().getColor(R.color.enabled_color, getActivity().getTheme()));
     }
 
     @Override

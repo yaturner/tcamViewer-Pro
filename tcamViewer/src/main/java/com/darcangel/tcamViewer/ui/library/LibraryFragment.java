@@ -127,7 +127,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
 
     private void setMenuItems(Menu menu) {
         MenuItem itemDelete = menu.findItem(R.id.action_item_delete);
-        MenuItem itemSlideShow = menu.findItem(R.id.action_slideshow);
+        MenuItem itemSlideShow = menu.findItem(R.id.action_item__slideshow);
         itemDelete.setEnabled(true);
         itemSlideShow.setEnabled(true);
     }
@@ -262,6 +262,19 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
     public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.library_menu, menu);
         setMenuItems(menu);
+        MenuItem slideshow = menu.findItem(R.id.action_item__slideshow);
+        MenuItem trash = menu.findItem(R.id.action_item_delete);
+        if(selectionTracker.getSelection().isEmpty()) {
+            slideshow.setEnabled(false);
+            slideshow.getIcon().setTint(getActivity().getResources().getColor(R.color.disabled_color, getActivity().getTheme()));
+            trash.setEnabled(false);
+            trash.getIcon().setTint(getActivity().getResources().getColor(R.color.disabled_color, getActivity().getTheme()));
+        } else {
+            slideshow.setEnabled(true);
+            slideshow.getIcon().setTint(getActivity().getResources().getColor(R.color.enabled_color, getActivity().getTheme()));
+            trash.setEnabled(true);
+            trash.getIcon().setTint(getActivity().getResources().getColor(R.color.enabled_color, getActivity().getTheme()));
+        }
     }
 
     @Override
@@ -271,7 +284,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         Selection<Long> selection = selectionTracker.getSelection();
         if (id == R.id.action_item_delete) {
             deleteImage(selection);
-        } else if (id == R.id.action_slideshow) {
+        } else if (id == R.id.action_item__slideshow) {
             if (!selection.isEmpty()) {
                 int key;
                 Iterator<Long> it = selection.iterator();
@@ -300,6 +313,7 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                 keys.add((long) index);
             }
             selectionTracker.setItemsSelected(keys, false);
+            mainActivity.invalidateMenu();
         } else if(id == R.id.action_sort_ascending) {
             Collections.sort(imageDtos, (o1, o2) -> o1.getCreationDate().compareTo(o2.getCreationDate()));
             ((LibrarySelectionAdapter)binding.rvLibrary.getAdapter()).setImageData(imageDtos);
@@ -312,7 +326,9 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
             });
             ((LibrarySelectionAdapter) binding.rvLibrary.getAdapter()).setImageData(imageDtos);
         }
-            return true;
+        mainActivity.invalidateMenu();
+        getActivity().invalidateOptionsMenu();
+        return true;
     }
 
     @Override
