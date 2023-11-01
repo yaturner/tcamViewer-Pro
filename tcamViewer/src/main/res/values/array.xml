@@ -102,7 +102,7 @@
     <item name="palette_isotherm" type="id" />
     <item name="palette_rainbow" type="id" />
     <item name="palette_sepia" type="id" />
-palette_
+
     <integer-array name="palette_ids">
         <item>@id/palette_arctic</item>
         <item>@id/palette_banded</item>
