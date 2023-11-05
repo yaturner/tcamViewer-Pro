@@ -376,6 +376,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnError(error -> {
+                            mainActivity.invalidateMenu();
                             Sentry.captureException(error);
                             error.printStackTrace();
                         })
@@ -457,7 +458,7 @@ public class CameraFragment extends Fragment implements View.OnTouchListener, Me
                     }
                 }
             } else if (response.equalsIgnoreCase("error")) {
-                String msg = new JSONObject(obj.getString("error")).getString("message");
+                String msg = new JSONObject(obj.getString("error")).getString("exception");
                 mainActivity.dismissProgressDialog(); //just in case
                 if (msg.startsWith("java.net.SocketTimeoutException") ||
                         msg.startsWith("java.net.ConnectException")) {
