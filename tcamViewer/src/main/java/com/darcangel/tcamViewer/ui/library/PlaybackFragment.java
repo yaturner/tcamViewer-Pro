@@ -623,7 +623,12 @@ public class PlaybackFragment extends Fragment implements
             binding.clPlayback.tvGain.setTextColor(white);
         }
 
-        Bitmap bitmap = imageDto.drawHotspot();
+        Bitmap bitmap;
+        if(settings.getDisplaySpotmeter().getValue()) {
+            bitmap = imageDto.drawHotspot();
+        } else {
+            bitmap = imageDto.getBitmap();
+        }
         binding.clPlayback.ivCamera.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
         binding.clPlayback.ivColorBar.setImageBitmap(colorbar);

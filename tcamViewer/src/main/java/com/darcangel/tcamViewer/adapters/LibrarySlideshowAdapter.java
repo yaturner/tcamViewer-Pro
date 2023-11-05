@@ -99,7 +99,12 @@ public class LibrarySlideshowAdapter
             holder.tvGain.setTextColor(white);
         }
 
-        Bitmap bitmap = imageDto.drawHotspot();
+        Bitmap bitmap;
+        if(settings.getDisplaySpotmeter().getValue()) {
+            bitmap = imageDto.drawHotspot();
+        } else {
+            bitmap = imageDto.getBitmap();
+        }
         holder.ivCamera.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
         holder.ivColorBar.setImageBitmap(colorbar);

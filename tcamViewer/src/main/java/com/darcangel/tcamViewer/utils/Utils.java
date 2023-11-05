@@ -201,7 +201,12 @@ public class Utils {
         constraintLayout.layout(0, 0, layoutWidth, layoutHeight);
         constraintLayout.buildDrawingCache(true);
 
-        Bitmap bitmap = imageDto.drawHotspot();
+        Bitmap bitmap;
+        if(settings.getDisplaySpotmeter().getValue()) {
+            bitmap = imageDto.drawHotspot();
+        } else {
+            bitmap = imageDto.getBitmap();
+        }
         ivImageView.setImageBitmap(bitmap);
         Bitmap colorbar = imageDto.createColorBar();
         ivColorBar.setImageBitmap(colorbar);
