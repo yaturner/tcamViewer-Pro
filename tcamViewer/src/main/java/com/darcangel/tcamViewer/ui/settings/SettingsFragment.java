@@ -304,6 +304,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                     //If ManualRange is checked do the same for it's values
                     if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()) {
                         settings.setManualRange(binding.switchManualRange.isChecked());
+                        cameraViewModel.setManualRange(binding.switchManualRange.isChecked());
                         cameraViewModel.setRemapNeeded(true);
                         if (settings.getManualRange().getValue()) {
                             try {
