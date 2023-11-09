@@ -165,14 +165,15 @@ public class Utils {
         tvMinTemperature.setTextColor(white);
         tvMinTemperature.setTextSize(textSize);
 
+        tvSpotmeterTemperature.setText(hotspotString);
+        tvSpotmeterTemperature.setTextSize(textSize);
+        tvSpotmeterTemperature.setTextColor(white);
+
         if (settings.getExportMetaData().getValue()) {
             LinearLayoutCompat lline1 = inflatedFrame.findViewById(R.id.llAnnotation_line_1);
             tvLogo.setText(R.string.appName);
             tvLogo.setTextSize(textSize);
             tvLogo.setTextColor(white);
-            tvSpotmeterTemperature.setText(hotspotString);
-            tvSpotmeterTemperature.setTextSize(textSize);
-            tvSpotmeterTemperature.setTextColor(white);
             float emissivity = (float) imageDto.getEmissivity() / 8192f;
             tvEmissivity.setText(String.format(Locale.US, "ε%.2f", emissivity));
             tvEmissivity.setTextSize(textSize);
