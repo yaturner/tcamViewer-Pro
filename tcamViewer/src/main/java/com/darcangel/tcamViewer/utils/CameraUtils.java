@@ -104,8 +104,8 @@ public class CameraUtils extends BaseObservable {
         imageDto.setAGC((status & Constants.TELEMETRY_MASK_AGC) == Constants.TELEMETRY_MASK_AGC);
         imageDto.setShutdown((status & Constants.TELEMETRY_MASK_SHUTDOWN) == Constants.TELEMETRY_MASK_SHUTDOWN);
         imageDto.setEmissivity(telemetryData[offsetB + 19]);
-        imageDto.setGainMode(telemetryData[offsetC + 5]);
-        imageDto.setAutoGainMode(telemetryData[offsetC + 6]);
+        imageDto.setGainMode(telemetryData[offsetC + 5]);          //0 - High, 1 - Low, 2 - Auto, if auto then use AutoGainMode
+        imageDto.setAutoGainMode(telemetryData[offsetC + 6]);      //0 - High, 1 - Low
         imageDto.setTLinearEnabled(telemetryData[offsetC + 48]);
         imageDto.setTLinearResolution(telemetryData[offsetC + 49]);
         imageDto.setSpotmeterMean(telemetryData[offsetC + 50]);

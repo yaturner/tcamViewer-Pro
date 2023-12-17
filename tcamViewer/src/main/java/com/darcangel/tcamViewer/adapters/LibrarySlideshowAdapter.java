@@ -25,6 +25,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
+import com.darcangel.tcamViewer.constants.Constants;
 
 public class LibrarySlideshowAdapter
         extends RecyclerView.Adapter<LibrarySlideshowAdapter.ViewHolder> {
@@ -75,7 +76,12 @@ public class LibrarySlideshowAdapter
             minString = cameraUtils.createTemperatureString(temps.first);
         }
 
+        //If the Gain Mode is set to auto then use the AutoGainMode which is the mode
+        //  reported by the camera when it is in auto mode
         int gain = imageDto.getGainMode();
+        if(gain == Constants.GAIN_MODE_AUTO) {
+            gain = imageDto.getAutoGainMode();
+        }
         float emissivity = (float) imageDto.getEmissivity() / 8192f;
 
         holder.clPlayback.setBackgroundColor(black);
@@ -95,7 +101,7 @@ public class LibrarySlideshowAdapter
 
             holder.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
             holder.tvDateTime.setTextColor(white);
-            holder.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
+            holder.tvGain.setText("g" + (gain ==  Constants.GAIN_MODE_LOW ? "LOW" : "HIGH"));
             holder.tvGain.setTextColor(white);
         }
 

@@ -302,7 +302,13 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                         settings.setAGC(binding.switchAGC.isChecked());
                     }
                     //If ManualRange is checked do the same for it's values
-                    if(binding.switchManualRange.isChecked() != settings.getManualRange().getValue()) {
+                    //TODO if manual range is on check to see if max/min changed
+                    float minf = Float.parseFloat(binding.etManualRangeMin.getText().toString());
+                    float maxf = Float.parseFloat(binding.etManualRangeMax.getText().toString());
+                    if((binding.switchManualRange.isChecked() != settings.getManualRange().getValue())
+                            || ((binding.switchManualRange.isChecked() &&
+                            (!(minf == cameraViewModel.getManualMinTemperature()) ||
+                                    (!(maxf == cameraViewModel.getManualMaxTemperature())))))) {
                         settings.setManualRange(binding.switchManualRange.isChecked());
                         cameraViewModel.setManualRange(binding.switchManualRange.isChecked());
                         cameraViewModel.setRemapNeeded(true);
@@ -311,8 +317,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener,
                                 String min = binding.etManualRangeMin.getText().toString();
                                 String max = binding.etManualRangeMax.getText().toString();
                                 if(!min.isEmpty() && !max.isEmpty()) {
-                                    settings.setManualRangeMin(Float.parseFloat(min));
-                                    settings.setManualRangeMax(Float.parseFloat(max));
+                                    settings.setManualRangeMin(minf);
+                                    settings.setManualRangeMax(maxf);
+                                    cameraViewModel.setManualMinTemperature(minf);
+                                    cameraViewModel.setManualMaxTemperature(maxf);
                                 } else {
                                     Toast.makeText(getContext(), R.string.invalid_range_value, Toast.LENGTH_LONG).show();
                                 }

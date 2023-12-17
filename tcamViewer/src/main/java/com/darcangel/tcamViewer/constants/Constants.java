@@ -10,6 +10,11 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 public final class Constants {
+
+    public static final int GAIN_MODE_HIGH = 0;
+    public static final int GAIN_MODE_LOW = 1;
+    public static final int GAIN_MODE_AUTO = 2;
+
     public static final Pattern IP_PATTERN = Pattern.compile(
             "^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
     public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy HH:mm:ss", Locale.getDefault());
