@@ -157,12 +157,8 @@ public class PlaybackFragment extends Fragment implements
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (exportResolution.first == 160 && exportResolution.second == 120) {
-                                videoBitmap = utils.createExportImage(imageDto);
-                            } else {
-                                videoBitmap = Bitmap.createScaledBitmap(utils.createExportImage(imageDto),
-                                        exportResolution.first, exportResolution.second, false);
-                            }
+                            videoBitmap = Bitmap.createScaledBitmap(utils.createExportImage(imageDto),
+                                    exportResolution.first, exportResolution.second, false);
                             //make a copy of the bitmap for the encoding at the end
                             videoFrameArray.add(new Pair<Bitmap, Integer>(Bitmap.createBitmap(videoBitmap), frameNumber));
                         }

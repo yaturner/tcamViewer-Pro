@@ -113,10 +113,10 @@ public class Utils {
 
         switch (res) {
             case 0:
-                textSize = 4f;
+                textSize = 6f;
                 break;
             case 1:
-                textSize = 6f;
+                textSize = 8f;
                 break;
             case 3:
                 textSize = 12f;
