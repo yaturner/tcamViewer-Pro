@@ -152,13 +152,12 @@ public class PlaybackFragment extends Fragment implements
                     frameNumber = (int) (((float) delay / 1000.0) * 30.0);
                     frameNumber = frameNumber == 0 ? 1 : frameNumber;
                     int res = settings.getExportResolution().getValue();
-                    //if we are not exporting at the default resolution (160x120) resize the bitmap
                     Pair<Integer, Integer> exportResolution = getExportBitmapSize();
                     mainActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             videoBitmap = Bitmap.createScaledBitmap(utils.createExportImage(imageDto),
-                                    exportResolution.first, exportResolution.second, false);
+                                    exportResolution.first, exportResolution.second, true);
                             //make a copy of the bitmap for the encoding at the end
                             videoFrameArray.add(new Pair<Bitmap, Integer>(Bitmap.createBitmap(videoBitmap), frameNumber));
                         }

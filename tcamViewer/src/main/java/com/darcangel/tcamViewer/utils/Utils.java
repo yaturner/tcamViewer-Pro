@@ -113,10 +113,10 @@ public class Utils {
 
         switch (res) {
             case 0:
-                textSize = 6f;
+                textSize = 8f;
                 break;
             case 1:
-                textSize = 8f;
+                textSize = 10f;
                 break;
             case 3:
                 textSize = 12f;
@@ -145,6 +145,8 @@ public class Utils {
         View inflatedFrame = mainActivity.getLayoutInflater()
                 .inflate(R.layout.fragment_slideshow_item, null);
 
+        ImageView ivImage = inflatedFrame.findViewById(R.id.ivCamera);
+
         tvMaxTemperature = inflatedFrame.findViewById(R.id.tvMaxTemperature);
         ivColorBar = inflatedFrame.findViewById(R.id.ivColorBar);
         tvMinTemperature = inflatedFrame.findViewById(R.id.tvMinTemperature);
@@ -155,8 +157,10 @@ public class Utils {
         tvGain = inflatedFrame.findViewById(R.id.tvGain);
         ivImageView = inflatedFrame.findViewById(R.id.ivCamera);
 
-        ViewGroup.LayoutParams lp = new LinearLayout.LayoutParams(width[res], height[res]);
-        ivImageView.setLayoutParams(lp);
+        android.view.ViewGroup.LayoutParams layoutParams = ivImage.getLayoutParams();
+        layoutParams.width = width[res];
+        layoutParams.height = height[res];
+        ivImage.setLayoutParams(layoutParams);
 
         tvMaxTemperature.setText(maxString);
         tvMaxTemperature.setTextColor(white);
