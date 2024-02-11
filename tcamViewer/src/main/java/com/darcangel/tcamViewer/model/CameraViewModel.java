@@ -39,8 +39,8 @@ public class CameraViewModel extends ViewModel {
         settings = mainActivity.getSettings();
 
         //Listen for changes in ipAddress
-        MutableLiveData<String> camera = mainActivity.getSettings().getCameraAddress();
-        camera.observe(mainActivity, address -> mainActivity.invalidateOptionsMenu());
+        MutableLiveData<String> cameraAddress = mainActivity.getSettings().getCameraAddress();
+        cameraAddress.observe(mainActivity, address -> mainActivity.invalidateOptionsMenu());
         //observe any changes from settings for manual range and/or units
         settings.getManualRange().observe(mainActivity, v -> {
             isManualRange = v;

@@ -2,6 +2,7 @@ package com.darcangel.tcamViewer;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.TaskStackBuilder;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -11,8 +12,9 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -25,34 +27,34 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
+import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-
 import com.darcangel.tcamViewer.constants.Constants;
 import com.darcangel.tcamViewer.databinding.ActivityMainBinding;
 import com.darcangel.tcamViewer.factory.PaletteFactory;
-import com.darcangel.tcamViewer.model.Settings;
-import com.darcangel.tcamViewer.services.CameraService;
 import com.darcangel.tcamViewer.model.CameraViewModel;
 import com.darcangel.tcamViewer.model.LibraryViewModel;
+import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.model.SettingsViewModel;
+import com.darcangel.tcamViewer.services.CameraService;
+import com.darcangel.tcamViewer.ui.camera.CameraFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
+import dagger.hilt.android.AndroidEntryPoint;
+import io.sentry.Sentry;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import dagger.hilt.android.AndroidEntryPoint;
-import io.sentry.Sentry;
 import rxdogtag2.RxDogTag;
 import timber.log.Timber;
 
 
 @AndroidEntryPoint
-public class MainActivity extends AppCompatActivity implements ViewModelStoreOwner {
+public class MainActivity extends AppCompatActivity implements ViewModelStoreOwner,
+    OnMenuItemClickListener {
 
     private ActivityMainBinding binding;
     private SettingsViewModel settingsViewModel;
@@ -218,6 +220,7 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         super.onSaveInstanceState(outState);
     }
 
+    
     private void init() {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         //This set up the navigation bar at the bottom of the window
@@ -232,6 +235,14 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+//        MenuItem cameraBtn = navView.getMenu().getItem(0);
+//        MenuItem settingsBtn = navView.getMenu().getItem(1);
+//        MenuItem libraryBtn = navView.getMenu().getItem(2);
+//        cameraBtn.setOnMenuItemClickListener(this);
+//        settingsBtn.setOnMenuItemClickListener(this);
+//        libraryBtn.setOnMenuItemClickListener(this);
+
         navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
             @Override
             public void onDestinationChanged(@NonNull NavController navController,
@@ -251,7 +262,72 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         });
     }
 
+    /**
+     * Called when a menu item has been invoked.  This is the first code that is executed; if it
+     * returns true, no other callbacks will be executed.
+     *
+     * @param item The menu item that was invoked.
+     * @return Return true to consume this click and prevent others from executing.
+     */
+    @Override
+    public boolean onMenuItemClick(@NonNull MenuItem item) {
+        //if we are not in the cameraFragment, just do the navigation
+//        if(navController.getCurrentDestination()  == navController.findDestination(R.id.navigation_camera) &&
+//            item.getItemId() != R.id.navigation_camera &&
+//            (cameraViewModel.isRecording || cameraViewModel.isInStreamingMode())) {
+//                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//                builder.setTitle("Warning")
+//                    .setMessage(
+//                        "Leaving this screen while streaming will abort the streaming operation.\nDo you wish to leave")
+//                    .setPositiveButton(R.string.ok, (dialog, which) -> {
+//                        cameraViewModel.startStreaming(false);
+//                        cameraViewModel.setInStreamingMode(false);
+//                        cameraViewModel.setRecording(false);
+//                        if (item.getItemId() == R.id.navigation_settings) {
+//                            NavDirections gotoSettings = CameraFragmentDirections.actionNavigationCameraToNavigationSettings();
+//                            navController.navigate(gotoSettings);
+//                        } else if(item.getItemId() == R.id.navigation_library) {
+//                            NavDirections gotoLibrary = CameraFragmentDirections.actionNavigationCameraToNavigationLibrary();
+//                            navController.navigate(gotoLibrary);
+//                        }
+//                    })
+//                    .setNegativeButton(R.string.cancel, (dialog, which) -> {
+//                        cancelNavigation = false;
+//                    })
+//                    .create();
+//                builder.show();
+//
+//
+//        } else {
+            return false;
+//        }
+//        return true;
+    }
 
+
+    /**
+     * Support version of {@link #onCreateNavigateUpTaskStack(TaskStackBuilder)}.
+     * This method will be called on all platform versions.
+     * <p>
+     * Define the synthetic task stack that will be generated during Up navigation from
+     * a different task.
+     *
+     * <p>The default implementation of this method adds the parent chain of this activity
+     * as specified in the manifest to the supplied {@link androidx.core.app.TaskStackBuilder}. Applications
+     * may choose to override this method to construct the desired task stack in a different
+     * way.</p>
+     *
+     * <p>This method will be invoked by the default implementation of {@link #onNavigateUp()}
+     * if {@link #shouldUpRecreateTask(Intent)} returns true when supplied with the intent
+     * returned by {@link #getParentActivityIntent()}.</p>
+     *
+     * <p>Applications that wish to supply extra Intent parameters to the parent stack defined
+     * by the manifest should override
+     * {@link #onPrepareSupportNavigateUpTaskStack(androidx.core.app.TaskStackBuilder)}.</p>
+     *
+     * @param builder An empty TaskStackBuilder - the application should add intents representing
+     *                the desired task stack
+     */
     private void putSharedPreferences(final String key, final Object value) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         if (value instanceof Boolean) {

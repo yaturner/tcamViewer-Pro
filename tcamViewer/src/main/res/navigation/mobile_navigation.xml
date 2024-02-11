@@ -11,8 +11,11 @@
         android:label="@string/title_camera"
         tools:layout="@layout/fragment_camera" >
         <action
-            android:id="@+id/action_navigation_camera_to_navigation_library2"
-            app:destination="@id/navigation_library" />
+          android:id="@+id/action_navigation_camera_to_navigation_library"
+          app:destination="@id/navigation_library" />
+        <action
+          android:id="@+id/action_navigation_camera_to_navigation_settings"
+          app:destination="@id/navigation_settings" />
     </fragment>
 
     <fragment
@@ -39,9 +42,9 @@
         android:name="com.darcangel.tcamViewer.ui.library.LibraryFragment"
         android:label="@string/title_library"
         tools:layout="@layout/fragment_library" >
-        <action
-            android:id="@+id/action_navigation_library_to_navigation_camera"
-            app:destination="@id/navigation_camera" />
+<!--        <action-->
+<!--            android:id="@+id/action_navigation_library_to_navigation_camera"-->
+<!--            app:destination="@id/navigation_camera" />-->
         <action
             android:id="@+id/action_navigation_library_to_navigation_librarySlideShowFragment"
             app:destination="@id/navigation_librarySlideShowFragment" />

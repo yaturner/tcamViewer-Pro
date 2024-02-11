@@ -614,7 +614,12 @@ public class PlaybackFragment extends Fragment implements
 
             binding.clPlayback.tvDateTime.setText(sdf.format(imageDto.getCreationDate()));
             binding.clPlayback.tvDateTime.setTextColor(white);
-            binding.clPlayback.tvGain.setText("g" + (gain == 0 ? "LOW" : gain == 1 ? "MEDIUM" : "HIGH"));
+            binding.clPlayback.tvGain.setText(
+                String.format("%s%s", getString(R.string.gain_symbol_text),
+                    gain == Constants.GAIN_MODE_LOW ? getString(
+                        R.string.gain_low_text) :
+                        gain == Constants.GAIN_MODE_AUTO ? getString(R.string.gain_auto_text) :
+                            getString(R.string.gain_high_text)));
             binding.clPlayback.tvGain.setTextColor(white);
         }
 

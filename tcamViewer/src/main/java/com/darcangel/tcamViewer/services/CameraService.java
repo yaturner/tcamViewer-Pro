@@ -257,6 +257,7 @@ public class CameraService extends Service {
                         }
                     } catch (IOException e) {
                         if(e.toString().equalsIgnoreCase("java.net.SocketException: Socket closed")) {
+                            Sentry.captureException(e);
                             running = false;
                         }
                         String jsonString = String.format(Constants.ERROR_RESPONSE, e.toString());

@@ -105,4 +105,9 @@
     <string name="camera">CAMERA</string>
     <string name="ip_address">IP ADDRESS</string>
     <string name="title_camera_discovery">Camera Discovery</string>
+  <string name="recoding_warning">Leaving this screen while recording will stop the recording and save it in the Library.</string>
+  <string name="gain_symbol_text">g</string>
+    <string name="gain_low_text">LOW</string>
+    <string name="gain_high_text">HIGH</string>
+    <string name="gain_auto_text">AUTO</string>
 </resources>
