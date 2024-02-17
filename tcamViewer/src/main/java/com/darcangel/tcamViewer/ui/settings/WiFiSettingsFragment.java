@@ -34,6 +34,7 @@ import java.util.Locale;
 
 import dagger.hilt.android.AndroidEntryPoint;
 import io.sentry.Sentry;
+import timber.log.Timber;
 
 @AndroidEntryPoint
 public class WiFiSettingsFragment extends Fragment implements OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -182,7 +183,7 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
                     settings.getSSID().getValue(),
                     settings.getPassword().getValue());
         } else {
-//            Timber.d("Unknown or unrecognized wifi settings");
+            Timber.d("Unknown or unrecognized wifi settings");
             throw new IllegalArgumentException();
         }
         String cmd = String.format(Locale.US, Constants.CMD_SET_WIFI, args);
@@ -217,6 +218,8 @@ public class WiFiSettingsFragment extends Fragment implements OnClickListener, C
                             })
                             .setMessage(R.string.warning_password);
                     builder.create().show();
+                } else {
+                    settings.setPassword(password);
                 }
                 String ssid = binding.etSSID.getText().toString();
                 if(ssid == null || ssid.isEmpty() || ssid.length() > 32) {

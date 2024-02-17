@@ -116,8 +116,5 @@ public class PrivacyDisclosureFragment extends Fragment implements MenuProvider 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(navBar != null) {
-            navBar.setVisibility(View.VISIBLE);
-        }
     }
 }

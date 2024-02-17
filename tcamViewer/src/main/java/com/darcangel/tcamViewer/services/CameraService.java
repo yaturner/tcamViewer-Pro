@@ -256,6 +256,7 @@ public class CameraService extends Service {
 //                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
                         }
                     } catch (IOException e) {
+                        //TODO if this was a setWiFI command, ignore the error
                         if(e.toString().equalsIgnoreCase("java.net.SocketException: Socket closed")) {
                             Sentry.captureException(e);
                             running = false;

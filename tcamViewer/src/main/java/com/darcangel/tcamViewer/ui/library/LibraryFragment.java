@@ -45,6 +45,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import io.sentry.Sentry;
+import manifold.rt.api.util.ManObjectUtil.Null;
 
 public class LibraryFragment extends Fragment implements MenuProvider  {
 
@@ -205,6 +206,8 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
                             }
                         }
                         deletedFile.clear();
+                        //there is a problem with deleting images, so just rebuild the view
+                        initRecyclerView();
                     })
                     .show();
         } else {
@@ -219,11 +222,11 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         if(deletedFile == null) {
             deletedFile = new ArrayList<String>();
         }
-        Iterator<Long> it = selection.iterator();
-        while (it.hasNext()) {
-            int key = it.next().intValue();
+        for (Long it : (Iterable<Long>) selection) {
+            int key = it.intValue();
             keys.add(key);
-            LibraryItemViewHolder libraryItemViewHolder = (LibraryItemViewHolder) recyclerView.findViewHolderForAdapterPosition(key);
+            LibraryItemViewHolder libraryItemViewHolder =
+                (LibraryItemViewHolder) recyclerView.findViewHolderForAdapterPosition(key);
             String path = libraryItemViewHolder.getImagePath();
             deletedFile.add(path);
         }
@@ -287,10 +290,10 @@ public class LibraryFragment extends Fragment implements MenuProvider  {
         } else if (id == R.id.action_item__slideshow) {
             if (!selection.isEmpty()) {
                 int key;
-                Iterator<Long> it = selection.iterator();
-                while (it.hasNext()) {
-                    key = it.next().intValue();
-                    LibraryItemViewHolder libraryItemViewHolder = (LibraryItemViewHolder) recyclerView.findViewHolderForAdapterPosition(key);
+                for (Long it : selection) {
+                    key = it.intValue();
+                    LibraryItemViewHolder libraryItemViewHolder = (LibraryItemViewHolder) recyclerView.findViewHolderForAdapterPosition(
+                        key);
                     selectedImages.add(libraryItemViewHolder.getImageDto());
                 }
                 libraryViewModel.setSelectedImages(selectedImages);

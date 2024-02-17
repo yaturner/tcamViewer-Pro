@@ -618,7 +618,6 @@ public class PlaybackFragment extends Fragment implements
                 String.format("%s%s", getString(R.string.gain_symbol_text),
                     gain == Constants.GAIN_MODE_LOW ? getString(
                         R.string.gain_low_text) :
-                        gain == Constants.GAIN_MODE_AUTO ? getString(R.string.gain_auto_text) :
                             getString(R.string.gain_high_text)));
             binding.clPlayback.tvGain.setTextColor(white);
         }

@@ -39,7 +39,6 @@ import com.darcangel.tcamViewer.model.LibraryViewModel;
 import com.darcangel.tcamViewer.model.Settings;
 import com.darcangel.tcamViewer.model.SettingsViewModel;
 import com.darcangel.tcamViewer.services.CameraService;
-import com.darcangel.tcamViewer.ui.camera.CameraFragmentDirections;
 import com.darcangel.tcamViewer.utils.CameraUtils;
 import com.darcangel.tcamViewer.utils.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -53,8 +52,7 @@ import timber.log.Timber;
 
 
 @AndroidEntryPoint
-public class MainActivity extends AppCompatActivity implements ViewModelStoreOwner,
-    OnMenuItemClickListener {
+public class MainActivity extends AppCompatActivity implements ViewModelStoreOwner {
 
     private ActivityMainBinding binding;
     private SettingsViewModel settingsViewModel;
@@ -236,13 +234,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
 
-//        MenuItem cameraBtn = navView.getMenu().getItem(0);
-//        MenuItem settingsBtn = navView.getMenu().getItem(1);
-//        MenuItem libraryBtn = navView.getMenu().getItem(2);
-//        cameraBtn.setOnMenuItemClickListener(this);
-//        settingsBtn.setOnMenuItemClickListener(this);
-//        libraryBtn.setOnMenuItemClickListener(this);
-
         navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
             @Override
             public void onDestinationChanged(@NonNull NavController navController,
@@ -262,72 +253,6 @@ public class MainActivity extends AppCompatActivity implements ViewModelStoreOwn
         });
     }
 
-    /**
-     * Called when a menu item has been invoked.  This is the first code that is executed; if it
-     * returns true, no other callbacks will be executed.
-     *
-     * @param item The menu item that was invoked.
-     * @return Return true to consume this click and prevent others from executing.
-     */
-    @Override
-    public boolean onMenuItemClick(@NonNull MenuItem item) {
-        //if we are not in the cameraFragment, just do the navigation
-//        if(navController.getCurrentDestination()  == navController.findDestination(R.id.navigation_camera) &&
-//            item.getItemId() != R.id.navigation_camera &&
-//            (cameraViewModel.isRecording || cameraViewModel.isInStreamingMode())) {
-//                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//                builder.setTitle("Warning")
-//                    .setMessage(
-//                        "Leaving this screen while streaming will abort the streaming operation.\nDo you wish to leave")
-//                    .setPositiveButton(R.string.ok, (dialog, which) -> {
-//                        cameraViewModel.startStreaming(false);
-//                        cameraViewModel.setInStreamingMode(false);
-//                        cameraViewModel.setRecording(false);
-//                        if (item.getItemId() == R.id.navigation_settings) {
-//                            NavDirections gotoSettings = CameraFragmentDirections.actionNavigationCameraToNavigationSettings();
-//                            navController.navigate(gotoSettings);
-//                        } else if(item.getItemId() == R.id.navigation_library) {
-//                            NavDirections gotoLibrary = CameraFragmentDirections.actionNavigationCameraToNavigationLibrary();
-//                            navController.navigate(gotoLibrary);
-//                        }
-//                    })
-//                    .setNegativeButton(R.string.cancel, (dialog, which) -> {
-//                        cancelNavigation = false;
-//                    })
-//                    .create();
-//                builder.show();
-//
-//
-//        } else {
-            return false;
-//        }
-//        return true;
-    }
-
-
-    /**
-     * Support version of {@link #onCreateNavigateUpTaskStack(TaskStackBuilder)}.
-     * This method will be called on all platform versions.
-     * <p>
-     * Define the synthetic task stack that will be generated during Up navigation from
-     * a different task.
-     *
-     * <p>The default implementation of this method adds the parent chain of this activity
-     * as specified in the manifest to the supplied {@link androidx.core.app.TaskStackBuilder}. Applications
-     * may choose to override this method to construct the desired task stack in a different
-     * way.</p>
-     *
-     * <p>This method will be invoked by the default implementation of {@link #onNavigateUp()}
-     * if {@link #shouldUpRecreateTask(Intent)} returns true when supplied with the intent
-     * returned by {@link #getParentActivityIntent()}.</p>
-     *
-     * <p>Applications that wish to supply extra Intent parameters to the parent stack defined
-     * by the manifest should override
-     * {@link #onPrepareSupportNavigateUpTaskStack(androidx.core.app.TaskStackBuilder)}.</p>
-     *
-     * @param builder An empty TaskStackBuilder - the application should add intents representing
-     *                the desired task stack
-     */
     private void putSharedPreferences(final String key, final Object value) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         if (value instanceof Boolean) {
