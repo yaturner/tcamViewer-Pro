@@ -237,7 +237,7 @@
                         <EditText
                             android:id="@+id/etManualRangeMin"
                             style="@style/SettingsEditTextEnd"
-                            android:inputType="number"
+                            android:inputType="numberSigned"
                             android:text="@={settings.manualRangeMin}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
@@ -251,7 +251,7 @@
                         <EditText
                             android:id="@+id/etManualRangeMax"
                             style="@style/SettingsEditTextEnd"
-                            android:inputType="number"
+                            android:inputType="numberSigned"
                             android:text="@={settings.manualRangeMax}" />
                     </androidx.appcompat.widget.LinearLayoutCompat>
 
