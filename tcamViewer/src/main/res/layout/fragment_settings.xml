@@ -331,7 +331,7 @@
                     <TextView
                         android:id="@+id/tvVersion"
                         style="@style/SettingsTextEnd"
-                        android:text="0.1.0" />
+                        android:text="1.0" />
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <!--Privacy Policy-->
