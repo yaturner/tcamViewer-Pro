@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+
+    <application
+        android:name="com.darcangel.tcamViewer.Application"
+        android:allowBackup="true"
+        android:icon="@drawable/appicon_48"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/appicon_48"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Acam">
+        <profileable android:shell="true"/>
+        <provider
+            android:name="com.darcangel.tcamViewer.providers.ImageProvider"
+            android:authorities="com.darcangel.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/image_paths" />
+        </provider>
+        <activity
+            android:name="com.darcangel.tcamViewer.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <meta-data android:name="io.sentry.dsn" android:value="https://0dcea97497fe4d5794a19e45a2397a0c@o1336451.ingest.sentry.io/6605510" />
+        <!-- Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+           We recommend adjusting this value in production. -->
+        <meta-data android:name="io.sentry.traces.sample-rate" android:value="0.25" />
+        <!-- Enable user interaction tracing to capture transactions for various UI events (such as clicks or scrolls). -->
+        <meta-data android:name="io.sentry.traces.user-interaction.enable" android:value="false" />
+
+        <service android:name=".services.CameraService"/>
+    </application>
+
+</manifest>

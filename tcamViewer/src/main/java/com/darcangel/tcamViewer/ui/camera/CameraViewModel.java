@@ -1,0 +1,266 @@
+package com.darcangel.tcamViewer.ui.camera;
+
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
+import com.darcangel.tcamViewer.MainActivity;
+import com.darcangel.tcamViewer.constants.Constants;
+import com.darcangel.tcamViewer.model.ImageDto;
+import com.darcangel.tcamViewer.model.Settings;
+import com.darcangel.tcamViewer.services.CameraService;
+import com.darcangel.tcamViewer.utils.CameraUtils;
+
+import java.util.Calendar;
+import java.util.Locale;
+
+import io.sentry.Sentry;
+
+public class CameraViewModel extends ViewModel {
+
+    private MutableLiveData<ImageDto> imageDto;
+    private CameraService cameraService;
+    private CameraUtils cameraUtils;
+    private MainActivity mainActivity;
+    private Settings settings;
+    private float manualMaxTemperature;
+    private float manualMinTemperature;
+    private boolean unitsCelsius;
+    private boolean isStreaming = false;        //are we currently streaming
+    private boolean isInStreamingMode = false;  //should we resume streaming after onPause etc.
+    private boolean isRemapNeeded = false;
+    private boolean isManualRange;
+
+
+
+
+    public CameraViewModel() {
+        mainActivity = MainActivity.getInstance();
+        cameraUtils = mainActivity.getCameraUtils();
+        settings = mainActivity.getSettings();
+
+        //Listen for changes in ipAddress
+        MutableLiveData<String> camera = mainActivity.getSettings().getCameraAddress();
+        camera.observe(mainActivity, address -> {
+            mainActivity.invalidateOptionsMenu();
+        });
+        //observe any changes from settings for manual range and/or units
+        settings.getManualRange().observe(mainActivity, v -> {
+            isManualRange = v;
+            //Timber.d("\\\\ManualRange\\\\observe isManualRange = %s", (isManualRange?"true":"false"));
+        });
+        settings.getManualRangeMin().observe(mainActivity, v -> {
+            manualMinTemperature = v; //convertToRadiometric(v);
+            //Timber.d("\\\\ManualRange\\\\observe ManualRangeMin = %f", v);
+        });
+        settings.getManualRangeMax().observe(mainActivity, v -> {
+            manualMaxTemperature = v; //convertToRadiometric(v);
+            //Timber.d("\\\\ManualRange\\\\observe ManualRangeMax = %f", v);
+        });
+        settings.getUnitsC().observe(mainActivity, v -> {
+            unitsCelsius = v;
+        });
+    }
+
+    public MutableLiveData<ImageDto> getImageDto() {
+        if(imageDto == null) {
+            imageDto = new MutableLiveData<ImageDto>(null);
+        }
+        return imageDto;
+    }
+
+    public void setImageDto(ImageDto imageDto) {
+        if(this.imageDto == null) {
+            this.imageDto = new MutableLiveData<ImageDto>(null);
+        }
+        this.imageDto.setValue(imageDto);
+    }
+
+    public void setCameraService(CameraService cameraService) {
+        this.cameraService = cameraService;
+    }
+
+    //Camera operations
+    /**
+     * connectToCamera
+     * this is called when the camera is connected
+     */
+    public Boolean connectToCamera() {
+        try {
+            if(!cameraService.connect()) {
+                return false;
+            }
+        } catch (Exception e) {
+            Sentry.captureException(e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * disconnectFromCamera
+     */
+    public void disconnectFromCamera() {
+        try {
+            cameraService.disconnect();
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+    }
+
+    /**
+     * setTime
+     *
+     * set_time argument	Description
+     *          sec	        Seconds 0-59
+     *          min	        Minutes 0-59
+     *          hour	    Hour 0-23
+     *          dow	        Day of Week starting with Sunday 1-7
+     *          day	        Day of Month 1-28 to 1-31 depending
+     *          mon	        Month 1-12
+     *          year	    Year offset from 1970
+     */
+    public void setTime() {
+        Calendar now = Calendar.getInstance();
+
+        String args = String.format(Locale.US, Constants.ARGS_SET_TIME,
+                now.get(Calendar.SECOND),
+                now.get(Calendar.MINUTE),
+                now.get(Calendar.HOUR),
+                now.get(Calendar.DAY_OF_WEEK),
+                now.get(Calendar.DAY_OF_MONTH),
+                now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.YEAR) - 1970);
+
+        String cmd = String.format(Constants.CMD_SET_TIME, args);
+        try {
+            cameraService.sendCmd(cmd);
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+    }
+
+    /**
+     * setConfig
+     */
+    public void setConfig() {
+        if (cameraService.isConnected()) {
+
+            String args = String.format(Locale.US, Constants.ARGS_SET_CONFIG,
+                    Boolean.TRUE.equals(settings.getAGC().getValue()) ? 1 : 0,
+                    settings.getEmissivity().getValue(),
+                    Boolean.TRUE.equals(settings.getGainHigh().getValue()) ? 0 :
+                            Boolean.TRUE.equals(settings.getGainLow().getValue()) ? 1 : 2);
+            String cmd = String.format(Constants.CMD_SET_CONFIG, args);
+            //isConnectingToCamera = false;
+            try {
+                cameraService.sendCmd(cmd);
+            } catch (Exception e) {
+                Sentry.captureException(e);
+            }
+        }
+    }
+
+    public void getConfig() {
+        if(cameraService.isConnected()) {
+            String cmd = Constants.CMD_GET_CONFIG;
+            try {
+                cameraService.sendCmd(cmd);
+            } catch (Exception e) {
+                Sentry.captureException(e);
+            }
+        }
+    }
+
+    public void getWifi() {
+        if(cameraService.isConnected()) {
+            String cmd = Constants.CMD_GET_WIFI;
+            try {
+                cameraService.sendCmd(cmd);
+            } catch (Exception e) {
+                Sentry.captureException(e);
+            }
+        }
+    }
+
+    /**
+     * getImage
+     */
+    public void getImageFromCamera() {
+        try {
+            cameraService.sendCmd(Constants.CMD_GET_IMAGE);
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+    }
+
+    public void startStreaming(Boolean on) {
+        try {
+            if(on) {
+                cameraService.startStreaming();
+            } else {
+                cameraService.stopStreaming();
+            }
+            isStreaming = on;
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+    }
+
+    public Boolean getStreaming() {
+        return isStreaming;
+    }
+
+    public void setStreaming(Boolean streaming) {
+        isStreaming = streaming;
+    }
+
+    //If this is true, then we should resume streaming if, for example,
+    // we went to a different fragment and returned to camera
+    public boolean isInStreamingMode() {
+        return isInStreamingMode;
+    }
+
+    public void setInStreamingMode(boolean inStreamingMode) {
+        isInStreamingMode = inStreamingMode;
+    }
+
+    public boolean isRemapNeeded() {
+        return isRemapNeeded;
+    }
+
+    public void setRemapNeeded(boolean remapNeeded) {
+        isRemapNeeded = remapNeeded;
+    }
+
+    public float getManualMaxTemperature() {
+        return manualMaxTemperature;
+    }
+
+    public void setManualMaxTemperature(float manualMaxTemperature) {
+        this.manualMaxTemperature = manualMaxTemperature;
+    }
+
+    public float getManualMinTemperature() {
+        return manualMinTemperature;
+    }
+
+    public void setManualMinTemperature(float manualMinTemperature) {
+        this.manualMinTemperature = manualMinTemperature;
+    }
+
+    public boolean isUnitsCelsius() {
+        return unitsCelsius;
+    }
+
+    public void setUnitsCelsius(boolean unitsCelsius) {
+        this.unitsCelsius = unitsCelsius;
+    }
+
+    public boolean isManualRange() {
+        return isManualRange;
+    }
+
+    public void setManualRange(boolean manualRange) {
+        isManualRange = manualRange;
+    }
+}

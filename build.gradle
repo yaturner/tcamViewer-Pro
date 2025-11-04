@@ -12,11 +12,18 @@ buildscript {
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
     }
 }
+
 plugins {
-    id 'com.android.application' version '7.2.0' apply false
-    id 'com.android.library' version '7.2.0' apply false
+    id 'com.android.application' version '8.10.1' apply false
+    id 'com.android.library' version '8.10.1' apply false
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+allprojects {
+    ext {
+        versionString = "0.1.4"
+    }
 }
