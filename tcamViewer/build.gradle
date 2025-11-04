@@ -67,6 +67,7 @@ android {
     hilt {
         enableAggregatingTask = true
     }
+    namespace 'com.darcangel.tcamViewer'
 }
 
 dependencies {
