@@ -1,0 +1,128 @@
+[versions]
+# Kotlin & Build Constraints
+kotlin = "1.8.0"
+kotlin-stdlib = "2.1.0"
+
+# AndroidX & Material
+appcompat = "1.7.1"
+material = "1.14.0"
+constraintlayout = "2.2.1"
+recyclerview = "1.4.0"
+recyclerview-selection = "1.2.0"
+viewpager2 = "1.1.0"
+lifecycle = "2.10.0"
+navigation = "2.9.8"
+databinding = "9.2.1"
+
+# Dependency Injection
+dagger-hilt = "2.44.2"
+
+# Network & Data Parsing
+gson = "2.11.0"
+moshi = "1.15.1"
+socket-io = "2.1.0"
+
+# Reactive Extensions
+rxandroid = "3.0.2"
+rxdogtag = "2.0.1"
+
+# Utilities & Third-Party UI
+sweetalert = "1.6.2"
+timber = "5.0.1"
+manifold = "2022.1.34"
+sectioned-recyclerview = "v3.2.0"
+sentry = "8.29.0"
+
+# Define the latest stable versions
+reactivex-rxjava = "3.1.10"
+reactivex-rxandroid = "3.0.2"
+
+# Testing
+junit = "4.13.2"
+androidx-junit = "1.3.0"
+espresso = "3.7.0"
+
+[plugins]
+# ... your other plugins
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
+
+[libraries]
+# Kotlin Constraints
+kotlin-stdlib-jdk7 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk7", version.ref = "kotlin-stdlib" }
+kotlin-stdlib-jdk8 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin-stdlib" }
+
+# AndroidX Core & UI
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
+androidx-databinding-ktx = { group = "androidx.databinding", name = "databinding-ktx", version.ref = "databinding" }
+
+# RecyclerView
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
+androidx-recyclerview-selection = { group = "androidx.recyclerview", name = "recyclerview-selection", version.ref = "recyclerview-selection" }
+sectioned-recyclerview-adapter = { group = "com.github.luizgrp", name = "SectionedRecyclerViewAdapter", version.ref = "sectioned-recyclerview" }
+
+# Lifecycle
+androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+
+# Navigation
+androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigation" }
+androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigation" }
+androidx-navigation-dynamic-features = { group = "androidx.navigation", name = "navigation-dynamic-features-fragment", version.ref = "navigation" }
+
+# Dependency Injection (Hilt)
+dagger-hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "dagger-hilt" }
+dagger-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "dagger-hilt" }
+dagger-core = { group = "com.google.dagger", name = "dagger", version.ref = "dagger-hilt" }
+
+# Network & Data
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
+moshi-adapters = { group = "com.squareup.moshi", name = "moshi-adapters", version.ref = "moshi" }
+moshi-kotlin = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
+socket-io-client = { group = "io.socket", name = "socket.io-client", version.ref = "socket-io" }
+
+# Reactive
+rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "rxandroid" }
+rxdogtag = { group = "com.uber.rxdogtag2", name = "rxdogtag", version.ref = "rxdogtag" }
+
+# Manifold
+manifold-ext = { group = "systems.manifold", name = "manifold-ext", version.ref = "manifold" }
+manifold-preprocessor = { group = "systems.manifold", name = "manifold-preprocessor", version.ref = "manifold" }
+manifold-preprocessor-android-syms = { group = "systems.manifold", name = "manifold-preprocessor-android-syms", version.ref = "manifold" }
+
+# Utilities & Monitoring
+sweetalert-library = { group = "com.github.f0ris", name = "sweetalert-library", version.ref = "sweetalert" }
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+sentry-android = { group = "io.sentry", name = "sentry-android", version.ref = "sentry" }
+
+# Map the aliases to their respective coordinates
+reactivex-rxjava = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "reactivex-rxjava" }
+reactivex-rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "reactivex-rxandroid" }
+
+# Testing
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-junit" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+
+[bundles]
+navigation = [
+    "androidx-navigation-fragment",
+    "androidx-navigation-ui",
+    "androidx-navigation-dynamic-features"
+]
+lifecycle = [
+    "androidx-lifecycle-livedata-ktx",
+    "androidx-lifecycle-viewmodel-ktx"
+]
+moshi = [
+    "moshi",
+    "moshi-adapters",
+    "moshi-kotlin"
+]
+reactivex = [
+    "reactivex-rxjava",
+    "reactivex-rxandroid"
+]

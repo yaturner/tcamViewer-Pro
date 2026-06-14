@@ -14,6 +14,9 @@ import com.darcangel.tcamViewer.constants.Constants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.JsonAdapter;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -335,7 +338,6 @@ public class CameraService extends Service {
         endFound = false;
         startFound = false;
         totalBytesRead = 0;
-        //sb = new StringBuilder();
     }
 
     /**

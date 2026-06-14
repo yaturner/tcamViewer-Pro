@@ -1,20 +1,28 @@
 plugins {
+    // 1. Android plugins MUST come first
     id 'com.android.application'
-    id 'dagger.hilt.android.plugin'
+
+    // 2. Then apply dependent plugins like Safe Args and Hilt
     id 'androidx.navigation.safeargs'
-    id "io.sentry.android.gradle" version "3.1.3"
+    id 'dagger.hilt.android.plugin'
+    id 'io.sentry.android.gradle' version '3.1.3'
+    id("org.jetbrains.kotlin.android")
+
+    // Add this line:
+    id("org.jetbrains.kotlin.kapt")
 }
+
 
 android {
     dataBinding {
         enabled true
     }
-    compileSdk 33
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.darcangel.tcamViewer"
         minSdk 26
-        targetSdk 32
+        targetSdk 35
         versionName "nameExt"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -71,47 +79,36 @@ android {
 }
 
 dependencies {
-    constraints {
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {
-            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
-        }
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0") {
-            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
-        }
-    }
-    implementation 'com.github.f0ris.sweetalert:library:1.6.2'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.navigation:navigation-fragment:2.5.3'
-    implementation 'androidx.navigation:navigation-ui:2.5.3'
-    implementation "androidx.navigation:navigation-dynamic-features-fragment:2.5.3"
-    implementation 'androidx.databinding:databinding-ktx:7.4.2'
-    implementation 'com.jakewharton.timber:timber:5.0.1'
-    implementation 'com.google.dagger:hilt-android:2.44.2'
-    implementation 'com.google.dagger:dagger:2.44.2'
-    implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
-    implementation 'systems.manifold:manifold-ext:2022.1.34'
-    implementation 'com.uber.rxdogtag2:rxdogtag:2.0.1'
-    annotationProcessor 'com.google.dagger:hilt-compiler:2.44.2'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0'
-    implementation 'androidx.recyclerview:recyclerview:1.3.0'
-    implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
-    implementation 'com.github.luizgrp:SectionedRecyclerViewAdapter:v3.2.0'
-    implementation 'io.sentry:sentry-android:6.15.0'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'
-    implementation ('io.socket:socket.io-client:2.1.0') {
-            exclude group: 'org.json', module: 'json'
-        }
-    compileOnly 'systems.manifold:manifold-preprocessor:2022.1.34'
-    compileOnly 'systems.manifold:manifold-preprocessor-android-syms:2022.1.34'
+    // Individual Libraries
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.material)
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    // RecyclerView & Selection
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.recyclerview.selection)
 
-    /////debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
+    // Using Bundles (Groups multiple libraries into one line)
+    implementation(libs.bundles.navigation)
+    implementation(libs.bundles.lifecycle)
+    implementation(libs.bundles.moshi)
+
+    implementation(libs.reactivex.rxjava)
+    implementation(libs.reactivex.rxandroid) // Only needed for Android projects
+    implementation(libs.manifold.ext)        //    implementation libs.rxdogtag
+
+    implementation(libs.timber)
+
+    // Dependency Injection & Annotation Processors
+    implementation(libs.dagger.hilt.android)
+    kapt(libs.dagger.hilt.compiler) // Or annotationProcessor(libs.dagger.hilt.compiler)
+
+    // Handling Dependencies with Exclusions
+    implementation(libs.socket.io.client)
+
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
+
