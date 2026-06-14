@@ -18,6 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.SocketTimeoutException;
+import java.net.SocketAddress;
+
 import java.nio.charset.StandardCharsets;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -66,17 +70,26 @@ public class CameraService extends Service {
     Runnable connectRunnable = new Runnable() {
         public void run() {
             try {
-                cameraSocket = new Socket(ipAddress, 5001);
+                cameraSocket = new Socket();
+                SocketAddress address = new InetSocketAddress(ipAddress, 5001);
+                int timeoutMs = 30 * 1000;
+                cameraSocket.connect(address, timeoutMs);
                 if (cameraSocket != null) {
                     inFromSocket = cameraSocket.getInputStream();
                     outToSocket = cameraSocket.getOutputStream();
                 }
-            } catch (Exception e) {
-                Sentry.captureException(e);
-                cameraSocket = null;
+            } catch (SocketTimeoutException e) {
+                // Handle a failure caused specifically by the timeout expiring
+                e.printStackTrace();
+
+            } catch (IOException e) {
+                // Handle other connection errors (e.g., connection refused, wrong IP)
+                e.printStackTrace();
+
             }
         }
     };
+
 
     /**
      * listeningRunnable
@@ -154,7 +167,7 @@ public class CameraService extends Service {
         try {
             running = true;
             connectThread.start();
-            connectThread.join(15 * 1000);
+            connectThread.join(150 * 1000);
         } catch (InterruptedException e) {
             Sentry.captureException(e);
             return false;
@@ -163,7 +176,7 @@ public class CameraService extends Service {
 
         if (isConnected()) {
             Thread listeningThread = new Thread(listeningRunnable);
-            listeningThread.start();
+            listeningThread.run();
         } else {
             return false;
         }
@@ -244,66 +257,77 @@ public class CameraService extends Service {
         totalBytesRead = 0;
         bytes_read = 0;
 
+        // Use a background thread properly
         listenerThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                // Cache frequently accessed/mutated state locally for speed
+                int localResponsePos = 0;
+                boolean startFound = false;
+
                 while (isConnected() && running) {
-                    prevTime = SystemClock.elapsedRealtime();
+                    long prevTime = SystemClock.elapsedRealtime();
                     try {
                         bytes_read = inFromSocket.read(readBuffer);
-                        if (prevTime != 0L) {
-                            long elapsedTime = SystemClock.elapsedRealtime() - prevTime;
-//                            Timber.d("\\\\response\\\\ Read %d bytes in %d millis", bytes_read, elapsedTime);
+
+                        // End of stream reached (-1)
+                        if (bytes_read == -1) {
+                            running = false;
+                            break;
                         }
                     } catch (IOException e) {
-                        if(e.toString().equalsIgnoreCase("java.net.SocketException: Socket closed")) {
+                        // Cleaner, safer check for closed socket
+                        if (e instanceof java.net.SocketException || "Socket closed".equals(e.getMessage())) {
                             running = false;
+                            break; // Stop looping if socket is dead
                         }
                         String jsonString = String.format(Constants.ERROR_RESPONSE, e.toString());
                         imageChannel.onNext(parseResponse(jsonString));
-                        //Sentry.captureException(e);
                         continue;
                     }
+
                     if (bytes_read == 0) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt(); // Restore interrupted status
                             Sentry.captureException(e);
                         }
                         continue;
                     }
+
+                    // Highly optimized parsing loop
                     for (int index = 0; index < bytes_read; index++) {
-                        char c = (char)readBuffer[index];
-                        if (c == '\02') {
-                            if (startFound) {
-                                //second in a row, we lost the '03', start over
-                                responsePos = 0;
-                            } else {
-                                startFound = true;
-                            }
-//                            Timber.d("found start readBuffer[%d] = %x", index, (int)c);
-                        } else if (startFound && !endFound && c == '\03') {
-                            endFound = true;
-//                            Timber.d("found end readBuffer[%d] = %x", index, (int)c);
-                            response[responsePos] = '\0';
-                            String r = String.valueOf(response, 0, responsePos);
-                            Timber.d("\\\\response\\\\ response = '%s'",
-                                    r.substring(0, Math.min(r.length(), 64)));
+                        byte b = readBuffer[index]; // Keep it as byte, don't cast to char yet
+
+                        if (b == 0x02) { // '\02' STX (Start of Text)
+                            startFound = true;
+                            localResponsePos = 0; // Reset directly instead of flag juggling
+                        } else if (startFound && b == 0x03) { // '\03' ETX (End of Text)
+                            // Convert the precise byte array slice directly to a String (Saves memory & CPU)
+                            String r = new String(response, 0, localResponsePos);
+
+                            Timber.d("\\\\response\\\\ response = '%s'", r.substring(0, Math.min(r.length(), 64)));
+
                             imageChannel.onNext(parseResponse(r));
-                            resetBuffers();
-                        } else {
-                            if (startFound && !endFound) {
-                                //sb.append(c);
-                                response[responsePos] = c;
-                                responsePos += 1;
+
+                            // Reset local flags
+                            startFound = false;
+                            localResponsePos = 0;
+                        } else if (startFound) {
+                            // Prevent ArrayOutOfBoundsException if response buffer fills up
+                            if (localResponsePos < response.length) {
+                                response[localResponsePos++] = (char) b;
                             }
-                            totalBytesRead++;
                         }
+                        totalBytesRead++;
                     }
                 }
             }
         });
-        listenerThread.run();
+
+        // CRITICAL FIX: Use .start() to actually run this on a background thread!
+        listenerThread.start();
     }
 
     void resetBuffers() {
